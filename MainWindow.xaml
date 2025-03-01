@@ -73,10 +73,6 @@
                           VerticalAlignment="Top" Height="37" Background="White" FontFamily="Open Sans"
                           FontSize="21.333" SelectionChanged="Cbox_Modelo_SelectionChanged"
                           SelectedValuePath="Content">
-                    <ComboBoxItem Content="ANTENNA KIT" />
-                    <ComboBoxItem Content="K41-0447-000" />
-                    <ComboBoxItem Content="K41-0432-000" />
-                    <ComboBoxItem Content="K41-0441-000" />
                 </ComboBox>
                 <Label Content="Modelo" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top"
                        FontSize="14" Foreground="#FF595656" />

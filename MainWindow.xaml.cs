@@ -60,8 +60,7 @@ namespace Scale_Program
         private bool sensorProp65Activo;
         private bool sensorSelladoraActivo;
         private bool sensorUnitariaActivo;
-        private List<SequenceStep> sequenceAntennaKit;
-        private List<SequenceStep> sequenceArmHarness;
+        private List<SequenceStep> sequence;
         private string zpl;
 
         private string rutaImagenes = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes");
@@ -88,35 +87,28 @@ namespace Scale_Program
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
                 IniciarSealevel();
 
-                if (Cbox_Modelo.SelectedValue == null)
-                    return;
-
                 var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
 
-                if (modeloSeleccionado == "ANTENNA KIT" || modeloSeleccionado == "K41-0447-000" ||
-                    modeloSeleccionado == "K41-0432-000" || modeloSeleccionado == "K41-0441-000")
+                if (ModeloExisteEnExcel(modeloSeleccionado))
+                {
                     ProcesarModeloValido(modeloSeleccionado);
 
-                if (modeloSeleccionado == "ANTENNA KIT")
-                {
-                    lblProgreso.Visibility = Visibility.Visible;
-                    lblConteoCajas.Visibility = Visibility.Visible;
-                }
+                    bool esAntennaKit = modeloSeleccionado.Equals("ANTENNA KIT", StringComparison.OrdinalIgnoreCase);
 
-                else if (modeloSeleccionado != "ANTENNA KIT")
-                {
-                    lblProgreso.Visibility = Visibility.Hidden;
-                    lblConteoCajas.Visibility = Visibility.Hidden;
+                    lblProgreso.Visibility = esAntennaKit ? Visibility.Visible : Visibility.Hidden;
+                    lblConteoCajas.Visibility = esAntennaKit ? Visibility.Visible : Visibility.Hidden;
                 }
-
                 else
+                {
                     ShowAlertError("Modelo no reconocido.");
+                }
             }
             catch (Exception exception)
             {
                 ShowAlertError($"Error al seleccionar el modelo: {exception.Message}");
             }
         }
+
 
         private void ProcesarModeloValido(string modeloSeleccionado)
         {
@@ -142,28 +134,36 @@ namespace Scale_Program
             try
             {
                 var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
-                var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
-
-                if (modeloSeleccionado == "ANTENNA KIT" || modeloSeleccionado == "K41-0447-000" ||
-                    modeloSeleccionado == "K41-0432-000" || modeloSeleccionado == "K41-0441-000")
-                {
-                    pasosFiltrados = ObtenerSecuenciaFiltrada(modeloSeleccionado, procesoSeleccionado);
-
-                    if (pasosFiltrados != null)
-                        ProcesarModeloYProceso(modeloSeleccionado);
-                    else
-                        ShowAlertError("No se pudo obtener la secuencia para el modelo seleccionado.");
-                }
-                else
+                if (!ModeloExisteEnExcel(modeloSeleccionado))
                 {
                     ShowAlertError("Modelo no reconocido.");
                     return;
                 }
 
-                if (pasosFiltrados != null && pasosFiltrados.Count == 0)
-                    ShowAlertError("No hay pasos definidos para este proceso.");
+                if (!int.TryParse(Cbox_Proceso.SelectedValue.ToString(), out int procesoSeleccionado))
+                {
+                    ShowAlertError("El valor del proceso seleccionado no es válido.");
+                    return;
+                }
 
-                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen) ReadInputBascula1();
+                pasosFiltrados = ObtenerSecuenciaFiltrada(modeloSeleccionado, procesoSeleccionado);
+
+                if (pasosFiltrados == null)
+                {
+                    ShowAlertError("No se pudo obtener la secuencia para el modelo seleccionado.");
+                    return;
+                }
+
+                if (pasosFiltrados.Count == 0)
+                {
+                    ShowAlertError("No hay pasos definidos para este proceso.");
+                    return;
+                }
+
+                ProcesarModeloYProceso(modeloSeleccionado);
+
+                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
+                    ReadInputBascula1();
             }
             catch (Exception ex)
             {
@@ -171,32 +171,23 @@ namespace Scale_Program
             }
         }
 
+
         private List<SequenceStep> ObtenerSecuenciaFiltrada(string modeloSeleccionado, int procesoSeleccionado)
         {
-            switch (modeloSeleccionado)
+            try
             {
-                case "ANTENNA KIT":
-                    return sequenceAntennaKit
-                        .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == 1)
-                        .OrderBy(s => int.Parse(s.Part_Orden))
-                        .ToList();
-                case "K41-0447-000":
-                    return sequenceArmHarness
-                        .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == 2)
-                        .OrderBy(s => int.Parse(s.Part_Orden))
-                        .ToList();
-                case "K41-0432-000":
-                    return sequenceArmHarness
-                        .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == 3)
-                        .OrderBy(s => int.Parse(s.Part_Orden))
-                        .ToList();
-                case "K41-0441-000":
-                    return sequenceArmHarness
-                        .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == 4)
-                        .OrderBy(s => int.Parse(s.Part_Orden))
-                        .ToList();
-                default:
-                    return null;
+                int modProceso = ObtenerModeloModProceso(modeloSeleccionado);
+                if (modProceso == -1) return null;
+
+                return sequence
+                    .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == modProceso)
+                    .OrderBy(s => int.Parse(s.Part_Orden))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al obtener la secuencia filtrada para '{modeloSeleccionado}': {ex.Message}");
+                return null;
             }
         }
 
@@ -213,45 +204,67 @@ namespace Scale_Program
             try
             {
                 var modeloModProceso = ObtenerModeloModProceso(modeloSeleccionado);
-                pasosFiltrados = new List<SequenceStep>();
+
+                List<SequenceStep> pasosFiltrados = new List<SequenceStep>();
 
                 using (var workbook = new XLWorkbook(_catalogos.filePathExcel))
                 {
                     var worksheet = workbook.Worksheet("Articulos");
 
                     foreach (var row in worksheet.RowsUsed().Skip(1))
+                    {
                         try
                         {
                             var step = CrearSequenceStepDesdeFila(row, modeloModProceso);
-                            if (step != null) pasosFiltrados.Add(step);
+                            if (step != null)
+                            {
+                                pasosFiltrados.Add(step);
+                            }
                         }
                         catch (Exception ex)
                         {
-                            ShowAlertError($"Error al procesar la fila en '{modeloSeleccionado}': {ex.Message}");
+                            ShowAlertError($"Error al procesar una fila para '{modeloSeleccionado}': {ex.Message}");
                         }
+                    }
                 }
 
-                GuardarSecuenciaPorModelo(modeloSeleccionado, pasosFiltrados);
+                sequence = pasosFiltrados;
             }
             catch (Exception ex)
             {
-                ShowAlertError($"Error al cargar secuencias para {modeloSeleccionado}: {ex.Message}");
+                ShowAlertError($"Error al cargar secuencias para el modelo {modeloSeleccionado}: {ex.Message}");
             }
         }
 
+
         private int ObtenerModeloModProceso(string modeloSeleccionado)
         {
-            modeloSeleccionado = modeloSeleccionado.ToUpper();
-            if (modeloSeleccionado == "ANTENNA KIT")
-                return 1;
-            if (modeloSeleccionado == "K41-0447-000")
-                return 2;
-            if (modeloSeleccionado == "K41-0432-000")
-                return 3;
-            if (modeloSeleccionado == "K41-0441-000")
-                return 4;
-            throw new ArgumentException($"Modelo '{modeloSeleccionado}' no es válido.");
+            try
+            {
+                modeloSeleccionado = modeloSeleccionado.ToUpper();
+
+                using (var workbook = new XLWorkbook(_catalogos.filePathExcel))
+                {
+                    var worksheet = workbook.Worksheet("Modelos");
+
+                    var row = worksheet.RowsUsed()
+                        .FirstOrDefault(r => r.Cell(1).GetString().ToUpper() == modeloSeleccionado);
+
+                    if (row != null)
+                    {
+                        return row.Cell(2).GetValue<int>();
+                    }
+                }
+
+                throw new ArgumentException($"Modelo '{modeloSeleccionado}' no encontrado en la hoja 'Modelos'.");
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al obtener ModProceso para '{modeloSeleccionado}': {ex.Message}");
+                return -1;
+            }
         }
+
 
         private SequenceStep CrearSequenceStepDesdeFila(IXLRow row, int modeloModProceso)
         {
@@ -285,26 +298,6 @@ namespace Scale_Program
                 };
 
             return null;
-        }
-
-        private void GuardarSecuenciaPorModelo(string modeloSeleccionado, List<SequenceStep> pasosFiltrados)
-        {
-            modeloSeleccionado = modeloSeleccionado.ToUpper();
-            switch (modeloSeleccionado)
-            {
-                case "ANTENNA KIT":
-                    sequenceAntennaKit = pasosFiltrados;
-                    break;
-                case "K41-0447-000":
-                    sequenceArmHarness = pasosFiltrados;
-                    break;
-                case "K41-0432-000":
-                    sequenceArmHarness = pasosFiltrados;
-                    break;
-                case "K41-0441-000":
-                    sequenceArmHarness = pasosFiltrados;
-                    break;
-            }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -355,12 +348,16 @@ namespace Scale_Program
 
             var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
 
-            if (modeloSeleccionado == "ANTENNA KIT" || modeloSeleccionado == "K41-0447-000" ||
-                modeloSeleccionado == "K41-0432-000" || modeloSeleccionado == "K41-0441-000")
+            if (ModeloExisteEnExcel(modeloSeleccionado))
+            {
                 ReiniciarPasos(steps, modeloSeleccionado);
+            }
             else
+            {
                 ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+            }
         }
+
 
         private void ReiniciarPasos(List<SequenceStep> steps, string modeloSeleccionado)
         {
@@ -399,64 +396,161 @@ namespace Scale_Program
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ShowAlertError("RECUERDA CONFIGURAR LAS ENTRADAS Y EL CATALOGO ANTES DE EMPEZAR");
+            CargarModelosDesdeExcel();
+        }
+
+        private void CargarModelosDesdeExcel()
+        {
+            try
+            {
+                List<string> modelos = new List<string>();
+
+                using (var workbook = new XLWorkbook(_catalogos.filePathExcel))
+                {
+                    var worksheet = workbook.Worksheet("Modelos");
+
+                    modelos = worksheet.RowsUsed()
+                        .Skip(1)
+                        .Select(row => row.Cell(1).GetString())
+                        .Where(modelo => !string.IsNullOrWhiteSpace(modelo))
+                        .ToList();
+                }
+
+                Cbox_Modelo.Items.Clear();
+                foreach (var modelo in modelos)
+                {
+                    Cbox_Modelo.Items.Add(new ComboBoxItem { Content = modelo });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar modelos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void btnReset_Click(object sender, RoutedEventArgs e)
         {
-            if (Cbox_Modelo.SelectedValue == null)
+            if (Cbox_Modelo.SelectedItem == null)
             {
                 ShowAlertError("No hay un modelo seleccionado.");
                 return;
             }
 
-            var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
+            var modeloSeleccionado = Cbox_Modelo.Text.ToUpper();
 
-            if (modeloSeleccionado == "ANTENNA KIT" || modeloSeleccionado == "K41-0447-000" ||
-                modeloSeleccionado == "K41-0432-000" || modeloSeleccionado == "K41-0441-000")
+            if (ModeloExisteEnExcel(modeloSeleccionado))
+            {
                 ProcesarResetModelo();
+            }
             else
+            {
                 ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+            }
+        }
+
+        private bool ModeloExisteEnExcel(string modelo)
+        {
+            try
+            {
+                using (var workbook = new XLWorkbook(_catalogos.filePathExcel))
+                {
+                    var worksheet = workbook.Worksheet("Modelos");
+
+                    return worksheet.RowsUsed()
+                        .Skip(1)
+                        .Any(row => row.Cell(1).GetString().ToUpper() == modelo.ToUpper());
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al verificar el modelo en Excel: {ex.Message}");
+                return false;
+            }
         }
 
         private void ProcesarResetModelo()
         {
-            if (_FerreteriaPart2)
-                RegistrarPasoRechazado(caja.FirstOrDefault());
-            else if (_currentStepIndex < pasosFiltrados.Count)
-                RegistrarPasoRechazado(pasosFiltrados[_currentStepIndex]);
+            try
+            {
+                // Registrar el paso rechazado si corresponde
+                if (_FerreteriaPart2)
+                    RegistrarPasoRechazado(caja.FirstOrDefault());
+                else if (_currentStepIndex < pasosFiltrados.Count)
+                    RegistrarPasoRechazado(pasosFiltrados[_currentStepIndex]);
 
-            CerrarAlertas();
-            _stopBascula1 = false;
-            _stopBascula2 = true;
-            _FerreteriaPart2 = false;
-            _startMeasurinBoxAndBags = false;
-            _accumulatedWeight = 0;
-            _currentStepIndex = 0;
-            lblProgreso.Content = 0;
-            contador = 0;
-            stepIndex = 0;
-            runningWeight = 0.0;
-            scannerReading = false;
-            CargarSecuenciasPorModelo(Cbox_Modelo.SelectedValue.ToString());
-            CargarProcesos();
-            HideAll();
-            ObtenerSecuenciaFiltrada(Cbox_Modelo.SelectedValue.ToString(),
-                int.Parse(Cbox_Proceso.SelectedValue.ToString()));
-            ProcesarModeloYProceso(Cbox_Modelo.SelectedValue.ToString());
-            _validacion = false;
-            valoresBolsas.Clear();
-            _etapa1 = true;
-            _etapa2 = false;
-            codigo = "";
-            SetImagesBox();
+                // Reinicializar variables
+                CerrarAlertas();
+                _stopBascula1 = false;
+                _stopBascula2 = true;
+                _FerreteriaPart2 = false;
+                _startMeasurinBoxAndBags = false;
+                _accumulatedWeight = 0;
+                _currentStepIndex = 0;
+                lblProgreso.Content = 0;
+                contador = 0;
+                stepIndex = 0;
+                runningWeight = 0.0;
+                scannerReading = false;
+                _validacion = false;
+                valoresBolsas.Clear();
+                _etapa1 = true;
+                _etapa2 = false;
+                codigo = "";
+                SetImagesBox();
 
-            if (Cbox_Modelo.Text == "ANTENNA KIT")
-                ProcessSequenceFerreteria(0, true);
+                if (Cbox_Modelo.SelectedValue == null)
+                {
+                    ShowAlertError("No hay un modelo seleccionado.");
+                    return;
+                }
 
-            if (Cbox_Modelo.Text == "K41-0447-000" || Cbox_Modelo.Text == "K41-0432-000" ||
-                Cbox_Modelo.Text == "K41-0441-000")
-                ProcessSequenceArmHarness(0, true);
+                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
+
+                if (!ModeloExisteEnExcel(modeloSeleccionado))
+                {
+                    ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+                    return;
+                }
+
+                CargarSecuenciasPorModelo(modeloSeleccionado);
+                CargarProcesos();
+                HideAll();
+
+                if (Cbox_Proceso.SelectedValue == null)
+                {
+                    ShowAlertError("No hay un proceso seleccionado.");
+                    return;
+                }
+
+                var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
+
+                ObtenerSecuenciaFiltrada(modeloSeleccionado, procesoSeleccionado);
+                ProcesarModeloYProceso(modeloSeleccionado);
+
+                if (EsModeloFerreteria(modeloSeleccionado))
+                    ProcessSequenceFerreteria(0, true);
+                else if (EsModeloArmHarness(modeloSeleccionado))
+                    ProcessSequenceArmHarness(0, true);
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al procesar el reset del modelo: {ex.Message}");
+            }
         }
+        private bool EsModeloFerreteria(string modelo)
+        {
+            return modelo.Equals("ANTENNA KIT", StringComparison.OrdinalIgnoreCase) ||
+                   modelo.Equals("123-0253-000", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool EsModeloArmHarness(string modelo)
+        {
+            return modelo.Equals("K41-0447-000", StringComparison.OrdinalIgnoreCase) ||
+                   modelo.Equals("K41-0432-000", StringComparison.OrdinalIgnoreCase) ||
+                   modelo.Equals("K41-0441-000", StringComparison.OrdinalIgnoreCase);
+        }
+
 
         private void RegistrarPasoRechazado(SequenceStep step)
         {
@@ -468,21 +562,21 @@ namespace Scale_Program
         {
             try
             {
-                switch (Cbox_Modelo.SelectionBoxItem.ToString())
+                if (Cbox_Modelo.SelectedValue == null)
                 {
-                    case "ANTENNA KIT":
-                        pasosFiltrados = sequenceAntennaKit;
-                        break;
-                    case "K41-0447-000":
-                        pasosFiltrados = sequenceArmHarness;
-                        break;
-                    case "K41-0432-000":
-                        pasosFiltrados = sequenceArmHarness;
-                        break;
-                    case "K41-0441-000":
-                        pasosFiltrados = sequenceArmHarness;
-                        break;
+                    ShowAlertError("No hay un modelo seleccionado.");
+                    return;
                 }
+
+                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
+
+                if (!ModeloExisteEnExcel(modeloSeleccionado))
+                {
+                    ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+                    return;
+                }
+
+                pasosFiltrados = sequence;
 
                 if (_currentStepIndex < pasosFiltrados.Count)
                 {
@@ -501,6 +595,7 @@ namespace Scale_Program
                 ShowAlertError($"Error al registrar el rechazo en FERRETERÍA: {ex.Message}");
             }
         }
+
 
         private void btnSelladora_Click(object sender, RoutedEventArgs e)
         {
@@ -544,6 +639,8 @@ namespace Scale_Program
 
         #region BASCULAS
 
+        // GUARDAR SE VA VERIFICAR EN UN FUTURO CON BASCULA 1 BASCULA 2 PARA DETECTAR A QUE SECUENCIA VA
+
         private void Bascula1_OnDataReady(object sender, BasculaEventArgs e)
         {
             if (_stopBascula1 || scannerReading) return;
@@ -564,7 +661,7 @@ namespace Scale_Program
 
                     if (_consecutiveCount == 4)
                     {
-                        if (Cbox_Modelo.Text == "ANTENNA KIT") ProcessSequenceFerreteria(weight, isStable);
+                        if (Cbox_Modelo.Text == "ANTENNA KIT" || Cbox_Modelo.Text == "123-0253-000") ProcessSequenceFerreteria(weight, isStable);
 
                         if (Cbox_Modelo.Text == "K41-0447-000" || Cbox_Modelo.Text == "K41-0432-000" ||
                             Cbox_Modelo.Text == "K41-0441-000") ProcessSequenceArmHarness(weight, isStable);
@@ -918,15 +1015,17 @@ namespace Scale_Program
             }
         }
 
+        // SE TIENE QUE VERIFICAR CON MODELO TABLA DE EXCEL, VALOR NUEVO DE FIN ETAPA 1 Y COMIENZO ETAPA 2
         private void SetValuesEtapas(List<SequenceStep> steps, int etapa)
         {
             switch (etapa)
             {
                 case 1:
-                    var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains("Caja antenna 141A1528")
-                                                              || step.Part_NoParte.Contains("Clamp 028-0171-000") ||
+                    var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains("Caja antenna 141A1528") || 
+                                                              step.Part_NoParte.Contains("Clamp 028-0171-000") ||
                                                               step.Part_NoParte.Contains("17 Tornillos chicos 171A0366") ||
-                                                              step.Part_NoParte.Contains("3 Tornillos hex 121-1268-000"));
+                                                              step.Part_NoParte.Contains("3 Tornillos hex 121-1268-000") ||
+                                                              step.Part_NoParte.Contains("Empaque"));
                     _etapa1 = true;
                     if (etapa1 != null)
                         pasosFiltrados = steps
@@ -1522,7 +1621,7 @@ namespace Scale_Program
         private void ProcessSequenceFerreteria(double currentWeight, bool isStable)
         {
             _consecutiveCount = 0;
-            if (contador == 10)
+            if (contador == 10 && Cbox_Modelo.Text == "ANTENNA KIT")
             {
                 _stopBascula1 = true;
                 _etapa2 = true;
@@ -1538,7 +1637,7 @@ namespace Scale_Program
                 _stopBascula2 = false;
             }
 
-            if (Cbox_Modelo.SelectionBoxItem.ToString() == "ANTENNA KIT" && _etapa1)
+            if ((Cbox_Modelo.SelectionBoxItem.ToString() == "ANTENNA KIT" || Cbox_Modelo.SelectionBoxItem.ToString() == "123-0253-000") && _etapa1)
                 ProcessStableWeight(currentWeight, isStable);
         }
 
@@ -1576,7 +1675,7 @@ namespace Scale_Program
 
                     if (cantidadRestante == 0)
                     {
-                        if (!currentStep.IsCompleted)
+                        if (!currentStep.IsCompleted && Cbox_Modelo.Text == "ANTENNA KIT")
                             LogFerreteriaStep(currentStep, "OK", codigo);
 
                         if (_currentStepIndex == pasosFiltrados.Count - 2)
@@ -1638,12 +1737,33 @@ namespace Scale_Program
                         pieceWeight = 0;
                         SetImagesBox();
                         contador++;
-                        lblProgreso.Content = contador;
+
+                        // VERIFICAR CON TABLA DE EXCEL BASCULA 1 y 2 
+
+                        if (Cbox_Modelo.Text == "ANTENNA KIT")
+                            lblProgreso.Content = contador;
+                        else if (Cbox_Modelo.Text == "123-0253-000")
+                        {
+                            lblCompletados.Content = contador;
+                        }
+
 
                         if (btnEtiquetaManual.Tag?.ToString() == "off")
                         {
-                            ActivarSalida("unitaria");
-                            ActivarSalida("prop65");
+                            if (Cbox_Modelo.Text == "123-0253-000")
+                            {
+                                ActivarSalida("prop65");
+
+                                (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(Cbox_Modelo.SelectedValue.ToString());
+                                codigo = $"{integrer}.{fraction}";
+                                RawPrinterHelper.SendStringToPrinter(defaultSettings.ZebraName, zpl);
+                                LogFerreteriaStep(currentStep, "OK", codigo);
+                            }
+                            else
+                            {
+                                ActivarSalida("unitaria");
+                                ActivarSalida("prop65");
+                            }
                         }
 
                         codigo = "";
@@ -1723,23 +1843,23 @@ namespace Scale_Program
         {
             try
             {
-                var procesosDisponibles = new List<int>();
+                if (Cbox_Modelo.SelectedValue == null)
+                    return;
 
-                if (Cbox_Modelo.SelectedValue?.ToString() == "ANTENNA KIT")
-                    procesosDisponibles = sequenceAntennaKit
-                        .Select(s => s.Part_Proceso)
-                        .Distinct()
-                        .OrderBy(p => p)
-                        .ToList();
+                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
 
-                else if (Cbox_Modelo.SelectedValue?.ToString() == "K41-0447-000" ||
-                         Cbox_Modelo.SelectedValue?.ToString() == "K41-0432-000" ||
-                         Cbox_Modelo.SelectedValue?.ToString() == "K41-0441-000")
-                    procesosDisponibles = sequenceArmHarness
-                        .Select(s => s.Part_Proceso)
-                        .Distinct()
-                        .OrderBy(p => p)
-                        .ToList();
+                if (!ModeloExisteEnExcel(modeloSeleccionado))
+                {
+                    ShowAlertError("Modelo no reconocido.");
+                    return;
+                }
+
+                var procesosDisponibles = sequence
+                    .Where(s => s.ModProceso == ObtenerModeloModProceso(modeloSeleccionado))
+                    .Select(s => s.Part_Proceso)
+                    .Distinct()
+                    .OrderBy(p => p)
+                    .ToList();
 
                 Cbox_Proceso.ItemsSource = procesosDisponibles;
             }
@@ -1752,6 +1872,7 @@ namespace Scale_Program
                 _isInitializing = false;
             }
         }
+
 
         private async void EndFerreteriaG()
         {
@@ -1813,8 +1934,6 @@ namespace Scale_Program
             _etapa1 = true;
             _etapa2 = false;
             contador = 0;
-
-            // REINICIAR ESTADO DE LA SECUENCIA DE PESO
             stepIndex = 0;
             runningWeight = 0.0;
             codigo = "";

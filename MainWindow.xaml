@@ -1,0 +1,549 @@
+﻿<Window x:Class="Scale_Program.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Missing Parts" Width="1512.836" Height="768" WindowStartupLocation="CenterScreen"
+        WindowState="Maximized" Icon="Content/img/Logo.png" Closing="Window_Closing" Loaded="Window_Loaded">
+    <Window.Resources>
+        <ControlTemplate x:Key="ButtonControlTemplate1" TargetType="{x:Type Button}">
+            <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"
+                    SnapsToDevicePixels="True">
+                <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" TargetName="border" Value="0.8" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Opacity" TargetName="border" Value="1.0" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid Height="165" VerticalAlignment="Top" Background="#FF005288">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="307" />
+                <ColumnDefinition Width="370" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="465.836" />
+            </Grid.ColumnDefinitions>
+            <Label x:Name="AppName" Content="Parts Presence" HorizontalAlignment="Left" Margin="20,14,0,0"
+                   VerticalAlignment="Top" Height="54" FontFamily="Open Sans" FontSize="33.333" Width="331"
+                   FontWeight="Bold" Foreground="White" Grid.Column="0" Grid.ColumnSpan="2" />
+            <Grid Height="77" Margin="0,88,0,0" VerticalAlignment="Top" Background="#FFE2E2E2" Grid.ColumnSpan="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="370" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="250*" />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="125" />
+                        <ColumnDefinition Width="125*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Name="lblCompletados" Content="0" Grid.Column="1" HorizontalContentAlignment="Center"
+                           HorizontalAlignment="Right" Margin="0,17,23,0" VerticalAlignment="Top" FontFamily="Arial"
+                           FontSize="48" Width="221" Height="60" Foreground="#FF5A5D5A" FontWeight="Bold"
+                           Background="{x:Null}" Visibility="Visible" />
+                    <Label Content="Completados" Grid.Column="1" HorizontalAlignment="Right"
+                           HorizontalContentAlignment="Center" Margin="0,5,23,0" VerticalAlignment="Top"
+                           RenderTransformOrigin="1.026,0.423" FontFamily="Arial" FontSize="14" Foreground="#FF7F7F7F"
+                           Height="30" Width="228" FontWeight="Normal" Visibility="Visible" />
+                    <Label x:Name="lblProgreso" Content="0" Grid.Column="1" HorizontalContentAlignment="Center"
+                           HorizontalAlignment="Right" Margin="0,20,215,0" VerticalAlignment="Top" FontFamily="Arial"
+                           FontSize="48" Width="221" Height="60" Foreground="#FF5A5D5A" FontWeight="Bold"
+                           Background="{x:Null}" Visibility="Hidden" />
+                    <Label x:Name="lblConteoCajas" Content="Conteo cajas" Grid.Column="1" HorizontalAlignment="Right"
+                           HorizontalContentAlignment="Center" Margin="0,8,215,0" VerticalAlignment="Top"
+                           RenderTransformOrigin="1.026,0.423" FontFamily="Arial" FontSize="14" Foreground="#FF7F7F7F"
+                           Height="30" Width="228" FontWeight="Normal" Visibility="Hidden" />
+                </Grid>
+                <ComboBox x:Name="Cbox_Modelo" Text="Modelo" IsEditable="False" IsReadOnly="True" Margin="10,25,16,0"
+                          VerticalAlignment="Top" Height="37" Background="White" FontFamily="Open Sans"
+                          FontSize="21.333" SelectionChanged="Cbox_Modelo_SelectionChanged"
+                          SelectedValuePath="Content">
+                    <ComboBoxItem Content="ANTENNA KIT" />
+                    <ComboBoxItem Content="K41-0447-000" />
+                    <ComboBoxItem Content="K41-0432-000" />
+                    <ComboBoxItem Content="K41-0441-000" />
+                </ComboBox>
+                <Label Content="Modelo" HorizontalAlignment="Left" Margin="10,1,0,0" VerticalAlignment="Top"
+                       FontSize="14" Foreground="#FF595656" />
+                <Label Content="Bolsas" Grid.Column="1" HorizontalAlignment="Left" Margin="7,1,0,0"
+                       VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" Visibility="Hidden" />
+
+                <Label Name="LabelLedPart1" Content="Sensor" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Hidden"
+                       Margin="9,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border Name="LedPart1" Grid.Column="2" Margin="8,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+
+                <Label Name="LabelLedPart2" Content="Parte 2" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Hidden"
+                       Margin="75,1,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border Name="LedPart2" Grid.Column="2" Margin="75,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <Label Name="LabelLedPart3" Content="Parte 2" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Hidden"
+                       Margin="141,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border Name="LedPart3" Grid.Column="2" Margin="142,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <ComboBox x:Name="Cbox_Proceso" Text="Proceso" IsEditable="False" Visibility="Hidden"
+                          IsReadOnly="True" Margin="10,25,10,0"
+                          VerticalAlignment="Top" Height="37" Background="White" Grid.Column="1" FontFamily="Open Sans"
+                          FontSize="21.333" Foreground="#FF343333" SelectionChanged="Cbox_Proceso_SelectionChanged"
+                          SelectedIndex="-1" />
+                <Label Content="Proceso" Visibility="Hidden" Grid.Column="1" HorizontalAlignment="Left"
+                       Margin="7,1,0,0"
+                       VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+
+            </Grid>
+
+            <Label x:Name="lblConfiguracion" Content="Configuracion" Margin="0,49,11,0" VerticalAlignment="Top"
+                   Foreground="White" HorizontalAlignment="Right" Width="84" Grid.Column="3" Height="26" />
+            <Label x:Name="lblCatalogos" Content="Catalogo" Margin="314,49,0,0" VerticalAlignment="Top"
+                   Foreground="White" HorizontalAlignment="Left" Width="58" Grid.Column="3" Height="26" />
+            <TextBox Name="txtPaso" Grid.Column="2" HorizontalAlignment="Left" Height="23" Margin="114,44,0,0"
+                     TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Visibility="Hidden" />
+            <Button x:Name="btnCatalogos" Grid.Column="3" Content="" HorizontalAlignment="Left" Margin="325,13,0,0"
+                    VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36" Width="36"
+                    BorderBrush="{x:Null}" Click="btnCatalogos_Click"
+                    Template="{StaticResource ButtonControlTemplate1}">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Tile-02.png" />
+                </Button.Background>
+            </Button>
+            <Button x:Name="Configuracion_btn" Grid.Column="3" Content="" HorizontalAlignment="Left"
+                    Margin="396,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
+                    Width="36" BorderBrush="{x:Null}" Click="Configuracion_btn_Click"
+                    Template="{StaticResource ButtonControlTemplate1}">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/menu.png" />
+                </Button.Background>
+            </Button>
+            <Button x:Name="btnValidaciones" Grid.Column="3" Content="" HorizontalAlignment="Left"
+                    Margin="263,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
+                    Width="36" BorderBrush="{x:Null}"
+                    Template="{StaticResource ButtonControlTemplate1}" Click="btnValidaciones_Click">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Automatic gearbox warning.png" />
+                </Button.Background>
+            </Button>
+            <Button x:Name="btnSelladora" Grid.Column="3" Content="" HorizontalAlignment="Left"
+                    Margin="193,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
+                    Width="36" BorderBrush="{x:Null}"
+                    Template="{StaticResource ButtonControlTemplate1}" Click="btnSelladora_Click">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Electric Bulb.png" />
+                </Button.Background>
+            </Button>
+            <TextBox x:Name="lblSelladora" Text="Encender selladora" Margin="0,49,213,0" VerticalAlignment="Top"
+                     TextWrapping="Wrap" HorizontalAlignment="Right" Width="84" Grid.Column="3" Height="36"
+                     SelectionTextBrush="{x:Null}" Foreground="White" HorizontalContentAlignment="Center"
+                     Focusable="False" BorderThickness="0,0,0,0" AllowDrop="False" IsHitTestVisible="False"
+                     IsTabStop="False">
+                <TextBox.SelectionBrush>
+                    <ImageBrush />
+                </TextBox.SelectionBrush>
+                <TextBox.BorderBrush>
+                    <ImageBrush />
+                </TextBox.BorderBrush>
+                <TextBox.Background>
+                    <ImageBrush />
+                </TextBox.Background>
+            </TextBox>
+            <Label x:Name="lblValidacion" Content="Mostrar" Margin="237,44,0,0" VerticalAlignment="Top"
+                   Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="3" Height="26"
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label x:Name="lblValidacion2" Content="Validaciones" Margin="237,57,0,0" VerticalAlignment="Top"
+                   Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="3" Height="26"
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Button x:Name="btnEtiqueta" Grid.Column="3" Content="" HorizontalAlignment="Left"
+                    Margin="132,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
+                    Width="36" BorderBrush="{x:Null}"
+                    Template="{StaticResource ButtonControlTemplate1}" Click="btnEtiqueta_Click">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Etiqueta.png" />
+                </Button.Background>
+            </Button>
+            <TextBox x:Name="lblImprimirEtiqueta" Text="Imprimir etiqueta" Margin="0,48,272,0" VerticalAlignment="Top"
+                     TextWrapping="Wrap" HorizontalAlignment="Right" Width="84" Grid.Column="3" Height="36"
+                     SelectionTextBrush="{x:Null}" Foreground="White" HorizontalContentAlignment="Center"
+                     Focusable="False" BorderThickness="0,0,0,0" AllowDrop="False" IsHitTestVisible="False"
+                     IsTabStop="False">
+                <TextBox.SelectionBrush>
+                    <ImageBrush />
+                </TextBox.SelectionBrush>
+                <TextBox.BorderBrush>
+                    <ImageBrush />
+                </TextBox.BorderBrush>
+                <TextBox.Background>
+                    <ImageBrush />
+                </TextBox.Background>
+            </TextBox>
+            <Button x:Name="btnEtiquetaManual" Grid.Column="3" Content="" HorizontalAlignment="Left"
+                    Margin="75,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584"
+                    Height="36" Width="36" BorderBrush="{x:Null}" Click="btnEtiquetaManual_Click"
+                    Template="{StaticResource ButtonControlTemplate1}"
+                    Tag="off">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/checkoff.png" />
+                </Button.Background>
+            </Button>
+
+            <TextBox x:Name="lblImpresionAuto" Text="Etiqueta Manual" Margin="0,49,338,0" VerticalAlignment="Top"
+                     TextWrapping="Wrap" HorizontalAlignment="Right" Width="68" Grid.Column="3" Height="31"
+                     SelectionTextBrush="{x:Null}" Foreground="White" HorizontalContentAlignment="Center"
+                     Focusable="False" BorderThickness="0,0,0,0" AllowDrop="False" IsHitTestVisible="False"
+                     IsTabStop="False">
+                <TextBox.SelectionBrush>
+                    <ImageBrush />
+                </TextBox.SelectionBrush>
+                <TextBox.BorderBrush>
+                    <ImageBrush />
+                </TextBox.BorderBrush>
+                <TextBox.Background>
+                    <ImageBrush />
+                </TextBox.Background>
+            </TextBox>
+            <Button x:Name="btnReset" Content="Reset" HorizontalAlignment="Left" Margin="20,14,0,0"
+                    VerticalAlignment="Top" Width="36" Height="36" FontSize="24"
+                    RenderTransformOrigin="0.378,4.807" Click="btnReset_Click" Grid.Column="3"
+                    Template="{StaticResource ButtonControlTemplate1}" BorderBrush="{x:Null}">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Restart.png" Stretch="Uniform" />
+                </Button.Background>
+            </Button>
+            <TextBlock Text="Reset de secuencia" Margin="6,48,0,0" VerticalAlignment="Top"
+                       Foreground="White" HorizontalAlignment="Left" Width="64" Grid.Column="3" Height="33"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+
+        </Grid>
+
+        <Grid x:Name="Contenedor" Margin="10,170,10.333,59.667">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="315*" />
+                <ColumnDefinition Width="315*" />
+                <ColumnDefinition Width="315*" />
+                <ColumnDefinition Width="315*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="247*" />
+                <RowDefinition Height="244*" />
+            </Grid.RowDefinitions>
+            <Grid x:Name="Part0" Margin="10" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background0" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen0" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" Margin="0,-2,0,0" />
+                <Rectangle x:Name="Part_Indicator0" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso0" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte0" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad0" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia0" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="16" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part1" Margin="10" Grid.Column="1" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background1" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen1" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator1" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso1" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte1" Margin="10,10,10,0" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <Label x:Name="Part_Secuencia_Copy" HorizontalAlignment="Right" FontFamily="Arial" FontSize="16"
+                       Height="26" VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Cantidad1" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia1" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center" Height="31"
+                           VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic">
+                    <Run Text="Secuencia 1" />
+                </TextBlock>
+            </Grid>
+            <Grid x:Name="Part2" Margin="10" Grid.Column="2" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background2" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen2" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator2" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso2" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte2" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad2" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia2" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part3" Margin="10" Grid.Column="3" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background3" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen3" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator3" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso3" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte3" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad3" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia3" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part4" Margin="10,10,10,7" Grid.Row="1" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background4" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen4" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator4" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso4" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte4" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad4" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia4" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part5" Margin="10,10,10,7" Grid.Column="1" Grid.Row="1" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background5" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen5" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator5" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso5" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte5" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad5" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia5" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part6" Margin="10,10,10,7" Grid.Column="2" Grid.Row="1" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background6" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen6" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator6" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso6" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte6" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad6" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia6" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+            <Grid x:Name="Part7" Margin="10,10,10,7" Grid.Column="3" Grid.Row="1" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="53*" />
+                    <RowDefinition Height="118*" />
+                    <RowDefinition Height="56*" />
+                </Grid.RowDefinitions>
+                <Rectangle x:Name="Part_Background7" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Image x:Name="Part_Imagen7" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
+                <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
+                <Rectangle x:Name="Part_Indicator7" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
+                           VerticalAlignment="Bottom" />
+                <TextBlock x:Name="Part_Peso7" Margin="10,0,10,10" TextWrapping="Wrap" Grid.Row="2"
+                           FontFamily="Open Sans" TextAlignment="Center" FontSize="24" Foreground="White"
+                           VerticalAlignment="Bottom">
+                    <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
+                </TextBlock>
+                <TextBlock x:Name="Part_NoParte7" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
+                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                    <Run Text="No Parte" />
+                </TextBlock>
+                <TextBlock x:Name="Part_Cantidad7" TextWrapping="Wrap" Text="1" Background="#FF005288"
+                           Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
+                           Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
+                <TextBlock x:Name="Part_Secuencia7" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
+            </Grid>
+        </Grid>
+        <TextBlock x:Name="PesoGeneral" TextWrapping="Wrap" TextAlignment="Center" Background="#FFE2E2E2"
+                   FontFamily="Open Sans" Margin="0,0,0,0" FontSize="48" Height="70" VerticalAlignment="Bottom">
+            <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs." />
+        </TextBlock>
+
+        <Rectangle x:Name="recValidacion" Fill="#FFFEE141" Height="290" Stroke="Black"
+                   Width="676" RadiusY="2" RadiusX="2" Panel.ZIndex="10" Visibility="Hidden" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Right" Grid.Column="4"
+                   Grid.Row="2"
+                   Margin="0,0,75,75" />
+        <Grid x:Name="grdValidacion" Height="290"
+              VerticalAlignment="Bottom" Width="676" Panel.ZIndex="11" Visibility="Hidden" Grid.Row="2" Grid.Column="4"
+              HorizontalAlignment="Right" Margin="0,0,75,75">
+            <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO" HorizontalAlignment="Left"
+                     VerticalAlignment="Top" FontSize="32" Width="616" Foreground="Red"
+                     FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,0,0"
+                     Focusable="False" AllowDrop="False" IsHitTestVisible="False" IsTabStop="False">
+                <TextBox.BorderBrush>
+                    <ImageBrush />
+                </TextBox.BorderBrush>
+                <TextBox.Background>
+                    <ImageBrush />
+                </TextBox.Background>
+            </TextBox>
+            <TextBlock x:Name="txbArticulo" HorizontalAlignment="Left" Margin="10,68,0,0" TextWrapping="Wrap"
+                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="656" TextAlignment="Center"
+                       FontWeight="Bold" />
+            <Label x:Name="lblPesoMin" Content="Peso Min" HorizontalAlignment="Left" Margin="115,164,0,0"
+                   VerticalAlignment="Top" FontSize="18.667" Width="87" />
+            <Label x:Name="lblPesoMax" Content="Peso Max" HorizontalAlignment="Left" Margin="478,166,0,0"
+                   VerticalAlignment="Top" FontSize="18.667" Width="87" />
+            <TextBlock x:Name="txbPesoMin" HorizontalAlignment="Left" Margin="43,119,0,0" TextWrapping="Wrap"
+                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="229" TextAlignment="Center" />
+            <TextBlock x:Name="txbPesoMax" HorizontalAlignment="Left" Margin="416,119,0,0" TextWrapping="Wrap"
+                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="230" TextAlignment="Center" />
+            <Button x:Name="btnCerrarPeso" Content="X" HorizontalAlignment="Left" Margin="616,7,0,0"
+                    VerticalAlignment="Top" Width="59" Height="53" Background="{x:Null}" FontSize="24"
+                    Foreground="#FFC1C0C0" BorderBrush="{x:Null}" BorderThickness="0" Click="btnCerrarPeso_Click" />
+            <Label x:Name="lblPesoActual" Content="Peso Actual" HorizontalAlignment="Center" Margin="0,212,0,0"
+                   VerticalAlignment="Top" FontSize="18.667" Width="148" HorizontalContentAlignment="Center" />
+            <TextBlock x:Name="txbPesoActual" HorizontalAlignment="Center" Margin="0,167,0,0" TextWrapping="Wrap"
+                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="228" TextAlignment="Center" />
+            <TextBox x:Name="txbScanner" Visibility="Hidden" HorizontalAlignment="Left" Margin="115,0,0,0"
+                     TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="450" Height="38"
+                     Background="#FFFFFADB" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                     FontSize="25" KeyDown="txbScanner_KeyDown" />
+            <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
+                    VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
+                    RenderTransformOrigin="0.378,4.807" Click="btnRechazo_Click" />
+        </Grid>
+        <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
+                 d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />
+
+    </Grid>
+
+
+</Window>

@@ -1,0 +1,117 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="Scale_Program.Catalogos"
+    Title="Catálogos" Height="768" Width="1280" WindowState="Maximized">
+    <Grid>
+        <!-- Barra superior -->
+        <Grid Height="70" VerticalAlignment="Top" Background="#FF005288">
+            <Label Content="PARTS PRESENCE" HorizontalAlignment="Left" Margin="10,10,0,0"
+                   VerticalAlignment="Top" Height="54" FontFamily="Open Sans" FontSize="33.333" Width="293"
+                   FontWeight="Bold" Foreground="White" />
+            <Label Content="| Catálogos" Margin="308,10,696,0" VerticalAlignment="Top"
+                   Height="54" FontFamily="Open Sans" FontSize="33.333" Foreground="White" />
+        </Grid>
+
+        <!-- Control de pestañas -->
+        <TabControl x:Name="tabControl" Margin="0,70,0,0" Background="#FFE5E5E5">
+            <!-- Pestaña de Modelos -->
+            <TabItem Header="Modelos" FontSize="16">
+                <Grid Background="#FFEFEFEF">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="107*" />
+                        <ColumnDefinition Width="1168*" />
+                    </Grid.ColumnDefinitions>
+                    <DataGrid x:Name="ModeloDataGrid" Margin="10,224,10,10" AutoGenerateColumns="False" FontSize="16"
+                              HorizontalGridLinesBrush="#FFEFEFEF" VerticalGridLinesBrush="#FF888888"
+                              CanUserAddRows="False" Background="White" AlternatingRowBackground="#FFEFEFEF"
+                              Grid.ColumnSpan="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding NoModelo}" Header="NoModelo" />
+                            <DataGridTextColumn Binding="{Binding ModProceso}" Header="ModProceso" />
+                            <DataGridTextColumn Binding="{Binding Descripcion}" Header="Descripción" />
+                            <DataGridCheckBoxColumn Binding="{Binding UsaSensor1}" Header="Usa Sensor 1" />
+                            <DataGridCheckBoxColumn Binding="{Binding UsaSensor2}" Header="Usa Sensor 2" />
+                            <DataGridCheckBoxColumn Binding="{Binding Activo}" Header="Activo" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Label Content="Modelo" Margin="16,10,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="NoModeloTBox" Height="28" Margin="14,12,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="190" Grid.Column="1" TabIndex="1" />
+                    <Label Content="Descripción" Margin="15,50,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="ModeloDescripcionTBox" Height="28" Margin="14,52,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="2" />
+                    <Button x:Name="ModeloAgregarBtn" Content="Agregar" Margin="234,176,808,0"
+                            VerticalAlignment="Top" Width="126" Height="28" Background="#FF53AB3B" Foreground="White"
+                            Click="ModeloAgregarBtn_Click" Grid.Column="1" TabIndex="4" />
+                    <Button x:Name="ModeloEliminarBtn" Content="Eliminar" Margin="468,176,574,0"
+                            VerticalAlignment="Top" Width="126" Height="28" Background="#FFCD3030" Foreground="White"
+                            Click="ModeloEliminarBtn_Click" Grid.Column="1" TabIndex="5" />
+                    <Label Content="ModProceso" Margin="15,101,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="tbxProcesoModelo" Height="28" Margin="14,103,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="3" />
+                    <Button x:Name="BtnGuardarModelos" Content="Guardar Cambios" Margin="674,176,352,0"
+                            VerticalAlignment="Top" Height="28" Background="#FF0077D4" Foreground="White"
+                            Grid.Column="1" Click="BtnGuardarModelos_Click" Width="140" TabIndex="6" />
+                </Grid>
+            </TabItem>
+
+            <!-- Pestaña de Artículos -->
+            <TabItem Header="Artículos" FontSize="16">
+                <Grid Background="#FFEFEFEF">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="53*" />
+                        <ColumnDefinition Width="1221*" />
+                    </Grid.ColumnDefinitions>
+                    <DataGrid x:Name="ArticuloDataGrid" Margin="10,161,10,10" AutoGenerateColumns="False" FontSize="16"
+                              HorizontalGridLinesBrush="#FFEFEFEF" VerticalGridLinesBrush="#FF888888"
+                              CanUserAddRows="False" Background="{x:Null}" Grid.ColumnSpan="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding NoParte}" Header="No Parte" />
+                            <DataGridTextColumn Binding="{Binding ModProceso}" Header="ModProceso" />
+                            <DataGridTextColumn Binding="{Binding Proceso}" Header="Proceso" />
+                            <DataGridTextColumn Binding="{Binding Paso}" Header="Paso" />
+                            <DataGridTextColumn Binding="{Binding Descripcion}" Header="Descripción" />
+                            <DataGridTextColumn Binding="{Binding PesoMin}" Header="Peso Mínimo" />
+                            <DataGridTextColumn Binding="{Binding PesoMax}" Header="Peso Máximo" />
+                            <DataGridTextColumn Binding="{Binding Cantidad}" Header="Cantidad" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Label Content="No Artículo" Margin="6,10,1074,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="NoArticuloTbox" Height="28" Margin="10,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="165" Grid.ColumnSpan="2" TabIndex="1" />
+                    <Label Content="Descripción" Margin="390,10,453,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <TextBox x:Name="ArticuloDescripcionTbox" Height="28" Margin="394,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="5" />
+                    <Label Content="Peso Mínimo(kg)" Margin="777,10,305,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <TextBox x:Name="ArticuloPesoMinTbox" Height="28" Margin="788,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="6" />
+                    <Label Content="Peso Máximo(kg)" Margin="909,10,179,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <TextBox x:Name="ArticuloPesoMaxTbox" Height="28" Margin="917,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="8" />
+                    <Button x:Name="ArticuloNuevoBtn" Content="Agregar" Margin="523,103,572,0"
+                            VerticalAlignment="Top" Width="126" Height="28" Background="#FF0077D4" Foreground="White"
+                            Click="ArticuloNuevoBtn_Click" Grid.Column="1" TabIndex="11" />
+                    <Button x:Name="ArticuloEliminarBtn" Content="Eliminar" Margin="352,103,743,0"
+                            VerticalAlignment="Top" Width="126" Height="28" Background="#FFCD3030" Foreground="White"
+                            Grid.Column="1" Click="ArticuloEliminarBtn_Click" TabIndex="10" />
+                    <Label Content="Proceso" Margin="299,10,844,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <TextBox x:Name="txbProceso" Height="28" Margin="289,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="88" Grid.Column="1" TabIndex="4" />
+                    <TextBox x:Name="txbPaso" Height="28" Margin="1057,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="9" />
+                    <Label Content="Numero de paso" Margin="1047,10,30,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <Button x:Name="btnGuardarCambios" Content="Guardar Cambios" Margin="685,103,406,0"
+                            VerticalAlignment="Top" Height="28" Background="#FF68D400" Foreground="White"
+                            Grid.Column="1" Width="130" Click="btnGuardarCambios_Click_1" TabIndex="12" />
+                    <Label Content="ModProceso" Margin="147,10,951,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <TextBox x:Name="txbModProceso" Height="28" Margin="137,41,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="133" Grid.Column="1" TabIndex="3" />
+                    <Label Content="Cantidad" Margin="6,72,1074,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="txbCantidad" Height="28" Margin="10,103,0,0" VerticalAlignment="Top"
+                             FontSize="18.667" HorizontalAlignment="Left" Width="165" Grid.ColumnSpan="2" TabIndex="2" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

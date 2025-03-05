@@ -4,12 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Scale_Program.Functions;
 
 namespace Scale_Program
 {
     public partial class Catalogos : Window
     {
+        public event Action CambiosGuardados;
         public readonly string filePathExcel = "CatalogosData.xlsx";
 
         public Catalogos()
@@ -36,9 +38,13 @@ namespace Scale_Program
                 modelosSheet.Cell(1, 1).Value = "NoModelo";
                 modelosSheet.Cell(1, 2).Value = "ModProceso";
                 modelosSheet.Cell(1, 3).Value = "Descripcion";
-                modelosSheet.Cell(1, 4).Value = "UsaSensor1";
-                modelosSheet.Cell(1, 5).Value = "UsaSensor2";
-                modelosSheet.Cell(1, 6).Value = "Activo";
+                modelosSheet.Cell(1, 4).Value = "UsaBascula1";
+                modelosSheet.Cell(1, 5).Value = "UsaBascula2";
+                modelosSheet.Cell(1, 6).Value = "UsaConteoCajas";
+                modelosSheet.Cell(1, 7).Value = "CantidadCajas";
+                modelosSheet.Cell(1, 8).Value = "Etapa1";
+                modelosSheet.Cell(1, 9).Value = "Etapa2";
+                modelosSheet.Cell(1, 10).Value = "Activo";
 
                 var articulosSheet = workbook.Worksheets.Add("Articulos");
                 articulosSheet.Cell(1, 1).Value = "NoParte";
@@ -77,9 +83,13 @@ namespace Scale_Program
                             NoModelo = row.Cell(1).GetValue<string>(),
                             ModProceso = row.Cell(2).GetValue<int>(),
                             Descripcion = row.Cell(3).GetValue<string>(),
-                            UsaSensor1 = row.Cell(4).GetValue<bool>(),
-                            UsaSensor2 = row.Cell(5).GetValue<bool>(),
-                            Activo = row.Cell(6).GetValue<bool>()
+                            UsaBascula1 = row.Cell(4).GetValue<bool>(),
+                            UsaBascula2 = row.Cell(5).GetValue<bool>(),
+                            UsaConteoCajas = row.Cell(6).GetValue<bool>(),
+                            CantidadCajas = row.Cell(7).GetValue<int>(),
+                            Etapa1 = row.Cell(8).GetValue<string>(),
+                            Etapa2 = row.Cell(9).GetValue<string>(),
+                            Activo = row.Cell(10).GetValue<bool>()
                         })
                 );
                 ModeloDataGrid.ItemsSource = Modelos;
@@ -128,13 +138,29 @@ namespace Scale_Program
                     return;
                 }
 
+                if (!ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value)
+                {
+                    MessageBox.Show("Debes utilizar una bascula.", "Seleccionar bascula");
+                    return;
+                }
+
+                if (ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value && ckb_ConteoCajas.IsChecked.Value)
+                {
+                    MessageBox.Show("No puedes utilizar una conteo cajas, necesitas utilizar bascula 1 y 2.", "Conteo cajas");
+                    return; 
+                }
+
                 var modelo = new Modelo
                 {
                     NoModelo = NoModeloTBox.Text,
                     ModProceso = proceso,
                     Descripcion = ModeloDescripcionTBox.Text,
-                    UsaSensor1 = false,
-                    UsaSensor2 = false,
+                    UsaBascula1 = ckb_Bascula1.IsChecked.Value,
+                    UsaBascula2 = ckb_Bascula2.IsChecked.Value,
+                    UsaConteoCajas = ckb_ConteoCajas.IsChecked.Value,
+                    CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
+                    Etapa1 = txb_Etapa1.Text,
+                    Etapa2 = ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
                     Activo = true
                 };
 
@@ -149,16 +175,29 @@ namespace Scale_Program
                     worksheet.Cell(newRow, 1).Value = modelo.NoModelo;
                     worksheet.Cell(newRow, 2).Value = modelo.ModProceso;
                     worksheet.Cell(newRow, 3).Value = modelo.Descripcion;
-                    worksheet.Cell(newRow, 4).Value = modelo.UsaSensor1;
-                    worksheet.Cell(newRow, 5).Value = modelo.UsaSensor2;
-                    worksheet.Cell(newRow, 6).Value = modelo.Activo;
+                    worksheet.Cell(newRow, 4).Value = modelo.UsaBascula1;
+                    worksheet.Cell(newRow, 5).Value = modelo.UsaBascula2;
+                    worksheet.Cell(newRow, 6).Value = modelo.UsaConteoCajas;
+                    worksheet.Cell(newRow, 7).Value = modelo.CantidadCajas;
+                    worksheet.Cell(newRow, 8).Value = modelo.Etapa1;
+                    worksheet.Cell(newRow, 9).Value = modelo.Etapa2;
+                    worksheet.Cell(newRow, 10).Value = modelo.Activo;
 
                     workbook.Save();
+
+                    MessageBox.Show($"Modelo agregado.");
                 }
 
                 NoModeloTBox.Clear();
                 ModeloDescripcionTBox.Clear();
                 tbxProcesoModelo.Clear();
+                ckb_Bascula1.IsChecked = false;
+                ckb_Bascula2.IsChecked = false;
+                ckb_ConteoCajas.IsChecked = false;
+                txb_CantidadCajas.Clear();
+                txb_Etapa1Bascula2.Clear();
+                txb_Etapa1.Clear();
+                txb_Etapa2.Clear();
             }
             catch (Exception ex)
             {
@@ -184,11 +223,15 @@ namespace Scale_Program
                 worksheet.Clear();
 
                 worksheet.Cell(1, 1).Value = "NoModelo";
-                worksheet.Cell(1, 2).Value = "Proceso";
+                worksheet.Cell(1, 2).Value = "ModProceso";
                 worksheet.Cell(1, 3).Value = "Descripcion";
-                worksheet.Cell(1, 4).Value = "UsaSensor1";
-                worksheet.Cell(1, 5).Value = "UsaSensor2";
-                worksheet.Cell(1, 6).Value = "Activo";
+                worksheet.Cell(1, 4).Value = "UsaBascula1";
+                worksheet.Cell(1, 5).Value = "UsaBascula2";
+                worksheet.Cell(1, 6).Value = "UsaConteoCajas";
+                worksheet.Cell(1, 7).Value = "CantidadCajas";
+                worksheet.Cell(1, 8).Value = "Etapa1";
+                worksheet.Cell(1, 9).Value = "Etapa2";
+                worksheet.Cell(1, 10).Value = "Activo";
 
                 var row = 2;
                 foreach (var modelo in Modelos)
@@ -196,13 +239,19 @@ namespace Scale_Program
                     worksheet.Cell(row, 1).Value = modelo.NoModelo;
                     worksheet.Cell(row, 2).Value = modelo.ModProceso;
                     worksheet.Cell(row, 3).Value = modelo.Descripcion;
-                    worksheet.Cell(row, 4).Value = modelo.UsaSensor1;
-                    worksheet.Cell(row, 5).Value = modelo.UsaSensor2;
-                    worksheet.Cell(row, 6).Value = modelo.Activo;
+                    worksheet.Cell(row, 4).Value = modelo.UsaBascula1;
+                    worksheet.Cell(row, 5).Value = modelo.UsaBascula2;
+                    worksheet.Cell(row, 6).Value = modelo.UsaConteoCajas;
+                    worksheet.Cell(row, 7).Value = modelo.CantidadCajas;
+                    worksheet.Cell(row, 8).Value = modelo.Etapa1;
+                    worksheet.Cell(row, 9).Value = modelo.Etapa2;
+                    worksheet.Cell(row, 10).Value = modelo.Activo;
                     row++;
                 }
 
                 workbook.Save();
+
+                MessageBox.Show("Modelo eliminado.");
             }
         }
 
@@ -404,11 +453,15 @@ namespace Scale_Program
                     worksheet.Clear();
 
                     worksheet.Cell(1, 1).Value = "NoModelo";
-                    worksheet.Cell(1, 2).Value = "Proceso";
+                    worksheet.Cell(1, 2).Value = "ModProceso";
                     worksheet.Cell(1, 3).Value = "Descripcion";
-                    worksheet.Cell(1, 4).Value = "UsaSensor1";
-                    worksheet.Cell(1, 5).Value = "UsaSensor2";
-                    worksheet.Cell(1, 6).Value = "Activo";
+                    worksheet.Cell(1, 4).Value = "UsaBascula1";
+                    worksheet.Cell(1, 5).Value = "UsaBascula2";
+                    worksheet.Cell(1, 6).Value = "UsaConteoCajas";
+                    worksheet.Cell(1, 7).Value = "CantidadCajas";
+                    worksheet.Cell(1, 8).Value = "Etapa1";
+                    worksheet.Cell(1, 9).Value = "Etapa2";
+                    worksheet.Cell(1, 10).Value = "Activo";
 
                     var row = 2;
                     foreach (var modelo in Modelos)
@@ -416,9 +469,13 @@ namespace Scale_Program
                         worksheet.Cell(row, 1).Value = modelo.NoModelo;
                         worksheet.Cell(row, 2).Value = modelo.ModProceso;
                         worksheet.Cell(row, 3).Value = modelo.Descripcion;
-                        worksheet.Cell(row, 4).Value = modelo.UsaSensor1;
-                        worksheet.Cell(row, 5).Value = modelo.UsaSensor2;
-                        worksheet.Cell(row, 6).Value = modelo.Activo;
+                        worksheet.Cell(row, 4).Value = modelo.UsaBascula1;
+                        worksheet.Cell(row, 5).Value = modelo.UsaBascula2;
+                        worksheet.Cell(row, 6).Value = modelo.UsaConteoCajas;
+                        worksheet.Cell(row, 7).Value = modelo.CantidadCajas;
+                        worksheet.Cell(row, 8).Value = modelo.Etapa1;
+                        worksheet.Cell(row, 9).Value = modelo.Etapa2;
+                        worksheet.Cell(row, 10).Value = modelo.Activo;
                         row++;
                     }
 
@@ -443,9 +500,100 @@ namespace Scale_Program
         private void BtnGuardarModelos_Click(object sender, RoutedEventArgs e)
         {
             GuardarModelosEnExcel();
+            CambiosGuardados?.Invoke();
 
             MessageBox.Show("Cambios guardados correctamente en el archivo Excel.", "Éxito", MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private void ckb_Bascula1_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
+            {
+                lblConteoCajas.Visibility = Visibility.Visible;
+                ckb_ConteoCajas.Visibility = Visibility.Visible;
+
+                lblUltimoEtapa2.Visibility = Visibility.Hidden;
+                txb_Etapa1Bascula2.Visibility = Visibility.Hidden;
+
+                lblPrimerEtapa2.Visibility = Visibility.Visible;
+                txb_Etapa2.Visibility = Visibility.Visible;
+            }
+
+            lblUltimoEtapa1.Visibility = Visibility.Visible;
+            txb_Etapa1.Visibility = Visibility.Visible;
+        }
+
+        private void ckb_Bascula1_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (!ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
+            {
+                lblUltimoEtapa2.Visibility = Visibility.Visible;
+                txb_Etapa1Bascula2.Visibility = Visibility.Visible;
+
+                lblPrimerEtapa2.Visibility = Visibility.Hidden;
+                txb_Etapa2.Visibility = Visibility.Hidden;
+            }
+
+            lblConteoCajas.Visibility = Visibility.Hidden;
+            ckb_ConteoCajas.Visibility = Visibility.Hidden;
+
+            lblConteoCajas.Visibility = Visibility.Hidden;
+            lblCantidad.Visibility = Visibility.Hidden;
+            txb_CantidadCajas.Text = "0";
+            txb_CantidadCajas.Visibility = Visibility.Hidden;
+            ckb_ConteoCajas.Visibility = Visibility.Hidden;
+            ckb_ConteoCajas.IsChecked = false;
+
+            lblUltimoEtapa1.Visibility = Visibility.Hidden;
+            txb_Etapa1.Visibility = Visibility.Hidden;
+        }
+
+        private void ckb_ConteoCajas_Checked(object sender, RoutedEventArgs e)
+        {
+            lblCantidad.Visibility = Visibility.Visible;
+            txb_CantidadCajas.Visibility = Visibility.Visible;
+        }
+        private void ckb_ConteoCajas_Unchecked(object sender, RoutedEventArgs e)
+        {
+            lblCantidad.Visibility = Visibility.Hidden;
+            txb_CantidadCajas.Visibility = Visibility.Hidden;
+        }
+
+        private void ckb_Bascula2_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ckb_Bascula1.IsChecked.Value)
+            {
+                lblPrimerEtapa2.Visibility = Visibility.Visible;
+                txb_Etapa2.Visibility = Visibility.Visible;
+            }
+            if (ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
+            {
+                lblConteoCajas.Visibility = Visibility.Visible;
+                ckb_ConteoCajas.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                lblUltimoEtapa2.Visibility = Visibility.Visible;
+                txb_Etapa1Bascula2.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ckb_Bascula2_Unchecked(object sender, RoutedEventArgs e)
+        {
+            lblUltimoEtapa2.Visibility = Visibility.Hidden;
+            txb_Etapa2.Visibility = Visibility.Hidden;
+
+            lblConteoCajas.Visibility = Visibility.Hidden;
+            lblCantidad.Visibility = Visibility.Hidden;
+
+            txb_CantidadCajas.Text = "0";
+            txb_CantidadCajas.Visibility = Visibility.Hidden;
+            ckb_ConteoCajas.Visibility = Visibility.Hidden;
+            ckb_ConteoCajas.IsChecked = false;
+
+            lblPrimerEtapa2.Visibility = Visibility.Hidden;
+            txb_Etapa1Bascula2.Visibility = Visibility.Hidden;
         }
     }
 }

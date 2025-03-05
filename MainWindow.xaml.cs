@@ -22,6 +22,7 @@ namespace Scale_Program
         private readonly BasculaFunc bascula1;
         private readonly BasculaFunc bascula2;
         private readonly List<SequenceStep> valoresBolsas = new List<SequenceStep>();
+        private Modelo ModeloData;
         private double _accumulatedWeight;
         private bool _activarSelladora;
         private AlertWindow _alertWindow;
@@ -85,30 +86,22 @@ namespace Scale_Program
             try
             {
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
-                IniciarSealevel();
+                //IniciarSealevel();
 
-                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
+                ModeloData = Cbox_Modelo.SelectedValue as Modelo ?? throw new Exception("Modelo no reconocido.");
 
-                if (ModeloExisteEnExcel(modeloSeleccionado))
-                {
-                    ProcesarModeloValido(modeloSeleccionado);
+                ProcesarModeloValido(ModeloData.NoModelo);
 
-                    bool esAntennaKit = modeloSeleccionado.Equals("ANTENNA KIT", StringComparison.OrdinalIgnoreCase);
+                bool conteoCajas = ModeloData.UsaConteoCajas;
 
-                    lblProgreso.Visibility = esAntennaKit ? Visibility.Visible : Visibility.Hidden;
-                    lblConteoCajas.Visibility = esAntennaKit ? Visibility.Visible : Visibility.Hidden;
-                }
-                else
-                {
-                    ShowAlertError("Modelo no reconocido.");
-                }
+                lblProgreso.Visibility = conteoCajas ? Visibility.Visible : Visibility.Hidden;
+                lblConteoCajas.Visibility = conteoCajas ? Visibility.Visible : Visibility.Hidden;
             }
             catch (Exception exception)
             {
                 ShowAlertError($"Error al seleccionar el modelo: {exception.Message}");
             }
         }
-
 
         private void ProcesarModeloValido(string modeloSeleccionado)
         {
@@ -133,37 +126,18 @@ namespace Scale_Program
 
             try
             {
-                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
-                if (!ModeloExisteEnExcel(modeloSeleccionado))
-                {
-                    ShowAlertError("Modelo no reconocido.");
-                    return;
-                }
 
                 if (!int.TryParse(Cbox_Proceso.SelectedValue.ToString(), out int procesoSeleccionado))
-                {
-                    ShowAlertError("El valor del proceso seleccionado no es válido.");
-                    return;
-                }
+                    throw new Exception("El valor del proceso seleccionado no es válido.");
 
-                pasosFiltrados = ObtenerSecuenciaFiltrada(modeloSeleccionado, procesoSeleccionado);
+                pasosFiltrados = ObtenerValoresProceso(ModeloData.NoModelo, procesoSeleccionado);
 
-                if (pasosFiltrados == null)
-                {
-                    ShowAlertError("No se pudo obtener la secuencia para el modelo seleccionado.");
-                    return;
-                }
+                if (pasosFiltrados == null || pasosFiltrados.Count == 0)
+                    throw new Exception("No hay pasos definidos para este proceso.");
 
-                if (pasosFiltrados.Count == 0)
-                {
-                    ShowAlertError("No hay pasos definidos para este proceso.");
-                    return;
-                }
+                ProcesarModeloYProceso(ModeloData.NoModelo);
 
-                ProcesarModeloYProceso(modeloSeleccionado);
-
-                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
-                    ReadInputBascula1();
+                SecuenciaASeguir(ModeloData);
             }
             catch (Exception ex)
             {
@@ -171,8 +145,51 @@ namespace Scale_Program
             }
         }
 
+        private void SecuenciaASeguir(Modelo modeloseleccionado)
+        {
+            if (modeloseleccionado.UsaBascula1 && !modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+            {
+                //Secuencia de bascula individual con solo bascula 1
 
-        private List<SequenceStep> ObtenerSecuenciaFiltrada(string modeloSeleccionado, int procesoSeleccionado)
+                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
+                    ReadInputBascula1();
+
+                _stopBascula1 = false;
+                _stopBascula2 = true;
+
+            }
+            else if (!modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+            {
+                //Secuencia de bascula individual solo bascula 2
+                if (bascula2?.GetPuerto() == null || !bascula2.GetPuerto().IsOpen)
+                    ReadInputBascula2();
+
+                _stopBascula1 = true;
+                _stopBascula2 = false;
+            }
+            else if (modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+            {
+                //Secuencia de bascula con ambas basculas sin conteo cajas
+                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
+                    ReadInputBascula1();
+
+                _stopBascula1 = false;
+                _stopBascula2 = true;
+            }
+            else if (modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && modeloseleccionado.UsaConteoCajas)
+            {
+                //Secuencia de bascula con ambas bascula mas conteo de cajas
+                if (bascula2?.GetPuerto() == null || !bascula2.GetPuerto().IsOpen)
+                    ReadInputBascula1();
+
+                _stopBascula1 = false;
+                _stopBascula2 = true;
+            }
+            else
+                ShowAlertError($"Error al cargar la secuencia, secuencia inexistente.");
+        }
+
+        private List<SequenceStep> ObtenerValoresProceso(string modeloSeleccionado, int procesoSeleccionado)
         {
             try
             {
@@ -195,7 +212,7 @@ namespace Scale_Program
         {
             ResetSequence(pasosFiltrados);
             HideAll();
-            SetValuesEtapas(pasosFiltrados, 1);
+            SetValuesEtapas(sequence, 1);
             HideFerreteria(false, pasosFiltrados);
         }
 
@@ -265,7 +282,6 @@ namespace Scale_Program
             }
         }
 
-
         private SequenceStep CrearSequenceStepDesdeFila(IXLRow row, int modeloModProceso)
         {
             var noParte = row.Cell(1).GetValue<string>();
@@ -302,7 +318,7 @@ namespace Scale_Program
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            OutputsOff();
+            //OutputsOff();
 
             if (bascula1.GetPuerto() != null && bascula1.GetPuerto().IsOpen)
                 bascula1.ClosePort();
@@ -311,8 +327,6 @@ namespace Scale_Program
                 bascula2.ClosePort();
 
             CerrarAlertas();
-
-            //LogFinal();
 
             Environment.Exit(0);
         }
@@ -334,6 +348,7 @@ namespace Scale_Program
                     grdValidacion.Visibility = Visibility.Visible;
                     break;
                 case false:
+
                     _validacion = true;
                     recValidacion.Visibility = Visibility.Hidden;
                     grdValidacion.Visibility = Visibility.Hidden;
@@ -357,7 +372,6 @@ namespace Scale_Program
                 ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
             }
         }
-
 
         private void ReiniciarPasos(List<SequenceStep> steps, string modeloSeleccionado)
         {
@@ -390,7 +404,13 @@ namespace Scale_Program
         private void btnCatalogos_Click(object sender, RoutedEventArgs e)
         {
             _catalogos = new Catalogos();
+            _catalogos.CambiosGuardados += ActualizarMainWindow;
             _catalogos.Show();
+        }
+
+        private void ActualizarMainWindow()
+        {
+            CargarModelosDesdeExcel();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -398,34 +418,44 @@ namespace Scale_Program
             ShowAlertError("RECUERDA CONFIGURAR LAS ENTRADAS Y EL CATALOGO ANTES DE EMPEZAR");
             CargarModelosDesdeExcel();
         }
-
         private void CargarModelosDesdeExcel()
         {
             try
             {
-                List<string> modelos = new List<string>();
+                List<Modelo> modelos = new List<Modelo>();
 
                 using (var workbook = new XLWorkbook(_catalogos.filePathExcel))
                 {
                     var worksheet = workbook.Worksheet("Modelos");
 
+                    // Leer todas las filas (omitiendo la primera fila de encabezados)
                     modelos = worksheet.RowsUsed()
                         .Skip(1)
-                        .Select(row => row.Cell(1).GetString())
-                        .Where(modelo => !string.IsNullOrWhiteSpace(modelo))
+                        .Select(row => new Modelo
+                        {
+                            NoModelo = row.Cell(1).GetString(),
+                            ModProceso = row.Cell(2).GetValue<int>(),
+                            Descripcion = row.Cell(3).GetString(),
+                            UsaBascula1 = row.Cell(4).GetBoolean(),
+                            UsaBascula2 = row.Cell(5).GetBoolean(),
+                            UsaConteoCajas = row.Cell(6).GetBoolean(),
+                            CantidadCajas = row.Cell(7).GetValue<int>(),
+                            Etapa1 = row.Cell(8).GetString(),
+                            Etapa2 = row.Cell(9).GetString(),
+                            Activo = row.Cell(10).GetBoolean()
+                        })
+                        .Where(m => m.Activo) // Filtrar solo modelos activos
                         .ToList();
                 }
 
-                Cbox_Modelo.Items.Clear();
-                foreach (var modelo in modelos)
-                {
-                    Cbox_Modelo.Items.Add(new ComboBoxItem { Content = modelo });
-                }
-
+                // Asignar los modelos al ComboBox (solo los activos)
+                Cbox_Modelo.ItemsSource = modelos;
+                Cbox_Modelo.DisplayMemberPath = "NoModelo";  // Mostrar solo el nombre del modelo
+                Cbox_Modelo.SelectedValuePath = ".";  // Permitir seleccionar el objeto completo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar modelos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error al cargar modelos desde Excel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -525,32 +555,15 @@ namespace Scale_Program
 
                 var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
 
-                ObtenerSecuenciaFiltrada(modeloSeleccionado, procesoSeleccionado);
+                ObtenerValoresProceso(modeloSeleccionado, procesoSeleccionado);
                 ProcesarModeloYProceso(modeloSeleccionado);
-
-                if (EsModeloFerreteria(modeloSeleccionado))
-                    ProcessSequenceFerreteria(0, true);
-                else if (EsModeloArmHarness(modeloSeleccionado))
-                    ProcessSequenceArmHarness(0, true);
+                SecuenciaASeguir(ModeloData);
             }
             catch (Exception ex)
             {
                 ShowAlertError($"Error al procesar el reset del modelo: {ex.Message}");
             }
         }
-        private bool EsModeloFerreteria(string modelo)
-        {
-            return modelo.Equals("ANTENNA KIT", StringComparison.OrdinalIgnoreCase) ||
-                   modelo.Equals("123-0253-000", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private bool EsModeloArmHarness(string modelo)
-        {
-            return modelo.Equals("K41-0447-000", StringComparison.OrdinalIgnoreCase) ||
-                   modelo.Equals("K41-0432-000", StringComparison.OrdinalIgnoreCase) ||
-                   modelo.Equals("K41-0441-000", StringComparison.OrdinalIgnoreCase);
-        }
-
 
         private void RegistrarPasoRechazado(SequenceStep step)
         {
@@ -661,24 +674,21 @@ namespace Scale_Program
 
                     if (_consecutiveCount == 4)
                     {
-                        if (Cbox_Modelo.Text == "ANTENNA KIT" || Cbox_Modelo.Text == "123-0253-000") ProcessSequenceFerreteria(weight, isStable);
+                        //if (Cbox_Modelo.Text == "ANTENNA KIT" || Cbox_Modelo.Text == "123-0253-000") ProcessSequenceFerreteria(weight, isStable);
 
-                        if (Cbox_Modelo.Text == "K41-0447-000" || Cbox_Modelo.Text == "K41-0432-000" ||
-                            Cbox_Modelo.Text == "K41-0441-000") ProcessSequenceArmHarness(weight, isStable);
+                        if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && ModeloData.UsaConteoCajas || ModeloData.UsaBascula1 && !ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas)
+                        {
+                            ProcessSequenceFerreteria(weight, isStable);
+                        }
+
+                        else if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas)
+                        {
+                            ProcessStableWeightArmHarness(weight, isStable);
+                        }
                     }
                 }
 
             });
-        }
-
-
-        private void ProcessSequenceArmHarness(double currentWeight, bool isStable)
-        {
-            _consecutiveCount = 0;
-            if ((Cbox_Modelo.SelectionBoxItem.ToString() == "K41-0447-000" && _etapa1) ||
-                (Cbox_Modelo.SelectionBoxItem.ToString() == "K41-0432-000" && _etapa1) ||
-                (Cbox_Modelo.SelectionBoxItem.ToString() == "K41-0441-000" && _etapa1))
-                ProcessStableWeightArmHarness(currentWeight, isStable);
         }
 
         private void ProcessStableWeightArmHarness(double currentWeight, bool isStable)
@@ -716,7 +726,7 @@ namespace Scale_Program
                     _etapa2 = true;
                     CargarSecuenciasPorModelo(Cbox_Modelo.SelectionBoxItem.ToString());
                     CargarProcesos();
-                    SetValuesEtapas(pasosFiltrados, 2);
+                    SetValuesEtapas(sequence, 2);
                     ReindexarPasos(pasosFiltrados);
                     SetImagesBox();
 
@@ -823,13 +833,15 @@ namespace Scale_Program
                     {
                         double tolerancia = 0.010;  // Ajusta según necesidad
 
-                        if (Cbox_Modelo.Text == "ANTENNA KIT" && _etapa2)
-                        {
+                        if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && ModeloData.UsaConteoCajas && _etapa2)
                             ProcessCajaFerreteria(weight, isStable);
-                        }
-                        else if (Cbox_Modelo.Text != "ANTENNA KIT" && _etapa2)
-                        {
+
+                        else if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas && _etapa2)
                             ProcessCajaEtapa2(weight, isStable, ref stepIndex, ref runningWeight, pasosFiltrados, valoresBolsas, tolerancia);
+
+                        else if (!ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas && _etapa1)
+                        {
+                            ProcessSequenceFerreteria(weight,isStable);
                         }
                     }
                 }
@@ -1015,46 +1027,59 @@ namespace Scale_Program
             }
         }
 
-        // SE TIENE QUE VERIFICAR CON MODELO TABLA DE EXCEL, VALOR NUEVO DE FIN ETAPA 1 Y COMIENZO ETAPA 2
         private void SetValuesEtapas(List<SequenceStep> steps, int etapa)
         {
-            switch (etapa)
-            {
-                case 1:
-                    var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains("Caja antenna 141A1528") || 
-                                                              step.Part_NoParte.Contains("Clamp 028-0171-000") ||
-                                                              step.Part_NoParte.Contains("17 Tornillos chicos 171A0366") ||
-                                                              step.Part_NoParte.Contains("3 Tornillos hex 121-1268-000") ||
-                                                              step.Part_NoParte.Contains("Empaque"));
-                    _etapa1 = true;
-                    if (etapa1 != null)
-                        pasosFiltrados = steps
-                            .Where(s => int.Parse(s.Part_Orden) <= int.Parse(etapa1.Part_Orden))
-                            .ToList();
-                    break;
+            if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 || ModeloData.UsaBascula1 && !ModeloData.UsaBascula2)
+                switch (etapa)
+                {
+                    case 1:
+                        var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa1));
 
-                case 2:
-                    var startStep = steps.FirstOrDefault(step => step.Part_NoParte.Contains("Caja master kit 141C2396") 
-                                                                 || step.Part_NoParte.Contains("Caja harness 141C1594")
-                                                                 || step.Part_NoParte.Contains("Carton 14-10898") 
-                                                                 || step.Part_NoParte.Contains("Carton 14-16"));
-                    _etapa2 = true;
-                    if (startStep != null)
-                        pasosFiltrados = steps
-                            .Where(s => int.Parse(s.Part_Orden) >= int.Parse(startStep.Part_Orden))
-                            .ToList();
-                    break;
+                        _etapa1 = true;
+                        if (etapa1 != null)
+                            pasosFiltrados = steps
+                                .Where(s => int.Parse(s.Part_Orden) <= int.Parse(etapa1.Part_Orden))
+                                .ToList();
+                        break;
 
-                default:
-                    throw new ArgumentException($"Etapa '{etapa}' no es válida.");
-            }
+                    case 2:
+
+                        var startStep = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa2));
+
+                        _etapa2 = true;
+                        if (startStep != null)
+                            pasosFiltrados = steps
+                                .Where(s => int.Parse(s.Part_Orden) >= int.Parse(startStep.Part_Orden))
+                                .ToList();
+                        break;
+
+                    default:
+                        throw new ArgumentException($"Etapa '{etapa}' no es válida.");
+                }
+
+            else if (!ModeloData.UsaBascula1 && ModeloData.UsaBascula2)
+                switch (etapa)
+                {
+                    case 1:
+                        var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa2));
+
+                        _etapa1 = true;
+                        if (etapa1 != null)
+                            pasosFiltrados = steps
+                                .Where(s => int.Parse(s.Part_Orden) <= int.Parse(etapa1.Part_Orden))
+                                .ToList();
+                        break;
+                    default:
+                        throw new ArgumentException($"Etapa '{etapa}' no es válida.");
+                }
 
             foreach (var step in pasosFiltrados)
             {
                 var imageControl = FindName(step.Part_Imagen) as Image;
                 if (imageControl != null)
                 {
-                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes", $"{step.Part_NoParte}.PNG");
+                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes",
+                        $"{step.Part_NoParte}.PNG");
                     var partCantidad = FindName($"Part_Cantidad{int.Parse(step.Part_Orden) - 1}") as TextBlock;
 
                     if (partCantidad != null)
@@ -1389,14 +1414,14 @@ namespace Scale_Program
 
         private void ActivarSalida(string tipo)
         {
-            var salida = ObtenerSalidaPorTipo(tipo);
-            ioInterface.WriteSingleOutput(salida, true);
+            /*var salida = ObtenerSalidaPorTipo(tipo);
+            ioInterface.WriteSingleOutput(salida, true);*/
         }
 
         private void DesactivarSalida(string tipo)
         {
-            var salida = ObtenerSalidaPorTipo(tipo);
-            ioInterface.WriteSingleOutput(salida, false);
+           /* var salida = ObtenerSalidaPorTipo(tipo);
+            ioInterface.WriteSingleOutput(salida, false);*/
         }
 
 
@@ -1621,13 +1646,16 @@ namespace Scale_Program
         private void ProcessSequenceFerreteria(double currentWeight, bool isStable)
         {
             _consecutiveCount = 0;
-            if (contador == 10 && Cbox_Modelo.Text == "ANTENNA KIT")
+
+            //Contador valor caja + modeloseleccionado.UsaConteoCajas
+
+            if (contador == ModeloData.CantidadCajas && ModeloData.UsaConteoCajas)
             {
                 _stopBascula1 = true;
                 _etapa2 = true;
                 CargarSecuenciasPorModelo(Cbox_Modelo.SelectionBoxItem.ToString());
                 CargarProcesos();
-                SetValuesEtapas(pasosFiltrados, 2);
+                SetValuesEtapas(sequence, 2);
                 ReindexarPasos(pasosFiltrados);
                 SetImagesBox();
 
@@ -1637,8 +1665,10 @@ namespace Scale_Program
                 _stopBascula2 = false;
             }
 
-            if ((Cbox_Modelo.SelectionBoxItem.ToString() == "ANTENNA KIT" || Cbox_Modelo.SelectionBoxItem.ToString() == "123-0253-000") && _etapa1)
+            //if ((Cbox_Modelo.SelectionBoxItem.ToString() == "ANTENNA KIT" || Cbox_Modelo.SelectionBoxItem.ToString() == "123-0253-000") && _etapa1)
+            if (_etapa1)
                 ProcessStableWeight(currentWeight, isStable);
+            //ProcessStableWeight(currentWeight, isStable);
         }
 
         private void ProcessStableWeight(double currentWeight, bool isStable)
@@ -1738,14 +1768,11 @@ namespace Scale_Program
                         SetImagesBox();
                         contador++;
 
-                        // VERIFICAR CON TABLA DE EXCEL BASCULA 1 y 2 
-
-                        if (Cbox_Modelo.Text == "ANTENNA KIT")
+                        if(ModeloData.UsaConteoCajas)
                             lblProgreso.Content = contador;
-                        else if (Cbox_Modelo.Text == "123-0253-000")
-                        {
+
+                        else if (!ModeloData.UsaConteoCajas)
                             lblCompletados.Content = contador;
-                        }
 
 
                         if (btnEtiquetaManual.Tag?.ToString() == "off")
@@ -1846,16 +1873,8 @@ namespace Scale_Program
                 if (Cbox_Modelo.SelectedValue == null)
                     return;
 
-                var modeloSeleccionado = Cbox_Modelo.SelectedValue.ToString();
-
-                if (!ModeloExisteEnExcel(modeloSeleccionado))
-                {
-                    ShowAlertError("Modelo no reconocido.");
-                    return;
-                }
-
                 var procesosDisponibles = sequence
-                    .Where(s => s.ModProceso == ObtenerModeloModProceso(modeloSeleccionado))
+                    .Where(s => s.ModProceso == ModeloData.ModProceso)
                     .Select(s => s.Part_Proceso)
                     .Distinct()
                     .OrderBy(p => p)
@@ -1872,7 +1891,6 @@ namespace Scale_Program
                 _isInitializing = false;
             }
         }
-
 
         private async void EndFerreteriaG()
         {
@@ -1899,11 +1917,11 @@ namespace Scale_Program
 
             HideAll();
             ProcesarModeloValido(Cbox_Modelo.SelectedValue.ToString());
-            pasosFiltrados = ObtenerSecuenciaFiltrada(Cbox_Modelo.SelectedValue.ToString(),
+            pasosFiltrados = ObtenerValoresProceso(Cbox_Modelo.SelectedValue.ToString(),
                 1);
             ProcesarModeloYProceso(Cbox_Modelo.SelectedValue.ToString());
             Cbox_Proceso.SelectedIndex = 0;
-            SetValuesEtapas(pasosFiltrados, 1);
+            SetValuesEtapas(sequence, 1);
             SetImagesBox();
         }
 
@@ -1940,13 +1958,12 @@ namespace Scale_Program
 
             HideAll();
             ProcesarModeloValido(Cbox_Modelo.SelectedValue.ToString());
-            pasosFiltrados = ObtenerSecuenciaFiltrada(Cbox_Modelo.SelectedValue.ToString(), 1);
+            sequence = ObtenerValoresProceso(Cbox_Modelo.SelectedValue.ToString(), 1);
             ProcesarModeloYProceso(Cbox_Modelo.SelectedValue.ToString());
             Cbox_Proceso.SelectedIndex = 0;
-            SetValuesEtapas(pasosFiltrados, 1);
+            SetValuesEtapas(sequence, 1);
             SetImagesBox();
         }
-
 
         #endregion
     }

@@ -396,16 +396,26 @@ namespace Scale_Program
 
         private void Configuracion_btn_Click(object sender, RoutedEventArgs e)
         {
-            var newConfig = new ConfiguracionWindow();
-            newConfig.Show();
-            newConfig.Focus();
+            AuthenticationWindow auth = new AuthenticationWindow();
+
+            if (auth.ShowDialog() == true)
+            {
+                var newConfig = new ConfiguracionWindow();
+                newConfig.Show();
+                newConfig.Focus();
+            }
         }
 
         private void btnCatalogos_Click(object sender, RoutedEventArgs e)
         {
-            _catalogos = new Catalogos();
-            _catalogos.CambiosGuardados += ActualizarMainWindow;
-            _catalogos.Show();
+            AuthenticationWindow auth = new AuthenticationWindow();
+
+            if (auth.ShowDialog() == true)
+            {
+                _catalogos = new Catalogos();
+                _catalogos.CambiosGuardados += ActualizarMainWindow;
+                _catalogos.Show();
+            }
         }
 
         private void ActualizarMainWindow()
@@ -461,22 +471,28 @@ namespace Scale_Program
 
         private void btnReset_Click(object sender, RoutedEventArgs e)
         {
-            if (Cbox_Modelo.SelectedItem == null)
+            AuthenticationWindow auth = new AuthenticationWindow();
+
+            if (auth.ShowDialog() == true)
             {
-                ShowAlertError("No hay un modelo seleccionado.");
-                return;
+                if (Cbox_Modelo.SelectedItem == null)
+                {
+                    ShowAlertError("No hay un modelo seleccionado.");
+                    return;
+                }
+
+                var modeloSeleccionado = Cbox_Modelo.Text.ToUpper();
+
+                if (ModeloExisteEnExcel(modeloSeleccionado))
+                {
+                    ProcesarResetModelo();
+                }
+                else
+                {
+                    ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+                }
             }
 
-            var modeloSeleccionado = Cbox_Modelo.Text.ToUpper();
-
-            if (ModeloExisteEnExcel(modeloSeleccionado))
-            {
-                ProcesarResetModelo();
-            }
-            else
-            {
-                ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
-            }
         }
 
         private bool ModeloExisteEnExcel(string modelo)

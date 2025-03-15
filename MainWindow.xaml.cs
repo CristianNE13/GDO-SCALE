@@ -1290,7 +1290,29 @@ namespace Scale_Program
         {
             if (_FerreteriaPart2) return;
 
-            var currentStep = pasosFiltrados[_currentStepIndex];
+            var pasosPorPagina = 8;
+            var totalPasos = pasosFiltrados.Count;
+
+            var paginaActual = _currentStepIndex / pasosPorPagina;
+
+            var pasosAMostrar = pasosFiltrados
+                .Skip(paginaActual * pasosPorPagina)
+                .Take(pasosPorPagina)
+                .ToList();
+
+            var indexEnPagina = _currentStepIndex % pasosPorPagina;
+            if (_currentStepIndex > 0 && indexEnPagina == 0)
+            {
+                _currentStepIndex = 0;
+                HideAll();
+                pasosFiltrados = pasosAMostrar;
+                ReindexarPasos(pasosFiltrados);
+                SetImagesBox();
+            }
+
+            if (_currentStepIndex >= totalPasos) return; 
+
+            var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
 
             var indicator = FindName(currentStep.Part_Indicator) as Rectangle;
@@ -1426,7 +1448,29 @@ namespace Scale_Program
         {
             if (_FerreteriaPart2) return;
 
-            var currentStep = pasosFiltrados[_currentStepIndex];
+            var pasosPorPagina = 8;
+            var totalPasos = pasosFiltrados.Count;
+
+            var paginaActual = _currentStepIndex / pasosPorPagina;
+
+            var pasosAMostrar = pasosFiltrados
+                .Skip(paginaActual * pasosPorPagina)
+                .Take(pasosPorPagina)
+                .ToList();
+
+            var indexEnPagina = _currentStepIndex % pasosPorPagina;
+            if (_currentStepIndex > 0 && indexEnPagina == 0)
+            {
+                _currentStepIndex = 0;
+                HideAll();
+                pasosFiltrados = pasosAMostrar;
+                ReindexarPasos(pasosFiltrados);
+                SetImagesBox();
+            }
+
+            if (_currentStepIndex >= totalPasos) return; 
+
+            var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
 
             var indicator = FindName(currentStep.Part_Indicator) as Rectangle;

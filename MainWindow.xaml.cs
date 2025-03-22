@@ -36,8 +36,6 @@ namespace Scale_Program
         private bool _FerreteriaPart2;
         private bool _isInitializing;
         private double _lastWeight;
-        private bool _pistonAbierto;
-        private bool _sequenceFinished;
         private bool _startMeasurinBoxAndBags;
         private bool _stopBascula1;
         private bool _stopBascula2 = true;
@@ -45,7 +43,6 @@ namespace Scale_Program
         private List<SequenceStep> caja;
         private string codigo;
         private int contador;
-        private int contadorTotal;
         private Configuracion defaultSettings;
         private string fraction;
         private string integrer;

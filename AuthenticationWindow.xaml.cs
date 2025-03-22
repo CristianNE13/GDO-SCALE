@@ -39,7 +39,7 @@ namespace Scale_Program
                 if(!succedded)
                     ShowErroMessage("Contraseña incorrecta.");
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 ShowErroMessage("Error.");
             }

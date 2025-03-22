@@ -168,13 +168,15 @@ namespace Scale_Program.Functions
                 var status = match.Groups["status"].Value;
 
                 if (string.Compare(units, pounds, true) == 0)
-                    //convert pounds to kilos
-                    weight = weight * 0.453592;
-                if (string.Compare(units, kilograms, true) == 0) weight = weight;
+                    weight *= 0.453592;
 
-                if (string.Compare(units, grams, true) == 0)
-                    //convert grams to kilos
-                    weight = weight * 0.001;
+                else if (string.Compare(units, grams, true) == 0)
+                    weight *= 0.001;
+
+                else if (string.Compare(units, kilograms, true) == 0)
+                {
+                    // Already in kilograms
+                }
 
                 var isStable = status.ToUpper() == "@" || status.ToUpper() == "A" || status.ToUpper() == "D" ||
                                status.ToUpper() == "E";

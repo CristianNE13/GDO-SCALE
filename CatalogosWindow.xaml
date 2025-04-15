@@ -34,8 +34,8 @@
                             <DataGridCheckBoxColumn Binding="{Binding UsaBascula2}" Header="Usa bascula 2" />
                             <DataGridCheckBoxColumn Binding="{Binding UsaConteoCajas}" Header="Usa conteo cajas" />
                             <DataGridTextColumn Binding="{Binding CantidadCajas}" Header="Cantidad cajas" />
-                            <DataGridTextColumn Binding="{Binding Etapa1}" Header="Etapa 1" />
-                            <DataGridTextColumn Binding="{Binding Etapa2}" Header="Etapa 2" />
+                            <DataGridTextColumn Binding="{Binding Etapa1}" Header="Etapa 1 - Ferretería" />
+                            <DataGridTextColumn Binding="{Binding Etapa2}" Header="Etapa 2 - Empaque" />
                             <DataGridCheckBoxColumn Binding="{Binding Activo}" Header="Activo" />
                         </DataGrid.Columns>
                     </DataGrid>
@@ -73,7 +73,6 @@
                              FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="3" />
                 </Grid>
             </TabItem>
-
             <!-- Pestaña de Artículos -->
             <TabItem Header="Artículos" FontSize="16">
                 <Grid Background="#FFEFEFEF">
@@ -100,13 +99,13 @@
                              FontSize="18.667" HorizontalAlignment="Left" Width="165" Grid.ColumnSpan="2" TabIndex="1" />
                     <Label Content="Descripción" Margin="390,10,453,0" VerticalAlignment="Top" Grid.Column="1" />
                     <TextBox x:Name="ArticuloDescripcionTbox" Height="28" Margin="394,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="5" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="4" />
                     <Label Content="Peso Mínimo(kg)" Margin="777,10,305,0" VerticalAlignment="Top" Grid.Column="1" />
                     <TextBox x:Name="ArticuloPesoMinTbox" Height="28" Margin="788,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="6" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="5" />
                     <Label Content="Peso Máximo(kg)" Margin="909,10,179,0" VerticalAlignment="Top" Grid.Column="1" />
                     <TextBox x:Name="ArticuloPesoMaxTbox" Height="28" Margin="917,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="8" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="6" />
                     <Button x:Name="ArticuloNuevoBtn" Content="Agregar" Margin="523,103,572,0"
                             VerticalAlignment="Top" Width="126" Height="28" Background="#FF0077D4" Foreground="White"
                             Click="ArticuloNuevoBtn_Click" Grid.Column="1" TabIndex="11" />
@@ -115,19 +114,19 @@
                             Grid.Column="1" Click="ArticuloEliminarBtn_Click" TabIndex="10" />
                     <Label Content="Proceso" Margin="299,10,844,0" VerticalAlignment="Top" Grid.Column="1" />
                     <TextBox x:Name="txbProceso" Height="28" Margin="289,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="88" Grid.Column="1" TabIndex="4" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="88" Grid.Column="1" TabIndex="3" />
                     <TextBox x:Name="txbPaso" Height="28" Margin="1057,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="9" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="110" Grid.Column="1" TabIndex="7" />
                     <Label Content="Numero de paso" Margin="1047,10,30,0" VerticalAlignment="Top" Grid.Column="1" />
-                    <Button x:Name="btnGuardarCambios" Content="Guardar Cambios" Margin="685,103,406,0"
+                    <Button x:Name="btnGuardarArticulos" Content="Guardar Cambios" Margin="685,103,406,0"
                             VerticalAlignment="Top" Height="28" Background="#FF68D400" Foreground="White"
-                            Grid.Column="1" Width="130" Click="btnGuardarCambios_Click_1" TabIndex="12" />
+                            Grid.Column="1" Width="130" TabIndex="12" Click="btnGuardarArticulos_Click" />
                     <Label Content="ModProceso" Margin="147,10,951,0" VerticalAlignment="Top" Grid.Column="1" />
                     <TextBox x:Name="txbModProceso" Height="28" Margin="137,41,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="133" Grid.Column="1" TabIndex="3" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="133" Grid.Column="1" TabIndex="2" />
                     <Label Content="Cantidad" Margin="6,72,1074,0" VerticalAlignment="Top" Grid.ColumnSpan="2" />
                     <TextBox x:Name="txbCantidad" Height="28" Margin="10,103,0,0" VerticalAlignment="Top"
-                             FontSize="18.667" HorizontalAlignment="Left" Width="165" Grid.ColumnSpan="2" TabIndex="2" />
+                             FontSize="18.667" HorizontalAlignment="Left" Width="165" Grid.ColumnSpan="2" TabIndex="8" />
                 </Grid>
             </TabItem>
         </TabControl>

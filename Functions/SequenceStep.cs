@@ -7,16 +7,16 @@
         public bool IsCompleted { get; set; }
         public string DetectedWeight { get; set; }
         public string Tag { get; set; }
-
-        public string grdPart { get; set; }
-        public string Part_NoParte { get; set; }
+        public string GrdPart { get; set; }
+        public string PartNoParte { get; set; }
         public int ModProceso { get; set; }
-        public string Part_Imagen { get; set; }
-        public string Part_Indicator { get; set; }
-        public string Part_Peso { get; set; }
-        public int Part_Proceso { get; set; }
-        public string Part_Orden { get; set; }
-        public string Part_Cantidad { get; set; }
+        public string PartImagen { get; set; }
+        public string PartIndicator { get; set; }
+        public string PartPeso { get; set; }
+        public string PartSecuencia { get; set; }
+        public int PartProceso { get; set; }
+        public string PartOrden { get; set; }
+        public string PartCantidad { get; set; }
         public string Descripcion { get; set; }
     }
 }

@@ -79,21 +79,21 @@
                 <Label Content="Bolsas" Grid.Column="1" HorizontalAlignment="Left" Margin="7,1,0,0"
                        VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" Visibility="Hidden" />
 
-                <Label Name="LabelLedPart1" Content="Sensor" Grid.Column="2" HorizontalAlignment="Left"
-                       Visibility="Hidden"
+                <Label Name="LabelLedPart1" Content="Bascula 1" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Visible"
                        Margin="9,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border Name="LedPart1" Grid.Column="2" Margin="8,25,0,0" HorizontalAlignment="Left"
-                        Visibility="Hidden"
+                <Border x:Name="borderBascula1" Grid.Column="2" Margin="17,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Visible"
+                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <Label Name="LabelLedPart2" Content="Bascula 2" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Visible"
+                       Margin="75,1,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border x:Name="borderBascula2" Grid.Column="2" Margin="83,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Visible"
                         VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
                         BorderThickness="1" Background="Red" />
 
-                <Label Name="LabelLedPart2" Content="Parte 2" Grid.Column="2" HorizontalAlignment="Left"
-                       Visibility="Hidden"
-                       Margin="75,1,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border Name="LedPart2" Grid.Column="2" Margin="75,25,0,0" HorizontalAlignment="Left"
-                        Visibility="Hidden"
-                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                        BorderThickness="1" Background="Red" />
                 <Label Name="LabelLedPart3" Content="Parte 2" Grid.Column="2" HorizontalAlignment="Left"
                        Visibility="Hidden"
                        Margin="141,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
@@ -106,7 +106,7 @@
                           VerticalAlignment="Top" Height="37" Background="White" Grid.Column="1" FontFamily="Open Sans"
                           FontSize="21.333" Foreground="#FF343333" SelectionChanged="Cbox_Proceso_SelectionChanged"
                           SelectedIndex="-1" />
-                <Label Content="Proceso" Visibility="Hidden" Grid.Column="1" HorizontalAlignment="Left"
+                <Label Content="Proceso" Visibility="Visible" Grid.Column="1" HorizontalAlignment="Left"
                        Margin="7,1,0,0"
                        VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
 
@@ -120,7 +120,7 @@
                      TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Visibility="Hidden" />
             <Button x:Name="btnCatalogos" Grid.Column="3" Content="" HorizontalAlignment="Left" Margin="325,13,0,0"
                     VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36" Width="36"
-                    BorderBrush="{x:Null}" Click="btnCatalogos_Click"
+                    BorderBrush="{x:Null}" Click="BtnCatalogos_Click"
                     Template="{StaticResource ButtonControlTemplate1}">
                 <Button.Foreground>
                     <ImageBrush />
@@ -143,7 +143,7 @@
             <Button x:Name="btnValidaciones" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="263,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="btnValidaciones_Click">
+                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnValidaciones_Click">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -154,7 +154,7 @@
             <Button x:Name="btnSelladora" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="193,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="btnSelladora_Click">
+                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnSelladora_Click">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -186,7 +186,7 @@
             <Button x:Name="btnEtiqueta" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="132,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="btnEtiqueta_Click">
+                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnEtiqueta_Click">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -211,7 +211,7 @@
             </TextBox>
             <Button x:Name="btnEtiquetaManual" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="75,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584"
-                    Height="36" Width="36" BorderBrush="{x:Null}" Click="btnEtiquetaManual_Click"
+                    Height="36" Width="36" BorderBrush="{x:Null}" Click="BtnEtiquetaManual_Click"
                     Template="{StaticResource ButtonControlTemplate1}"
                     Tag="off">
                 <Button.Foreground>
@@ -239,7 +239,7 @@
             </TextBox>
             <Button x:Name="btnReset" Content="Reset" HorizontalAlignment="Left" Margin="20,14,0,0"
                     VerticalAlignment="Top" Width="36" Height="36" FontSize="24"
-                    RenderTransformOrigin="0.378,4.807" Click="btnReset_Click" Grid.Column="3"
+                    RenderTransformOrigin="0.378,4.807" Click="BtnReset_Click" Grid.Column="3"
                     Template="{StaticResource ButtonControlTemplate1}" BorderBrush="{x:Null}">
                 <Button.Foreground>
                     <ImageBrush />
@@ -282,14 +282,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte0" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad0" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia0" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="16" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part1" Margin="10" Grid.Column="1" Visibility="Hidden">
@@ -309,7 +309,7 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte1" Margin="10,10,10,0" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <Label x:Name="Part_Secuencia_Copy" HorizontalAlignment="Right" FontFamily="Arial" FontSize="16"
@@ -318,7 +318,7 @@
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia1" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center" Height="31"
+                           Background="#FFDEDEE2" FontSize="19" TextAlignment="Center" Height="31"
                            VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic">
                     <Run Text="Secuencia 1" />
                 </TextBlock>
@@ -340,14 +340,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte2" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad2" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia2" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part3" Margin="10" Grid.Column="3" Visibility="Hidden">
@@ -367,14 +367,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte3" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad3" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia3" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part4" Margin="10,10,10,7" Grid.Row="1" Visibility="Hidden">
@@ -394,14 +394,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte4" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad4" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia4" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part5" Margin="10,10,10,7" Grid.Column="1" Grid.Row="1" Visibility="Hidden">
@@ -421,14 +421,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte5" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad5" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia5" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part6" Margin="10,10,10,7" Grid.Column="2" Grid.Row="1" Visibility="Hidden">
@@ -448,14 +448,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte6" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad6" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia6" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
             <Grid x:Name="Part7" Margin="10,10,10,7" Grid.Column="3" Grid.Row="1" Visibility="Hidden">
@@ -475,14 +475,14 @@
                     <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs" />
                 </TextBlock>
                 <TextBlock x:Name="Part_NoParte7" Margin="10" TextWrapping="Wrap" FontFamily="Open Sans"
-                           TextAlignment="Center" FontSize="24" Foreground="Black" VerticalAlignment="Top">
+                           TextAlignment="Center" FontSize="20" Foreground="Black" VerticalAlignment="Top">
                     <Run Text="No Parte" />
                 </TextBlock>
                 <TextBlock x:Name="Part_Cantidad7" TextWrapping="Wrap" Text="1" Background="#FF005288"
                            Foreground="White" FontSize="30" TextAlignment="Center" HorizontalAlignment="Left"
                            Margin="0" Height="53" VerticalAlignment="Top" Width="50" />
                 <TextBlock x:Name="Part_Secuencia7" Margin="0,0,1.333,56" Grid.Row="1" TextWrapping="Wrap"
-                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="18.667" TextAlignment="Center"
+                           Text="Secuencia 1" Background="#FFDEDEE2" FontSize="19" TextAlignment="Center"
                            Height="31" VerticalAlignment="Bottom" Grid.RowSpan="2" FontStyle="Italic" />
             </Grid>
         </Grid>
@@ -523,7 +523,7 @@
                        Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="230" TextAlignment="Center" />
             <Button x:Name="btnCerrarPeso" Content="X" HorizontalAlignment="Left" Margin="616,7,0,0"
                     VerticalAlignment="Top" Width="59" Height="53" Background="{x:Null}" FontSize="24"
-                    Foreground="#FFC1C0C0" BorderBrush="{x:Null}" BorderThickness="0" Click="btnCerrarPeso_Click" />
+                    Foreground="#FFC1C0C0" BorderBrush="{x:Null}" BorderThickness="0" Click="BtnCerrarPeso_Click" />
             <Label x:Name="lblPesoActual" Content="Peso Actual" HorizontalAlignment="Center" Margin="0,212,0,0"
                    VerticalAlignment="Top" FontSize="18.667" Width="148" HorizontalContentAlignment="Center" />
             <TextBlock x:Name="txbPesoActual" HorizontalAlignment="Center" Margin="0,167,0,0" TextWrapping="Wrap"
@@ -531,10 +531,10 @@
             <TextBox x:Name="txbScanner" Visibility="Hidden" HorizontalAlignment="Left" Margin="115,0,0,0"
                      TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="450" Height="38"
                      Background="#FFFFFADB" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                     FontSize="25" KeyDown="txbScanner_KeyDown" />
+                     FontSize="25" KeyDown="TxbScanner_KeyDown" />
             <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
                     VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
-                    RenderTransformOrigin="0.378,4.807" Click="btnRechazo_Click" />
+                    RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
         </Grid>
         <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
                  d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />

@@ -178,6 +178,7 @@
     <Compile Include="Functions\BasculaFunc.cs" />
     <Compile Include="Functions\Bitacora.cs" />
     <Compile Include="Functions\Configuracion.cs" />
+    <Compile Include="Functions\Email.cs" />
     <Compile Include="Functions\IOInterface.cs" />
     <Compile Include="Functions\IOScanner.cs" />
     <Compile Include="Functions\LogEntry.cs" />

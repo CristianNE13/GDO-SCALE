@@ -4,13 +4,16 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using ClosedXML.Excel;
+using log4net.Repository.Hierarchy;
 using Scale_Program.Functions;
 using Brushes = System.Windows.Media.Brushes;
 using Rectangle = System.Windows.Shapes.Rectangle;
@@ -33,14 +36,12 @@ namespace Scale_Program
         private ErrorMessageWindow _errorWindow;
         private bool _etapa1;
         private bool _etapa2;
-        private bool _FerreteriaPart2;
         private bool _isInitializing;
         private double _lastWeight;
         private bool _startMeasurinBoxAndBags;
-        private bool _stopBascula1;
+        private bool _stopBascula1 = true;
         private bool _stopBascula2 = true;
-        private bool _validacion;
-        private List<SequenceStep> caja;
+        private bool _validacion = false;
         private string codigo;
         private int contador;
         private Configuracion defaultSettings;
@@ -60,8 +61,9 @@ namespace Scale_Program
         private bool sensorUnitariaActivo;
         private List<SequenceStep> sequence;
         private string zpl;
+        private DispatcherTimer _estadoBasculasTimer;
 
-        private string rutaImagenes = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes");
+        private readonly string rutaImagenes = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes");
 
         public MainWindow()
         {
@@ -112,8 +114,6 @@ namespace Scale_Program
             Cbox_Proceso.Text = "";
 
             _startMeasurinBoxAndBags = false;
-            _FerreteriaPart2 = false;
-            LedPart2.Background = Brushes.Red;
         }
 
         private void Cbox_Proceso_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -131,10 +131,12 @@ namespace Scale_Program
 
                 if (pasosFiltrados == null || pasosFiltrados.Count == 0)
                     throw new Exception("No hay pasos definidos para este proceso.");
-
-                ProcesarModeloYProceso(ModeloData.NoModelo);
+                ProcesarModeloYProceso();
 
                 SecuenciaASeguir(ModeloData);
+
+                var currentStep = pasosFiltrados[_currentStepIndex];
+                ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight, pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
             }
             catch (Exception ex)
             {
@@ -150,9 +152,10 @@ namespace Scale_Program
                 if (modProceso == -1) return null;
 
                 return sequence
-                    .Where(s => s.Part_Proceso == procesoSeleccionado && s.ModProceso == modProceso)
-                    .OrderBy(s => int.Parse(s.Part_Orden))
+                    .Where(s => s.PartProceso == procesoSeleccionado && s.ModProceso == modProceso)
+                    .OrderBy(s => int.Parse(s.PartOrden))
                     .ToList();
+
             }
             catch (Exception ex)
             {
@@ -161,11 +164,11 @@ namespace Scale_Program
             }
         }
 
-        private void ProcesarModeloYProceso(string modeloSeleccionado)
+        private void ProcesarModeloYProceso()
         {
             ResetSequence(pasosFiltrados);
             HideAll();
-            SetValuesEtapas(sequence, 1);
+            SetValuesEtapas(pasosFiltrados, 1);
             HideFerreteria(false, pasosFiltrados);
         }
 
@@ -253,14 +256,15 @@ namespace Scale_Program
                     IsCompleted = false,
                     DetectedWeight = "",
                     Tag = "",
-                    Part_Orden = paso.ToString(),
-                    grdPart = $"Part{paso - 1}",
-                    Part_NoParte = noParte,
-                    Part_Imagen = $"Part_Imagen{paso - 1}",
-                    Part_Indicator = $"Part_Indicator{paso - 1}",
-                    Part_Peso = $"Part_Peso{paso - 1}",
-                    Part_Proceso = proceso,
-                    Part_Cantidad = cantidad.ToString(),
+                    PartOrden = paso.ToString(),
+                    GrdPart = $"Part{paso - 1}",
+                    PartNoParte = noParte,
+                    PartImagen = $"Part_Imagen{paso - 1}",
+                    PartIndicator = $"Part_Indicator{paso - 1}",
+                    PartPeso = $"Part_Peso{paso - 1}",
+                    PartSecuencia = $"Part_Secuencia{paso - 1}",
+                    PartProceso = proceso,
+                    PartCantidad = cantidad.ToString(),
                     ModProceso = modProceso,
                     Descripcion = descripcion
                 };
@@ -306,13 +310,14 @@ namespace Scale_Program
             {
                 step.IsCompleted = false;
 
-                var indicator = FindName(step.Part_Indicator) as Rectangle;
-                var pesoTextBlock = FindName(step.Part_Peso) as TextBlock;
 
-                if (indicator != null)
+                if (FindName(step.PartSecuencia) is TextBlock secuencia)
+                    secuencia.Text = $"Rango:{step.MinWeight:F5}/{step.MaxWeight:F5}";
+
+                if (FindName(step.PartIndicator) is Rectangle indicator)
                     indicator.Fill = Brushes.Red;
 
-                if (pesoTextBlock != null)
+                if (FindName(step.PartPeso) is TextBlock pesoTextBlock)
                     pesoTextBlock.Text = "0.0Kgs";
             }
 
@@ -329,6 +334,7 @@ namespace Scale_Program
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ShowAlertError("RECUERDA CONFIGURAR LAS ENTRADAS Y EL CATALOGO ANTES DE EMPEZAR");
+            IniciarMonitoreoEstadoBasculas();
             CargarModelosDesdeExcel();
         }
 
@@ -395,16 +401,16 @@ namespace Scale_Program
         {
             try
             {
-                if (_FerreteriaPart2)
-                    RegistrarPasoRechazado(caja.FirstOrDefault());
-                else if (_currentStepIndex < pasosFiltrados.Count)
+                if (_currentStepIndex < pasosFiltrados.Count)
                     RegistrarPasoRechazado(pasosFiltrados[_currentStepIndex]);
 
                 CerrarAlertas();
+
                 _stopBascula1 = false;
                 _stopBascula2 = true;
-                _FerreteriaPart2 = false;
+
                 _startMeasurinBoxAndBags = false;
+                _consecutiveCount = 0;
                 _accumulatedWeight = 0;
                 _currentStepIndex = 0;
                 lblProgreso.Content = 0;
@@ -416,6 +422,9 @@ namespace Scale_Program
                 valoresBolsas.Clear();
                 _etapa1 = true;
                 _etapa2 = false;
+
+                txbPesoActual.Text = "0.0Kg";
+                PesoGeneral.Text = "0.0Kg";
                 codigo = "";
                 SetImagesBox();
 
@@ -443,11 +452,15 @@ namespace Scale_Program
                     return;
                 }
 
+                Cbox_Proceso.SelectedIndex = 0;
                 var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
-
-                ObtenerValoresProceso(modeloSeleccionado, procesoSeleccionado);
-                ProcesarModeloYProceso(modeloSeleccionado);
+                sequence = ObtenerValoresProceso(modeloSeleccionado, procesoSeleccionado);
+                ProcesarModeloValido(Cbox_Modelo.SelectedValue.ToString());
+                ProcesarModeloYProceso();
+                SetValuesEtapas(sequence, 1);
+                SetImagesBox();
                 SecuenciaASeguir(ModeloData);
+                Cbox_Proceso.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -461,7 +474,7 @@ namespace Scale_Program
                 LogRejectedStepFerre(step);
         }
 
-        private async void txbScanner_KeyDown(object sender, KeyEventArgs e)
+        private async void TxbScanner_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -509,7 +522,7 @@ namespace Scale_Program
 
                     lastBag.IsCompleted = true;
                     scannerReading = false;
-                    txbScanner.KeyDown -= txbScanner_KeyDown;
+                    txbScanner.KeyDown -= TxbScanner_KeyDown;
 
                     await ShowMensaje("SECUENCIA CORRECTA, PUEDE CERRAR LA BOLSA CON LA SELLADORA", Brushes.Green,
                         2500);
@@ -531,7 +544,7 @@ namespace Scale_Program
 
                 var procesosDisponibles = sequence
                     .Where(s => s.ModProceso == ModeloData.ModProceso)
-                    .Select(s => s.Part_Proceso)
+                    .Select(s => s.PartProceso)
                     .Distinct()
                     .OrderBy(p => p)
                     .ToList();
@@ -552,7 +565,7 @@ namespace Scale_Program
 
         private void HideParts(bool isHidden, List<SequenceStep> steps)
         {
-            foreach (var partGrid in steps.Select(step => FindName(step.grdPart)).OfType<UIElement>())
+            foreach (var partGrid in steps.Select(step => FindName(step.GrdPart)).OfType<UIElement>())
                 partGrid.Visibility = isHidden ? Visibility.Hidden : Visibility.Visible;
         }
 
@@ -572,33 +585,30 @@ namespace Scale_Program
         {
             foreach (var step in steps)
             {
-                var imageControl = FindName(step.Part_Imagen) as Image;
-                if (imageControl != null)
+                if (FindName(step.PartImagen) is Image imageControl)
                 {
-                    var imagePath = Path.Combine(rutaImagenes, $"{step.Part_NoParte}.PNG");
-                    var partCantidad = FindName($"Part_Cantidad{int.Parse(step.Part_Orden) - 1}") as TextBlock;
+                    var imagePath = Path.Combine(rutaImagenes, $"{step.PartNoParte}.PNG");
 
-                    if (partCantidad != null)
-                        partCantidad.Text = step.Part_Cantidad;
+                    if (FindName($"Part_Cantidad{int.Parse(step.PartOrden) - 1}") is TextBlock partCantidad)
+                        partCantidad.Text = step.PartCantidad;
 
-                    if (File.Exists(imagePath))
-                        imageControl.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
-                    else
-                        imageControl.Source = null; // No se encontró la imagen, dejar vacío
+                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
                 }
 
-                var ledLabel = FindName(step.Part_Indicator) as UIElement;
-                var ledPeso = FindName(step.Part_Peso) as UIElement;
 
-                if (ledLabel != null) ledLabel.Visibility = Visibility.Visible;
-                if (ledPeso != null) ledPeso.Visibility = Visibility.Visible;
+                if (FindName(step.PartIndicator) is UIElement ledLabel) ledLabel.Visibility = Visibility.Visible;
+                if (FindName(step.PartPeso) is UIElement ledPeso) ledPeso.Visibility = Visibility.Visible;
 
-                var partPesoIndex = step.Part_Peso.Replace("Part_Peso", "");
+                var partPesoIndex = step.PartPeso.Replace("Part_Peso", "");
                 var partNoTextBlockName = $"Part_NoParte{partPesoIndex}";
+                var partSecuencia = $"Part_Secuencia{partPesoIndex}";
 
-                var partNoTextBlock = FindName(partNoTextBlockName) as TextBlock;
-                if (partNoTextBlock != null)
-                    partNoTextBlock.Text = step.Part_NoParte;
+
+                if (FindName(partSecuencia) is TextBlock partSecuenciaTextBlock)
+                    partSecuenciaTextBlock.Text = $"Rango:{step.MinWeight:F5}/{step.MaxWeight:F5}";
+
+                if (FindName(partNoTextBlockName) is TextBlock partNoTextBlock)
+                    partNoTextBlock.Text = step.PartNoParte;
             }
         }
 
@@ -608,23 +618,23 @@ namespace Scale_Program
                 switch (etapa)
                 {
                     case 1:
-                        var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa1));
+                        var etapa1 = steps.FirstOrDefault(step => step.PartNoParte.Contains(ModeloData.Etapa1));
 
                         _etapa1 = true;
                         if (etapa1 != null)
                             pasosFiltrados = steps
-                                .Where(s => int.Parse(s.Part_Orden) <= int.Parse(etapa1.Part_Orden))
+                                .Where(s => int.Parse(s.PartOrden) <= int.Parse(etapa1.PartOrden))
                                 .ToList();
                         break;
 
                     case 2:
 
-                        var startStep = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa2));
+                        var startStep = steps.FirstOrDefault(step => step.PartNoParte.Contains(ModeloData.Etapa2));
 
                         _etapa2 = true;
                         if (startStep != null)
                             pasosFiltrados = steps
-                                .Where(s => int.Parse(s.Part_Orden) >= int.Parse(startStep.Part_Orden))
+                                .Where(s => int.Parse(s.PartOrden) >= int.Parse(startStep.PartOrden))
                                 .ToList();
                         break;
 
@@ -636,12 +646,12 @@ namespace Scale_Program
                 switch (etapa)
                 {
                     case 1:
-                        var etapa1 = steps.FirstOrDefault(step => step.Part_NoParte.Contains(ModeloData.Etapa2));
+                        var etapa1 = steps.FirstOrDefault(step => step.PartNoParte.Contains(ModeloData.Etapa2));
 
                         _etapa1 = true;
                         if (etapa1 != null)
                             pasosFiltrados = steps
-                                .Where(s => int.Parse(s.Part_Orden) <= int.Parse(etapa1.Part_Orden))
+                                .Where(s => int.Parse(s.PartOrden) <= int.Parse(etapa1.PartOrden))
                                 .ToList();
                         break;
                     default:
@@ -650,34 +660,27 @@ namespace Scale_Program
 
             foreach (var step in pasosFiltrados)
             {
-                var imageControl = FindName(step.Part_Imagen) as Image;
-                if (imageControl != null)
+                if (FindName(step.PartImagen) is Image imageControl)
                 {
                     var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes",
-                        $"{step.Part_NoParte}.PNG");
-                    var partCantidad = FindName($"Part_Cantidad{int.Parse(step.Part_Orden) - 1}") as TextBlock;
+                        $"{step.PartNoParte}.PNG");
 
-                    if (partCantidad != null)
-                        partCantidad.Text = step.Part_Cantidad;
 
-                    if (File.Exists(imagePath))
-                        imageControl.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
-                    else
-                        imageControl.Source = null;
+                    if (FindName($"Part_Cantidad{int.Parse(step.PartOrden) - 1}") is TextBlock partCantidad)
+                        partCantidad.Text = step.PartCantidad;
+
+                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
                 }
 
-                var ledLabel = FindName(step.Part_Indicator) as UIElement;
-                var ledPeso = FindName(step.Part_Peso) as UIElement;
 
-                if (ledLabel != null) ledLabel.Visibility = Visibility.Visible;
-                if (ledPeso != null) ledPeso.Visibility = Visibility.Visible;
+                if (FindName(step.PartIndicator) is UIElement ledLabel) ledLabel.Visibility = Visibility.Visible;
+                if (FindName(step.PartPeso) is UIElement ledPeso) ledPeso.Visibility = Visibility.Visible;
 
-                var partPesoIndex = step.Part_Peso.Replace("Part_Peso", "");
+                var partPesoIndex = step.PartPeso.Replace("Part_Peso", "");
                 var partNoTextBlockName = $"Part_NoParte{partPesoIndex}";
-                var partNoTextBlock = FindName(partNoTextBlockName) as TextBlock;
 
-                if (partNoTextBlock != null)
-                    partNoTextBlock.Text = step.Part_NoParte;
+                if (FindName(partNoTextBlockName) is TextBlock partNoTextBlock)
+                    partNoTextBlock.Text = step.PartNoParte;
             }
         }
 
@@ -687,35 +690,35 @@ namespace Scale_Program
             {
                 var step = pasos[i];
 
-                step.Part_Imagen = $"Part_Imagen{i}";
-                step.Part_Indicator = $"Part_Indicator{i}";
-                step.Part_Peso = $"Part_Peso{i}";
-                step.grdPart = $"Part{i}";
+                step.PartImagen = $"Part_Imagen{i}";
+                step.PartIndicator = $"Part_Indicator{i}";
+                step.PartPeso = $"Part_Peso{i}";
+                step.PartSecuencia = $"Part_Secuencia{i}";
+                step.GrdPart = $"Part{i}";
 
-                var imageControl = FindName(step.Part_Imagen) as Image;
-                var pesoControl = FindName(step.Part_Peso) as TextBlock;
-                var indicatorControl = FindName(step.Part_Indicator) as Rectangle;
-                var gridControl = FindName(step.grdPart) as Grid;
 
-                if (imageControl != null)
+                if (FindName(step.PartImagen) is Image imageControl)
                 {
                     imageControl.Visibility = Visibility.Visible;
                     imageControl.Source = null;
                 }
 
-                if (pesoControl != null)
+                if (FindName(step.PartPeso) is TextBlock pesoControl)
                 {
                     pesoControl.Visibility = Visibility.Visible;
                     pesoControl.Text = "0.0 kg";
                 }
 
-                if (indicatorControl != null)
+                if (FindName(step.PartIndicator) is Rectangle indicatorControl)
                 {
                     indicatorControl.Visibility = Visibility.Visible;
                     indicatorControl.Fill = Brushes.Red;
                 }
 
-                if (gridControl != null) gridControl.Visibility = Visibility.Visible;
+                if (FindName(step.PartSecuencia) is TextBlock secuencia)
+                    secuencia.Text = $"Rango:{step.MinWeight:F5}/{step.MaxWeight:F5}";
+
+                if (FindName(step.GrdPart) is Grid gridControl) gridControl.Visibility = Visibility.Visible;
             }
         }
 
@@ -730,40 +733,30 @@ namespace Scale_Program
                 var step = steps[counter];
 
                 var imageControlName = $"Part_Imagen{counter}";
-                var imageControl = FindName(imageControlName) as Image;
-                var textNoParte = FindName($"Part_NoParte{counter}") as TextBlock;
-                var partCantidad = FindName($"Part_Cantidad{counter}") as TextBlock;
-                var part = FindName($"Part{counter}") as Grid;
-                var indicador = FindName($"Part_Indicator{counter}") as Rectangle;
-                var peso = FindName($"Part_Peso{counter}") as TextBlock;
 
-                if (indicador != null && peso != null)
+                if (FindName($"Part_Indicator{counter}") is Rectangle indicador && FindName($"Part_Peso{counter}") is TextBlock peso)
                 {
                     indicador.Fill = Brushes.Red;
                     peso.Text = "0.0 kg";
                 }
 
-                if (textNoParte != null)
-                    textNoParte.Text = step.Part_NoParte;
+                if (FindName($"Part_Secuencia{counter}") is TextBlock secuencia)
+                    secuencia.Text = $"Rango:{step.MinWeight:F5}/{step.MaxWeight:F5}";
 
-                if (imageControl != null)
+                if (FindName($"Part_NoParte{counter}") is TextBlock textNoParte)
+                    textNoParte.Text = step.PartNoParte;
+
+                if (FindName(imageControlName) is Image imageControl)
                 {
-                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes", $"{step.Part_NoParte}.PNG");
+                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes", $"{step.PartNoParte}.PNG");
 
-                    if (partCantidad != null)
-                        partCantidad.Text = step.Part_Cantidad;
+                    if (FindName($"Part_Cantidad{counter}") is TextBlock partCantidad)
+                        partCantidad.Text = step.PartCantidad;
 
-                    if (part != null)
+                    if (FindName($"Part{counter}") is Grid part)
                         part.Visibility = Visibility.Visible;
 
-                    if (File.Exists(imagePath))
-                    {
-                        imageControl.Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
-                    }
-                    else
-                    {
-                        imageControl.Source = null;
-                    }
+                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
                 }
             }
         }
@@ -789,7 +782,7 @@ namespace Scale_Program
             txbScanner.IsEnabled = true;
             txbScanner.Clear();
             txbScanner.Focus();
-            txbScanner.KeyDown += txbScanner_KeyDown;
+            txbScanner.KeyDown += TxbScanner_KeyDown;
         }
 
         private void CerrarAlertas()
@@ -932,7 +925,7 @@ namespace Scale_Program
 
             _errorWindow = new ErrorMessageWindow
             {
-                TitleText = "Error",
+                TitleText = "ADVERTENCIA",
                 Message = mensaje
             };
 
@@ -973,6 +966,21 @@ namespace Scale_Program
 
             await Task.Delay(time);
             messageBox.Close();
+        }
+        private void IniciarMonitoreoEstadoBasculas()
+        {
+            _estadoBasculasTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1000)
+            };
+            _estadoBasculasTimer.Tick += VerificarEstadoBasculas;
+            _estadoBasculasTimer.Start();
+        }
+
+        private void VerificarEstadoBasculas(object sender, EventArgs e)
+        {
+            borderBascula1.Background = _stopBascula1 ? Brushes.Red : Brushes.Green;
+            borderBascula2.Background = _stopBascula2 ? Brushes.Red : Brushes.Green;
         }
 
         #endregion
@@ -1095,9 +1103,9 @@ namespace Scale_Program
                     var newRow = lastRow + 1;
 
                     worksheet.Cell(newRow, 1).Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cell(newRow, 2).Value = step.Part_NoParte;
+                    worksheet.Cell(newRow, 2).Value = step.PartNoParte;
                     worksheet.Cell(newRow, 3).Value = step.ModProceso;
-                    worksheet.Cell(newRow, 4).Value = step.Part_Proceso;
+                    worksheet.Cell(newRow, 4).Value = step.PartProceso;
                     worksheet.Cell(newRow, 5).Value = step.DetectedWeight;
                     worksheet.Cell(newRow, 6).Value = resultado;
                     worksheet.Cell(newRow, 7).Value = matchedTag ?? "";
@@ -1122,9 +1130,9 @@ namespace Scale_Program
                     var newRow = lastRow + 1;
 
                     worksheet.Cell(newRow, 1).Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cell(newRow, 2).Value = step.Part_NoParte;
+                    worksheet.Cell(newRow, 2).Value = step.PartNoParte;
                     worksheet.Cell(newRow, 3).Value = step.ModProceso;
-                    worksheet.Cell(newRow, 4).Value = step.Part_Proceso;
+                    worksheet.Cell(newRow, 4).Value = step.PartProceso;
                     worksheet.Cell(newRow, 5).Value = step.DetectedWeight;
                     worksheet.Cell(newRow, 6).Value = "Rechazado";
                     worksheet.Cell(newRow, 7).Value = step.Tag ?? "";
@@ -1144,23 +1152,66 @@ namespace Scale_Program
 
         private async void ReadInputBascula1()
         {
-            await Task.Run(() =>
-            {
-                var serialPort = new SerialPort(defaultSettings.PuertoBascula1, defaultSettings.BaudRateBascula12,
-                    Parity.None, defaultSettings.DataBitsBascula12, StopBits.One);
-                bascula1.AsignarPuertoBascula(serialPort);
-                bascula1.OpenPort();
-            });
+            await InicializarPuertoDeBasculaAsync(defaultSettings.PuertoBascula1, bascula1);
         }
 
         private async void ReadInputBascula2()
         {
+            await InicializarPuertoDeBasculaAsync(defaultSettings.PuertoBascula2, bascula2);
+        }
+
+        private async Task InicializarPuertoDeBasculaAsync(string puerto, BasculaFunc bascula)
+        {
             await Task.Run(() =>
             {
-                var serialPort = new SerialPort(defaultSettings.PuertoBascula2, defaultSettings.BaudRateBascula12,
-                    Parity.None, defaultSettings.DataBitsBascula12, StopBits.One);
-                bascula2.AsignarPuertoBascula(serialPort);
-                bascula2.OpenPort();
+                bool error = false;
+
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(puerto))
+                    {
+                        error = true;
+                        Application.Current.Dispatcher.Invoke(() =>
+                            ShowAlertError("El puerto de la báscula no está configurado."));
+                        return;
+                    }
+
+                    var puertoBascula = new SerialPort(puerto, defaultSettings.BaudRateBascula12,
+                        Parity.None, defaultSettings.DataBitsBascula12, StopBits.One);
+
+                    bascula.AsignarPuertoBascula(puertoBascula);
+                    bascula.OpenPort();
+                }
+                catch (IOException ioEx)
+                {
+                    error = true;
+                    bascula.ClosePort();
+                    Application.Current.Dispatcher.Invoke(() =>
+                        ShowAlertError($"No se pudo abrir el puerto ({puerto}) de comunicación con la báscula.\n\n" +
+                                       "Verifica que sea el puerto correcto o intenta cerrando y abriendo la aplicación nuevamente."));
+                }
+                catch (UnauthorizedAccessException uaEx)
+                {
+                    error = true;
+                    bascula.ClosePort();
+                    Application.Current.Dispatcher.Invoke(() =>
+                        ShowAlertError($"El puerto ({puerto}) ya está siendo usado por otra aplicación."));
+                }
+                catch (Exception ex)
+                {
+                    error = true;
+                    bascula.ClosePort();
+                    Application.Current.Dispatcher.Invoke(() =>
+                        ShowAlertError($"Error inesperado al abrir el puerto ({puerto}): {ex.Message}"));
+                }
+                finally
+                {
+                    if (error)
+                    {
+                        _stopBascula1 = true;
+                        _stopBascula2 = true;
+                    }
+                }
             });
         }
 
@@ -1186,14 +1237,10 @@ namespace Scale_Program
                     {
 
                         if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && ModeloData.UsaConteoCajas || ModeloData.UsaBascula1 && !ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas)
-                        {
-                            ProcessSequenceFerreteria(weight, isStable);
-                        }
+                            ProcessSequenceFerreteria(weight);
 
                         else if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas)
-                        {
-                            ProcessStableWeightArmHarness(weight, isStable);
-                        }
+                            ProcessStableWeightArmHarness(weight);
                     }
                 }
 
@@ -1221,18 +1268,16 @@ namespace Scale_Program
 
                     if (_consecutiveCount == 2)
                     {
-                        double tolerancia = 0.010;
+                        double tolerancia = 0.015;
 
                         if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && ModeloData.UsaConteoCajas && _etapa2)
-                            ProcessCajaFerreteria(weight, isStable);
+                            ProcessCajaFerreteria(weight, tolerancia);
 
                         else if (ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas && _etapa2)
-                            ProcessCajaEtapa2(weight, isStable, ref stepIndex, ref runningWeight, pasosFiltrados, valoresBolsas, tolerancia);
+                            ProcessCajaEtapa2(weight, ref stepIndex, ref runningWeight, pasosFiltrados, valoresBolsas, tolerancia);
 
                         else if (!ModeloData.UsaBascula1 && ModeloData.UsaBascula2 && !ModeloData.UsaConteoCajas && _etapa1)
-                        {
-                            ProcessSequenceFerreteria(weight,isStable);
-                        }
+                            ProcessSequenceFerreteria(weight);
                     }
                 }
                
@@ -1241,52 +1286,50 @@ namespace Scale_Program
 
         private void SecuenciaASeguir(Modelo modeloseleccionado)
         {
-            if (modeloseleccionado.UsaBascula1 && !modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+            try
             {
-                //Secuencia de básculas individual - solo báscula 1
+                if (modeloseleccionado.UsaBascula1 && !modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+                {
+                    //Secuencia de básculas individual - solo báscula 1
 
-                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
-                    ReadInputBascula1();
+                    if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
+                        ReadInputBascula1();
 
-                _stopBascula1 = false;
-                _stopBascula2 = true;
+                    _stopBascula1 = false;
+                    _stopBascula2 = true;
 
+                }
+                else if (!modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+                {
+                    //Secuencia de báscula individual - solo báscula 2
+                    if (bascula2?.GetPuerto() == null || !bascula2.GetPuerto().IsOpen)
+                        ReadInputBascula2();
+
+                    _stopBascula1 = true;
+                    _stopBascula2 = false;
+                }
+                else if (modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2)
+                {
+                    //Secuencia de ambas básculas
+                    if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
+                        ReadInputBascula1();
+
+                    _stopBascula1 = false;
+                    _stopBascula2 = true;
+                }
+                else
+                    ShowAlertError($"Error al cargar la secuencia, secuencia inexistente.");
             }
-            else if (!modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
+            catch (Exception e)
             {
-                //Secuencia de báscula individual - solo báscula 2
-                if (bascula2?.GetPuerto() == null || !bascula2.GetPuerto().IsOpen)
-                    ReadInputBascula2();
-
-                _stopBascula1 = true;
-                _stopBascula2 = false;
+                ShowAlertError(e.ToString());
+                throw;
             }
-            else if (modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && !modeloseleccionado.UsaConteoCajas)
-            {
-                //Secuencia de ambas básculas sin conteo cajas
-                if (bascula1?.GetPuerto() == null || !bascula1.GetPuerto().IsOpen)
-                    ReadInputBascula1();
 
-                _stopBascula1 = false;
-                _stopBascula2 = true;
-            }
-            else if (modeloseleccionado.UsaBascula1 && modeloseleccionado.UsaBascula2 && modeloseleccionado.UsaConteoCajas)
-            {
-                //Secuencia de ambas básculas más conteo de cajas
-                if (bascula2?.GetPuerto() == null || !bascula2.GetPuerto().IsOpen)
-                    ReadInputBascula1();
-
-                _stopBascula1 = false;
-                _stopBascula2 = true;
-            }
-            else
-                ShowAlertError($"Error al cargar la secuencia, secuencia inexistente.");
         }
 
-        private void ProcessStableWeight(double currentWeight, bool isStable)
+        private void ProcessStableWeight(double currentWeight)
         {
-            if (_FerreteriaPart2) return;
-
             var pasosPorPagina = 8;
             var totalPasos = pasosFiltrados.Count;
 
@@ -1312,17 +1355,14 @@ namespace Scale_Program
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
 
-            var indicator = FindName(currentStep.Part_Indicator) as Rectangle;
-            var pesoTextBlock = FindName(currentStep.Part_Peso) as TextBlock;
-            var cantidadTextBlock = FindName($"Part_Cantidad{int.Parse(currentStep.Part_Orden) - 1}") as TextBlock;
 
-            if (!isStable || cantidadTextBlock == null) return;
+            if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock)) return;
 
-            ShowBolsasRestantes(currentStep.Part_NoParte, currentStep.MinWeight, currentStep.MaxWeight,
+            ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
                 pieceWeight,
                 _validacion, int.Parse(cantidadTextBlock.Text));
 
-            if (indicator == null || pesoTextBlock == null) return;
+            if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) || !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
 
             if (pieceWeight >= currentStep.MinWeight && pieceWeight <= currentStep.MaxWeight)
             {
@@ -1339,7 +1379,7 @@ namespace Scale_Program
 
                     if (cantidadRestante == 0)
                     {
-                        if (!currentStep.IsCompleted && Cbox_Modelo.Text == "ANTENNA KIT")
+                        if (!currentStep.IsCompleted)
                             LogFerreteriaStep(currentStep, "OK", codigo);
 
                         if (_currentStepIndex == pasosFiltrados.Count - 2)
@@ -1352,18 +1392,18 @@ namespace Scale_Program
 
                             valoresBolsas.Add(new SequenceStep
                             {
-                                Part_NoParte = currentStep.Part_NoParte,
+                                PartNoParte = currentStep.PartNoParte,
                                 MinWeight = currentStep.MinWeight,
                                 MaxWeight = currentStep.MaxWeight,
                                 DetectedWeight = currentWeight.ToString(),
                                 Tag = codigo,
                                 IsCompleted = false,
-                                Part_Indicator = currentStep.Part_Indicator,
-                                Part_Peso = currentStep.Part_Peso,
-                                Part_Orden = currentStep.Part_Orden,
-                                Part_Cantidad = currentStep.Part_Cantidad,
+                                PartIndicator = currentStep.PartIndicator,
+                                PartPeso = currentStep.PartPeso,
+                                PartOrden = currentStep.PartOrden,
+                                PartCantidad = currentStep.PartCantidad,
                                 ModProceso = currentStep.ModProceso,
-                                Part_Proceso = currentStep.Part_Proceso
+                                PartProceso = currentStep.PartProceso
                             });
 
                             //ReadScannerBolsa();
@@ -1376,24 +1416,31 @@ namespace Scale_Program
                             currentStep = pasosFiltrados[_currentStepIndex];
                             pieceWeight = currentWeight - _accumulatedWeight;
 
-                            ShowBolsasRestantes(currentStep.Part_NoParte, currentStep.MinWeight, currentStep.MaxWeight,
+                            if (ModeloData.NoModelo == "ANTENNA KIT" && pasosFiltrados[_currentStepIndex].PartNoParte == "Caja antenna 141A1528")
+                            {
+                                _ = ShowMensaje("PUEDES CERRAR LA BOLSA DE FERRETERIA CON LA SELLADORA", Brushes.Green,
+                                    6000);
+                                _activarSelladora = true;
+                            }
+
+                            ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
                                 pieceWeight,
-                                _validacion, int.Parse(currentStep.Part_Cantidad));
+                                _validacion, int.Parse(currentStep.PartCantidad));
                             return;
                         }
 
                         var lastBag = valoresBolsas.LastOrDefault();
                         if (lastBag != null)
                         {
-                            lastBag.Part_NoParte = currentStep.Part_NoParte;
+                            lastBag.PartNoParte = currentStep.PartNoParte;
                             lastBag.MinWeight = currentStep.MinWeight;
                             lastBag.MaxWeight = currentStep.MaxWeight;
                             lastBag.DetectedWeight = currentWeight.ToString("F5");
-                            lastBag.Part_Indicator = currentStep.Part_Indicator;
-                            lastBag.Part_Peso = currentStep.Part_Peso;
-                            lastBag.Part_Orden = currentStep.Part_Orden;
-                            lastBag.Part_Cantidad = currentStep.Part_Cantidad;
-                            lastBag.Part_Proceso = currentStep.Part_Proceso;
+                            lastBag.PartIndicator = currentStep.PartIndicator;
+                            lastBag.PartPeso = currentStep.PartPeso;
+                            lastBag.PartOrden = currentStep.PartOrden;
+                            lastBag.PartCantidad = currentStep.PartCantidad;
+                            lastBag.PartProceso = currentStep.PartProceso;
                         }
 
                         _currentStepIndex = 0;
@@ -1436,18 +1483,15 @@ namespace Scale_Program
             else
             {
                 indicator.Fill = Brushes.Red;
-                pesoTextBlock.Text = "Fuera de rango";
+                pesoTextBlock.Text = $"{pieceWeight:F5} kg";
                 currentStep.DetectedWeight = currentWeight.ToString("F5");
             }
         }
 
-        private void ProcessStableWeightArmHarness(double currentWeight, bool isStable)
+        private void ProcessStableWeightArmHarness(double currentWeight)
         {
-            if (_FerreteriaPart2) return;
-
-            var pasosPorPagina = 8;
+            const int pasosPorPagina = 8;
             var totalPasos = pasosFiltrados.Count;
-
             var paginaActual = _currentStepIndex / pasosPorPagina;
 
             var pasosAMostrar = pasosFiltrados
@@ -1456,31 +1500,20 @@ namespace Scale_Program
                 .ToList();
 
             var indexEnPagina = _currentStepIndex % pasosPorPagina;
-            if (_currentStepIndex > 0 && indexEnPagina == 0)
-            {
-                _currentStepIndex = 0;
-                HideAll();
-                pasosFiltrados = pasosAMostrar;
-                ReindexarPasos(pasosFiltrados);
-                SetImagesBox();
-            }
 
-            if (_currentStepIndex >= totalPasos) return; 
+            if (_currentStepIndex >= totalPasos) return;
 
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
 
-            var indicator = FindName(currentStep.Part_Indicator) as Rectangle;
-            var pesoTextBlock = FindName(currentStep.Part_Peso) as TextBlock;
-            var cantidadTextBlockName = currentStep.Part_Indicator.Replace("Part_Indicator", "Part_Cantidad");
-            var cantidadTextBlock = FindName(cantidadTextBlockName) as TextBlock;
+            var cantidadTextBlockName = currentStep.PartIndicator.Replace("Part_Indicator", "Part_Cantidad");
 
-            if (!isStable || cantidadTextBlock == null) return;
+            if (!(FindName(cantidadTextBlockName) is TextBlock cantidadTextBlock)) return;
 
-            ShowBolsasRestantes(currentStep.Part_NoParte, currentStep.MinWeight, currentStep.MaxWeight,
+            ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
                 pieceWeight, _validacion, int.Parse(cantidadTextBlock.Text));
 
-            if (indicator == null || pesoTextBlock == null) return;
+            if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) || !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
 
             var isLastStep = _currentStepIndex == pasosFiltrados.Count - 1;
 
@@ -1519,7 +1552,7 @@ namespace Scale_Program
             }
 
             indicator.Fill = Brushes.Red;
-            pesoTextBlock.Text = "Fuera de rango";
+            pesoTextBlock.Text = $"{pieceWeight:F5} kg";
             currentStep.DetectedWeight = currentWeight.ToString("F5");
         }
 
@@ -1550,16 +1583,16 @@ namespace Scale_Program
 
                         valoresBolsas.Add(new SequenceStep
                         {
-                            Part_NoParte = currentStep.Part_NoParte,
+                            PartNoParte = currentStep.PartNoParte,
                             MinWeight = currentStep.MinWeight,
                             MaxWeight = currentStep.MaxWeight,
                             DetectedWeight = currentWeight.ToString(),
                             Tag = codigo,
                             IsCompleted = false,
-                            Part_Indicator = currentStep.Part_Indicator,
-                            Part_Peso = currentStep.Part_Peso,
-                            Part_Orden = currentStep.Part_Orden,
-                            Part_Cantidad = currentStep.Part_Cantidad
+                            PartIndicator = currentStep.PartIndicator,
+                            PartPeso = currentStep.PartPeso,
+                            PartOrden = currentStep.PartOrden,
+                            PartCantidad = currentStep.PartCantidad
                         });
 
                         //ReadScannerBolsa();
@@ -1570,20 +1603,37 @@ namespace Scale_Program
 
                     if (_currentStepIndex < pasosFiltrados.Count)
                     {
+                        var pasosPorPagina = 8;
+
+                        if (_currentStepIndex % pasosPorPagina == 0)
+                        {
+                            var paginaActual = _currentStepIndex / pasosPorPagina;
+
+                            HideAll();
+                            pasosFiltrados = pasosFiltrados
+                                .Skip(paginaActual * pasosPorPagina)
+                                .Take(pasosPorPagina)
+                                .ToList();
+
+                            ReindexarPasos(pasosFiltrados);
+                            SetImagesBox();
+
+                            _currentStepIndex = 0;
+                        }
+
                         currentStep = pasosFiltrados[_currentStepIndex];
                         pieceWeight = currentWeight - _accumulatedWeight;
 
-                        ShowBolsasRestantes(currentStep.Part_NoParte, currentStep.MinWeight, currentStep.MaxWeight,
-                            pieceWeight, _validacion, int.Parse(currentStep.Part_Cantidad));
+                        ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
+                            pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
                     }
                 }
             }
         }
 
-        private void ProcessCajaEtapa2(double weight, bool isStable, ref int stepIndex, ref double runningWeight,
+        private void ProcessCajaEtapa2(double weight, ref int stepIndex, ref double runningWeight,
             List<SequenceStep> pasosFiltrados, List<SequenceStep> valoresBolsas, double tolerancia)
         {
-            if (!isStable) return;
             if (stepIndex >= pasosFiltrados.Count) return;
 
             var currentStep = pasosFiltrados[stepIndex];
@@ -1591,39 +1641,58 @@ namespace Scale_Program
             double minRange, maxRange;
             var pieceWeight = weight - runningWeight;
 
-            if (currentStep.Part_NoParte.Contains("Ferreteria"))
+            if (currentStep.PartNoParte.Contains("Ferreteria"))
             {
                 var sumBolsas = valoresBolsas.Sum(b => double.Parse(b.DetectedWeight));
                 currentStep.DetectedWeight = sumBolsas.ToString("F5");
                 currentStep.MinWeight = sumBolsas;
                 currentStep.MaxWeight = sumBolsas;
-                minRange = runningWeight + currentStep.MinWeight;
-                maxRange = runningWeight + currentStep.MaxWeight;
+                minRange = currentStep.MinWeight - (currentStep.MinWeight * tolerancia);
+                maxRange = (currentStep.MaxWeight * tolerancia) + currentStep.MaxWeight;
             }
             else
             {
-                minRange = runningWeight + currentStep.MinWeight;
-                maxRange = runningWeight + currentStep.MaxWeight;
+                minRange = currentStep.MinWeight - (currentStep.MinWeight * tolerancia);
+                maxRange = (currentStep.MaxWeight * tolerancia) + currentStep.MaxWeight;
+
             }
 
-            minRange -= tolerancia;
-            maxRange += tolerancia;
+            ShowBolsasRestantes(currentStep.PartNoParte, minRange, maxRange, pieceWeight, _validacion,int.Parse(currentStep.PartCantidad));
 
-            ShowAlertaPeso(currentStep.Part_NoParte, minRange, maxRange, weight, _validacion);
-
-            if (weight >= minRange && weight <= maxRange)
+            if (pieceWeight >= minRange && pieceWeight <= maxRange)
             {
-                var indicator = FindName(currentStep.Part_Indicator) as Rectangle;
-                var pesoTextBlock = FindName(currentStep.Part_Peso) as TextBlock;
-                var cantidadTextBlockName = currentStep.Part_Indicator.Replace("Part_Indicator", "Part_Cantidad");
+                var indicator = FindName(currentStep.PartIndicator) as Rectangle;
+                var pesoTextBlock = FindName(currentStep.PartPeso) as TextBlock;
+                var cantidadTextBlockName = currentStep.PartIndicator.Replace("Part_Indicator", "Part_Cantidad");
                 var cantidadTextBlock = FindName(cantidadTextBlockName) as TextBlock;
 
-
-                CompleteCurrentStepEtapa2(currentStep, indicator, pesoTextBlock, cantidadTextBlock, pieceWeight, "OK",
-                    codigo);
+                CompleteCurrentStepEtapa2(currentStep, indicator, pesoTextBlock, cantidadTextBlock, pieceWeight);
 
                 runningWeight = weight;
                 stepIndex++;
+
+                if (stepIndex < pasosFiltrados.Count)
+                {
+                    currentStep = pasosFiltrados[stepIndex];
+                    pieceWeight = weight - runningWeight;
+
+                    if (currentStep.PartNoParte.Contains("Ferreteria"))
+                    {                
+                        var sumBolsas = valoresBolsas.Sum(b => double.Parse(b.DetectedWeight));
+                        currentStep.DetectedWeight = sumBolsas.ToString("F5");
+                        currentStep.MinWeight = sumBolsas;
+                        currentStep.MaxWeight = sumBolsas;
+                        minRange = currentStep.MinWeight - (currentStep.MinWeight * tolerancia);
+                        maxRange = (currentStep.MaxWeight * tolerancia) + currentStep.MaxWeight;
+                    }
+                    else
+                    {
+                        minRange = currentStep.MinWeight - (currentStep.MinWeight * tolerancia);
+                        maxRange = (currentStep.MaxWeight * tolerancia) + currentStep.MaxWeight;
+                    }
+
+                    ShowBolsasRestantes(currentStep.PartNoParte, minRange, maxRange, pieceWeight, _validacion,int.Parse(currentStep.PartCantidad));
+                }
 
                 if (stepIndex >= pasosFiltrados.Count)
                 {
@@ -1633,18 +1702,15 @@ namespace Scale_Program
             }
             else
             {
-                var indicator = FindName(currentStep.Part_Indicator) as Rectangle;
-                var pesoTextBlock = FindName(currentStep.Part_Peso) as TextBlock;
-
-                if (indicator != null) indicator.Fill = Brushes.Red;
-                if (pesoTextBlock != null) pesoTextBlock.Text = "Fuera de rango";
-
+                if (FindName(currentStep.PartIndicator) is Rectangle indicator) indicator.Fill = Brushes.Red;
+                if (FindName(currentStep.PartPeso) is TextBlock pesoTextBlock) pesoTextBlock.Text = $"{pieceWeight:F5}  kg";
+                if (FindName(currentStep.PartSecuencia) is TextBlock secuencia) secuencia.Text = $"Rango: {minRange:F5}/{maxRange:F5}";
                 currentStep.DetectedWeight = pieceWeight.ToString("F5");
             }
         }
 
         private void CompleteCurrentStepEtapa2(SequenceStep currentStep, Rectangle indicator, TextBlock pesoTextBlock,
-            TextBlock cantidadTextBlock, double currentWeight, string logMessage, string tags)
+            TextBlock cantidadTextBlock, double currentWeight)
         {
             currentStep.DetectedWeight = currentWeight.ToString("F5");
             indicator.Fill = Brushes.Green;
@@ -1682,7 +1748,6 @@ namespace Scale_Program
 
             _stopBascula1 = false;
 
-            _FerreteriaPart2 = false;
             _startMeasurinBoxAndBags = false;
             _accumulatedWeight = 0;
             _currentStepIndex = 0;
@@ -1694,12 +1759,14 @@ namespace Scale_Program
             _etapa1 = true;
             _etapa2 = false;
             contador = 0;
+            txbPesoActual.Text = "0.0Kg";
+            PesoGeneral.Text = "0.0Kg";
 
             HideAll();
             ProcesarModeloValido(Cbox_Modelo.SelectedValue.ToString());
             pasosFiltrados = ObtenerValoresProceso(Cbox_Modelo.SelectedValue.ToString(),
                 1);
-            ProcesarModeloYProceso(Cbox_Modelo.SelectedValue.ToString());
+            ProcesarModeloYProceso();
             Cbox_Proceso.SelectedIndex = 0;
             SetValuesEtapas(sequence, 1);
             SetImagesBox();
@@ -1720,7 +1787,6 @@ namespace Scale_Program
             _stopBascula1 = false;
             _stopBascula2 = true;
 
-            _FerreteriaPart2 = false;
             _startMeasurinBoxAndBags = false;
             _accumulatedWeight = 0;
             _currentStepIndex = 0;
@@ -1735,65 +1801,94 @@ namespace Scale_Program
             stepIndex = 0;
             runningWeight = 0.0;
             codigo = "";
+            txbPesoActual.Text = "0.0Kg";
+            PesoGeneral.Text = "0.0Kg";
 
             HideAll();
             ProcesarModeloValido(Cbox_Modelo.SelectedValue.ToString());
             sequence = ObtenerValoresProceso(Cbox_Modelo.SelectedValue.ToString(), 1);
-            ProcesarModeloYProceso(Cbox_Modelo.SelectedValue.ToString());
+            ProcesarModeloYProceso();
             Cbox_Proceso.SelectedIndex = 0;
             SetValuesEtapas(sequence, 1);
             SetImagesBox();
         }
 
-        private void ProcessCajaFerreteria(double weight, bool isStable)
+        private void ProcessCajaFerreteria(double weight, double tolerancia)
         {
-            var cajaStep = pasosFiltrados.LastOrDefault();
-            if (cajaStep == null) return;
-
-
-            var pesoTotalBolsas = valoresBolsas.Sum(s => double.Parse(s.DetectedWeight));
-            var listaTags = valoresBolsas.Select(b => b.Tag).Where(tag => !string.IsNullOrEmpty(tag)).ToList();
-            var pesoMinimo = pesoTotalBolsas + cajaStep.MinWeight + 0.01 * (pesoTotalBolsas + cajaStep.MinWeight);
-            var pesoMaximo = pesoTotalBolsas + cajaStep.MaxWeight + 0.01 * (pesoTotalBolsas + cajaStep.MaxWeight);
-
-            if (isStable)
+            if (pasosFiltrados.Count != 2)
             {
-                if (!_startMeasurinBoxAndBags)
-                {
-                    ShowAlertaPeso("PESAR SOLO CAJA MASTER", cajaStep.MinWeight, cajaStep.MaxWeight, weight,
-                        _validacion);
-
-                    if (weight >= cajaStep.MinWeight && weight <= cajaStep.MaxWeight)
-                    {
-                        cajaStep.DetectedWeight = weight.ToString();
-                        LogFerreteriaStep(cajaStep, "CAJA VACÍA OK", null);
-
-                        _startMeasurinBoxAndBags = true;
-                    }
-                }
-                else
-                {
-                    ShowAlertaPeso("PESAR CAJA MASTER CON CAJAS UNITARIAS", pesoMinimo, pesoMaximo, weight,
-                        _validacion);
-
-                    if (weight >= pesoMinimo && weight <= pesoMaximo)
-                    {
-                        cajaStep.DetectedWeight = weight.ToString("F5");
-                        var allTags = string.Join(", ", listaTags);
-                        LogFerreteriaStep(cajaStep, "CAJA COMPLETA OK", allTags);
-
-                        _stopBascula2 = true;
-                        EndFerreteriaG();
-                    }
-                }
+                _ = ShowMensaje("ESTA SECUENCIA SOLO LLEVA 2 ARTICULOS EN ETAPA 2, FAVOR DE ARREGLAR LA SECUENCIA EN CATALOGOS.",Brushes.Red,15000);
+                _stopBascula1 = true;
+                _stopBascula2 = true;
+                return;
             }
 
-            var cajaPeso = FindName("Part_Peso0") as TextBlock;
-            if (cajaPeso != null)
-                cajaPeso.Text = weight.ToString();
+            TextBlock cajaPeso = null;
+            Rectangle cajaIndicador = null;
+
+            var cajaVaciaStep = pasosFiltrados.FirstOrDefault();
+            var cajaCompletaStep = pasosFiltrados.Last();
+
+            var pesoTotalBolsas = valoresBolsas.Sum(s => double.Parse(s.DetectedWeight));
+
+            var pieceWeight = weight - _accumulatedWeight;
+
+            if (!_startMeasurinBoxAndBags)
+            {
+                ShowAlertaPeso("PESAR SOLO CAJA MASTER", cajaVaciaStep.MinWeight, cajaVaciaStep.MaxWeight, pieceWeight,
+                    _validacion);
+                var secuencia = FindName(cajaVaciaStep.PartSecuencia) as TextBlock;
+                cajaIndicador = FindName(cajaVaciaStep.PartIndicator) as Rectangle;
+                cajaPeso = FindName(cajaVaciaStep.PartPeso) as TextBlock;
+
+                secuencia.Text = $"Rango: {cajaVaciaStep.MinWeight:F5} / {cajaVaciaStep.MaxWeight:F5}";
+
+                if (pieceWeight >= cajaVaciaStep.MinWeight && pieceWeight <= cajaVaciaStep.MaxWeight)
+                {
+                    cajaVaciaStep.DetectedWeight = pieceWeight.ToString("F5");
+                    LogFerreteriaStep(cajaVaciaStep, "CAJA VACÍA OK", null);
+
+                    _startMeasurinBoxAndBags = true;
+
+                    if (cajaPeso == null || cajaIndicador == null) return;
+
+                    cajaIndicador.Fill = Brushes.Green;
+                    cajaPeso.Text = $"{cajaVaciaStep.DetectedWeight:F5} kg";
+                    _accumulatedWeight += pieceWeight;
+                }
+            }
+            else
+            {
+                var pesoMinimo = pesoTotalBolsas - pesoTotalBolsas * tolerancia;
+                var pesoMaximo = pesoTotalBolsas * tolerancia + pesoTotalBolsas;
+
+                ShowAlertaPeso("PESAR CAJA MASTER CON FERRETERIAS", pesoMinimo, pesoMaximo, pieceWeight,
+                    _validacion);
+                var secuencia2 = FindName(cajaCompletaStep.PartSecuencia) as TextBlock;
+                secuencia2.Text = $"Rango: {pesoMinimo:F5} / {pesoMaximo:F5}";
+                if (pieceWeight >= pesoMinimo && pieceWeight <= pesoMaximo)
+                {
+                    cajaIndicador = FindName(cajaCompletaStep.PartIndicator) as Rectangle;
+                    cajaPeso = FindName(cajaCompletaStep.PartPeso) as TextBlock;
+                    var allTags = string.Join(", ",
+                        valoresBolsas.Select(b => b.Tag).Where(tag => !string.IsNullOrEmpty(tag)));
+
+                    _stopBascula2 = true;
+                    if (cajaPeso != null && cajaIndicador != null)
+                    {
+                        cajaIndicador.Fill = Brushes.Green;
+                        _accumulatedWeight += pieceWeight;
+                        cajaCompletaStep.DetectedWeight = _accumulatedWeight.ToString("F5");
+                        cajaPeso.Text = $"{cajaCompletaStep.DetectedWeight:F5} kg";
+                    }
+
+                    LogFerreteriaStep(cajaCompletaStep, "CAJA COMPLETA OK", allTags);
+                    EndFerreteriaG();
+                }
+            }
         }
 
-        private void ProcessSequenceFerreteria(double currentWeight, bool isStable)
+        private void ProcessSequenceFerreteria(double currentWeight)
         {
             _consecutiveCount = 0;
 
@@ -1814,21 +1909,21 @@ namespace Scale_Program
             }
 
             if (_etapa1)
-                ProcessStableWeight(currentWeight, isStable);
+                ProcessStableWeight(currentWeight);
         }
 
         #endregion
 
         #region Botones
 
-        private void btnCerrarPeso_Click(object sender, RoutedEventArgs e)
+        private void BtnCerrarPeso_Click(object sender, RoutedEventArgs e)
         {
             _validacion = true;
             recValidacion.Visibility = Visibility.Hidden;
             grdValidacion.Visibility = Visibility.Hidden;
         }
 
-        private void btnValidaciones_Click(object sender, RoutedEventArgs e)
+        private void BtnValidaciones_Click(object sender, RoutedEventArgs e)
         {
             switch (_validacion)
             {
@@ -1858,7 +1953,7 @@ namespace Scale_Program
             }
         }
 
-        private void btnCatalogos_Click(object sender, RoutedEventArgs e)
+        private void BtnCatalogos_Click(object sender, RoutedEventArgs e)
         {
             AuthenticationWindow auth = new AuthenticationWindow();
 
@@ -1870,7 +1965,7 @@ namespace Scale_Program
             }
         }
 
-        private void btnReset_Click(object sender, RoutedEventArgs e)
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
             AuthenticationWindow auth = new AuthenticationWindow();
 
@@ -1896,10 +1991,15 @@ namespace Scale_Program
 
         }
 
-        private void btnRechazo_Click(object sender, RoutedEventArgs e)
+        private void BtnRechazo_Click(object sender, RoutedEventArgs e)
         {
+            AuthenticationWindow auth = new AuthenticationWindow();
+
+            if (auth.ShowDialog() != true) return;
+
             try
             {
+
                 if (Cbox_Modelo.SelectedValue == null)
                 {
                     ShowAlertError("No hay un modelo seleccionado.");
@@ -1921,7 +2021,8 @@ namespace Scale_Program
                     var currentStep = pasosFiltrados[_currentStepIndex];
 
                     RegistrarPasoRechazado(currentStep);
-                    ShowAlertError($"Se rechazó la pieza: {currentStep.Part_NoParte}, pieza Rechazada en FERRETERÍA");
+
+                    _ = ShowMensaje($"Se rechazó la pieza: {currentStep.PartNoParte}", Brushes.IndianRed, 5000);
                 }
                 else
                 {
@@ -1930,16 +2031,16 @@ namespace Scale_Program
             }
             catch (Exception ex)
             {
-                ShowAlertError($"Error al registrar el rechazo en FERRETERÍA: {ex.Message}");
+                ShowAlertError($"Error al registrar el rechazo: {ex.Message}");
             }
         }
 
-        private void btnSelladora_Click(object sender, RoutedEventArgs e)
+        private void BtnSelladora_Click(object sender, RoutedEventArgs e)
         {
             _activarSelladora = true;
         }
 
-        private async void btnEtiqueta_Click(object sender, RoutedEventArgs e)
+        private async void BtnEtiqueta_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(zpl))
             {
@@ -1952,7 +2053,7 @@ namespace Scale_Program
             }
         }
 
-        private void btnEtiquetaManual_Click(object sender, RoutedEventArgs e)
+        private void BtnEtiquetaManual_Click(object sender, RoutedEventArgs e)
         {
             if (btnEtiquetaManual.Tag?.ToString() == "off")
             {

@@ -18,8 +18,8 @@
                 VerticalAlignment="Bottom" Width="113" RenderTransformOrigin="0.507,0.841" Background="#FFDE0505"
                 BorderBrush="#FFDE0505" IsDefault="True" Foreground="White" BorderThickness="0"
                 Click="OnAcceptButtonClick" />
-        <TextBlock Name="txtMessage" HorizontalAlignment="Left" Margin="55,65,0,-87" TextWrapping="Wrap"
-                   Text="TextBlock" VerticalAlignment="Top" Height="108" Width="334" FontSize="16"
+        <TextBlock Name="txtMessage" HorizontalAlignment="Left" Margin="55,65,0,0" TextWrapping="Wrap"
+                   Text="TextBlock" VerticalAlignment="Top" Height="124" Width="334"
                    TextAlignment="Justify" Foreground="#FF810000" FontFamily="Arial" />
         <Image HorizontalAlignment="Left" Height="22" Margin="20,62,0,0" VerticalAlignment="Top" Width="22"
                Source="Content/img/icon-alert-32.png" Stretch="Fill" />

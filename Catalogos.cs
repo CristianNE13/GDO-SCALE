@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Scale_Program.Functions;
@@ -90,7 +91,7 @@ namespace Scale_Program
                             Etapa1 = row.Cell(8).GetValue<string>(),
                             Etapa2 = row.Cell(9).GetValue<string>(),
                             Activo = row.Cell(10).GetValue<bool>()
-                        })
+                        }).OrderBy(m => m.ModProceso)
                 );
                 ModeloDataGrid.ItemsSource = Modelos;
             }
@@ -100,9 +101,16 @@ namespace Scale_Program
         {
             using (var workbook = new XLWorkbook(filePathExcel))
             {
-                var worksheet = workbook.Worksheet("Articulos");
+                var worksheetModelos = workbook.Worksheet("Modelos");
+                var modelosActivos = worksheetModelos.RowsUsed()
+                    .Skip(1)
+                    .Where(row => row.Cell(10).GetValue<bool>())
+                    .Select(row => row.Cell(2).GetValue<int>())
+                    .ToHashSet();
+
+                var worksheetArticulos = workbook.Worksheet("Articulos");
                 Articulos = new ObservableCollection<Articulo>(
-                    worksheet.RowsUsed()
+                    worksheetArticulos.RowsUsed()
                         .Skip(1)
                         .Select(row => new Articulo
                         {
@@ -115,10 +123,15 @@ namespace Scale_Program
                             PesoMax = row.Cell(7).GetValue<double>(),
                             Cantidad = row.Cell(8).GetValue<int>()
                         })
+                        .Where(articulo => modelosActivos.Contains(articulo.ModProceso))
+                        .OrderBy(m => m.ModProceso)
+                        .ThenBy(p => p.Proceso)
+                        .ThenBy(step => step.Paso)
                 );
                 ArticuloDataGrid.ItemsSource = Articulos;
             }
         }
+
 
         private void ModeloAgregarBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -146,8 +159,9 @@ namespace Scale_Program
 
                 if (ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value && ckb_ConteoCajas.IsChecked.Value)
                 {
-                    MessageBox.Show("No puedes utilizar una conteo cajas, necesitas utilizar bascula 1 y 2.", "Conteo cajas");
-                    return; 
+                    MessageBox.Show("No puedes utilizar una conteo cajas, necesitas utilizar bascula 1 y 2.",
+                        "Conteo cajas");
+                    return;
                 }
 
                 var modelo = new Modelo
@@ -305,7 +319,9 @@ namespace Scale_Program
                     string.IsNullOrWhiteSpace(ArticuloDescripcionTbox.Text) ||
                     string.IsNullOrWhiteSpace(ArticuloPesoMinTbox.Text) ||
                     string.IsNullOrWhiteSpace(ArticuloPesoMaxTbox.Text) ||
-                    string.IsNullOrWhiteSpace(txbProceso.Text))
+                    string.IsNullOrWhiteSpace(txbCantidad.Text) ||
+                    string.IsNullOrWhiteSpace(txbPaso.Text) ||
+                    string.IsNullOrWhiteSpace(txbModProceso.Text))
                 {
                     MessageBox.Show("Por favor, llena todos los campos antes de agregar.", "Campos Vacíos",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -313,9 +329,9 @@ namespace Scale_Program
                 }
 
                 if (!int.TryParse(txbProceso.Text, out var proceso) ||
-                    !int.TryParse(txbPaso.Text, out var paso))
+                    !int.TryParse(txbPaso.Text, out var paso) || paso == 0)
                 {
-                    MessageBox.Show("El Proceso o Paso no son válidos.", "Error", MessageBoxButton.OK,
+                    MessageBox.Show("El Proceso o paso no son válidos.", "Error", MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     return;
                 }
@@ -323,7 +339,7 @@ namespace Scale_Program
                 if (!int.TryParse(txbModProceso.Text, out var modproceso) ||
                     !int.TryParse(txbCantidad.Text, out var cantidad))
                 {
-                    MessageBox.Show("El ModProceso", "Error", MessageBoxButton.OK,
+                    MessageBox.Show("El ModProceso o cantidad no son validos", "Error", MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     return;
                 }
@@ -333,6 +349,12 @@ namespace Scale_Program
                 {
                     MessageBox.Show("Los valores de Peso Mínimo o Máximo no son válidos.", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (pesoMin > pesoMax)
+                {
+                    MessageBox.Show("El Peso Mínimo no puede ser mayor que el Peso Máximo.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -484,25 +506,18 @@ namespace Scale_Program
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar los modelos en el archivo Excel: {ex.Message}", "Error",
+                MessageBox.Show($"Error al guardar los modelos en el archivo: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void btnGuardarCambios_Click_1(object sender, RoutedEventArgs e)
-        {
-            GuardarArticulosEnExcel();
-
-            MessageBox.Show("Cambios guardados correctamente en el archivo Excel.", "Éxito", MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
 
         private void BtnGuardarModelos_Click(object sender, RoutedEventArgs e)
         {
             GuardarModelosEnExcel();
             CambiosGuardados?.Invoke();
+            CargarDatosArticulos();
 
-            MessageBox.Show("Cambios guardados correctamente en el archivo Excel.", "Éxito", MessageBoxButton.OK,
+            MessageBox.Show("Cambios guardados correctamente en el archivo.", "Éxito", MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
 
@@ -554,6 +569,7 @@ namespace Scale_Program
             lblCantidad.Visibility = Visibility.Visible;
             txb_CantidadCajas.Visibility = Visibility.Visible;
         }
+
         private void ckb_ConteoCajas_Unchecked(object sender, RoutedEventArgs e)
         {
             lblCantidad.Visibility = Visibility.Hidden;
@@ -567,6 +583,7 @@ namespace Scale_Program
                 lblPrimerEtapa2.Visibility = Visibility.Visible;
                 txb_Etapa2.Visibility = Visibility.Visible;
             }
+
             if (ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
             {
                 lblConteoCajas.Visibility = Visibility.Visible;
@@ -594,6 +611,15 @@ namespace Scale_Program
 
             lblPrimerEtapa2.Visibility = Visibility.Hidden;
             txb_Etapa1Bascula2.Visibility = Visibility.Hidden;
+        }
+
+        private void btnGuardarArticulos_Click(object sender, RoutedEventArgs e)
+        {
+            GuardarArticulosEnExcel();
+            CargarDatosModelos();
+
+            MessageBox.Show("Cambios guardados correctamente en el archivo.", "Éxito", MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
     }
 }

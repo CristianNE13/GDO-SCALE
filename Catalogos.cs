@@ -13,13 +13,12 @@ namespace Scale_Program
     public partial class Catalogos : Window
     {
         public event Action CambiosGuardados;
-        public readonly string filePathExcel = "CatalogosData.xlsx";
+        public ObservableCollection<Modelo> Modelos { get; set; }
+        public ObservableCollection<Articulo> Articulos { get; set; }
 
         public Catalogos()
         {
             InitializeComponent();
-
-            if (!File.Exists(filePathExcel)) CrearArchivoBase();
 
             CargarDatosModelos();
 
@@ -28,106 +27,32 @@ namespace Scale_Program
             NoModeloTBox.Focus();
         }
 
-        public ObservableCollection<Modelo> Modelos { get; set; }
-        public ObservableCollection<Articulo> Articulos { get; set; }
-
-        private void CrearArchivoBase()
-        {
-            using (var workbook = new XLWorkbook())
-            {
-                var modelosSheet = workbook.Worksheets.Add("Modelos");
-                modelosSheet.Cell(1, 1).Value = "NoModelo";
-                modelosSheet.Cell(1, 2).Value = "ModProceso";
-                modelosSheet.Cell(1, 3).Value = "Descripcion";
-                modelosSheet.Cell(1, 4).Value = "UsaBascula1";
-                modelosSheet.Cell(1, 5).Value = "UsaBascula2";
-                modelosSheet.Cell(1, 6).Value = "UsaConteoCajas";
-                modelosSheet.Cell(1, 7).Value = "CantidadCajas";
-                modelosSheet.Cell(1, 8).Value = "Etapa1";
-                modelosSheet.Cell(1, 9).Value = "Etapa2";
-                modelosSheet.Cell(1, 10).Value = "Activo";
-
-                var articulosSheet = workbook.Worksheets.Add("Articulos");
-                articulosSheet.Cell(1, 1).Value = "NoParte";
-                articulosSheet.Cell(1, 2).Value = "ModProceso";
-                articulosSheet.Cell(1, 3).Value = "Proceso";
-                articulosSheet.Cell(1, 4).Value = "Paso";
-                articulosSheet.Cell(1, 5).Value = "Descripcion";
-                articulosSheet.Cell(1, 6).Value = "PesoMin";
-                articulosSheet.Cell(1, 7).Value = "PesoMax";
-                articulosSheet.Cell(1, 8).Value = "Cantidad";
-                articulosSheet.Cell(1, 9).Value = "Tag";
-
-                var completadoSheet = workbook.Worksheets.Add("Completados");
-                completadoSheet.Cell(1, 1).Value = "Fecha";
-                completadoSheet.Cell(1, 2).Value = "NoParte";
-                completadoSheet.Cell(1, 3).Value = "ModModelo";
-                completadoSheet.Cell(1, 4).Value = "Proceso";
-                completadoSheet.Cell(1, 5).Value = "PesoDetectado";
-                completadoSheet.Cell(1, 6).Value = "Estado";
-                completadoSheet.Cell(1, 7).Value = "Tag";
-
-                workbook.SaveAs(filePathExcel);
-            }
-        }
-
         private void CargarDatosModelos()
         {
-            using (var workbook = new XLWorkbook(filePathExcel))
+            using (var db = new dc_missingpartsEntities())
             {
-                var worksheet = workbook.Worksheet("Modelos");
-                Modelos = new ObservableCollection<Modelo>(
-                    worksheet.RowsUsed()
-                        .Skip(1)
-                        .Select(row => new Modelo
-                        {
-                            NoModelo = row.Cell(1).GetValue<string>(),
-                            ModProceso = row.Cell(2).GetValue<int>(),
-                            Descripcion = row.Cell(3).GetValue<string>(),
-                            UsaBascula1 = row.Cell(4).GetValue<bool>(),
-                            UsaBascula2 = row.Cell(5).GetValue<bool>(),
-                            UsaConteoCajas = row.Cell(6).GetValue<bool>(),
-                            CantidadCajas = row.Cell(7).GetValue<int>(),
-                            Etapa1 = row.Cell(8).GetValue<string>(),
-                            Etapa2 = row.Cell(9).GetValue<string>(),
-                            Activo = row.Cell(10).GetValue<bool>()
-                        }).OrderBy(m => m.ModProceso)
-                );
+                var modelosDb = db.Modelos
+                    .OrderBy(m => m.ModProceso)
+                    .ToList();
+                
+                Modelos = new ObservableCollection<Modelo>(modelosDb);
+                
                 ModeloDataGrid.ItemsSource = Modelos;
             }
         }
 
         public void CargarDatosArticulos()
         {
-            using (var workbook = new XLWorkbook(filePathExcel))
-            {
-                var worksheetModelos = workbook.Worksheet("Modelos");
-                var modelosActivos = worksheetModelos.RowsUsed()
-                    .Skip(1)
-                    .Where(row => row.Cell(10).GetValue<bool>())
-                    .Select(row => row.Cell(2).GetValue<int>())
-                    .ToHashSet();
 
-                var worksheetArticulos = workbook.Worksheet("Articulos");
-                Articulos = new ObservableCollection<Articulo>(
-                    worksheetArticulos.RowsUsed()
-                        .Skip(1)
-                        .Select(row => new Articulo
-                        {
-                            NoParte = row.Cell(1).GetValue<string>(),
-                            ModProceso = row.Cell(2).GetValue<int>(),
-                            Proceso = row.Cell(3).GetValue<int>(),
-                            Paso = row.Cell(4).GetValue<int>(),
-                            Descripcion = row.Cell(5).GetValue<string>(),
-                            PesoMin = row.Cell(6).GetValue<double>(),
-                            PesoMax = row.Cell(7).GetValue<double>(),
-                            Cantidad = row.Cell(8).GetValue<int>()
-                        })
-                        .Where(articulo => modelosActivos.Contains(articulo.ModProceso))
-                        .OrderBy(m => m.ModProceso)
-                        .ThenBy(p => p.Proceso)
-                        .ThenBy(step => step.Paso)
-                );
+            using (var db = new dc_missingpartsEntities())
+            {
+                var articulosDb = db.Articulos
+                    .OrderBy(m => m.ModProceso)
+                    .ThenBy(p => p.Paso)
+                    .ToList();
+
+                Articulos = new ObservableCollection<Articulo>(articulosDb);
+
                 ArticuloDataGrid.ItemsSource = Articulos;
             }
         }
@@ -151,13 +76,15 @@ namespace Scale_Program
                     return;
                 }
 
-                if (!ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value)
+                if (ckb_Bascula2.IsChecked != null && !ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value)
                 {
                     MessageBox.Show("Debes utilizar una bascula.", "Seleccionar bascula");
                     return;
                 }
 
-                if (ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value && ckb_ConteoCajas.IsChecked.Value)
+                if (ckb_ConteoCajas.IsChecked != null && ckb_Bascula2.IsChecked != null &&
+                    ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value && !ckb_Bascula2.IsChecked.Value &&
+                    ckb_ConteoCajas.IsChecked.Value)
                 {
                     MessageBox.Show("No puedes utilizar una conteo cajas, necesitas utilizar bascula 1 y 2.",
                         "Conteo cajas");
@@ -169,37 +96,21 @@ namespace Scale_Program
                     NoModelo = NoModeloTBox.Text,
                     ModProceso = proceso,
                     Descripcion = ModeloDescripcionTBox.Text,
-                    UsaBascula1 = ckb_Bascula1.IsChecked.Value,
-                    UsaBascula2 = ckb_Bascula2.IsChecked.Value,
-                    UsaConteoCajas = ckb_ConteoCajas.IsChecked.Value,
+                    UsaBascula1 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value,
+                    UsaBascula2 = ckb_Bascula2.IsChecked != null && ckb_Bascula2.IsChecked.Value,
+                    UsaConteoCajas = ckb_ConteoCajas.IsChecked != null && ckb_ConteoCajas.IsChecked.Value,
                     CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
                     Etapa1 = txb_Etapa1.Text,
-                    Etapa2 = ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
+                    Etapa2 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
                     Activo = true
                 };
 
                 Modelos.Add(modelo);
 
-                using (var workbook = new XLWorkbook(filePathExcel))
+                using (var db = new dc_missingpartsEntities())
                 {
-                    var worksheet = workbook.Worksheet("Modelos");
-                    var lastRow = worksheet.LastRowUsed().RowNumber();
-                    var newRow = lastRow + 1;
-
-                    worksheet.Cell(newRow, 1).Value = modelo.NoModelo;
-                    worksheet.Cell(newRow, 2).Value = modelo.ModProceso;
-                    worksheet.Cell(newRow, 3).Value = modelo.Descripcion;
-                    worksheet.Cell(newRow, 4).Value = modelo.UsaBascula1;
-                    worksheet.Cell(newRow, 5).Value = modelo.UsaBascula2;
-                    worksheet.Cell(newRow, 6).Value = modelo.UsaConteoCajas;
-                    worksheet.Cell(newRow, 7).Value = modelo.CantidadCajas;
-                    worksheet.Cell(newRow, 8).Value = modelo.Etapa1;
-                    worksheet.Cell(newRow, 9).Value = modelo.Etapa2;
-                    worksheet.Cell(newRow, 10).Value = modelo.Activo;
-
-                    workbook.Save();
-
-                    MessageBox.Show($"Modelo agregado.");
+                    db.Modelos.Add(modelo);
+                    db.SaveChanges();
                 }
 
                 NoModeloTBox.Clear();
@@ -221,92 +132,59 @@ namespace Scale_Program
 
         private void ModeloEliminarBtn_Click(object sender, RoutedEventArgs e)
         {
-            var selectedModelo = ModeloDataGrid.SelectedItem as Modelo;
-
-            if (selectedModelo == null)
+            try
             {
-                MessageBox.Show("Por favor, selecciona un modelo para eliminar.");
-                return;
-            }
-
-            Modelos.Remove(selectedModelo);
-
-            using (var workbook = new XLWorkbook(filePathExcel))
-            {
-                var worksheet = workbook.Worksheet("Modelos");
-                worksheet.Clear();
-
-                worksheet.Cell(1, 1).Value = "NoModelo";
-                worksheet.Cell(1, 2).Value = "ModProceso";
-                worksheet.Cell(1, 3).Value = "Descripcion";
-                worksheet.Cell(1, 4).Value = "UsaBascula1";
-                worksheet.Cell(1, 5).Value = "UsaBascula2";
-                worksheet.Cell(1, 6).Value = "UsaConteoCajas";
-                worksheet.Cell(1, 7).Value = "CantidadCajas";
-                worksheet.Cell(1, 8).Value = "Etapa1";
-                worksheet.Cell(1, 9).Value = "Etapa2";
-                worksheet.Cell(1, 10).Value = "Activo";
-
-                var row = 2;
-                foreach (var modelo in Modelos)
+                if (!(ModeloDataGrid.SelectedItem is Modelo selectedModelo))
                 {
-                    worksheet.Cell(row, 1).Value = modelo.NoModelo;
-                    worksheet.Cell(row, 2).Value = modelo.ModProceso;
-                    worksheet.Cell(row, 3).Value = modelo.Descripcion;
-                    worksheet.Cell(row, 4).Value = modelo.UsaBascula1;
-                    worksheet.Cell(row, 5).Value = modelo.UsaBascula2;
-                    worksheet.Cell(row, 6).Value = modelo.UsaConteoCajas;
-                    worksheet.Cell(row, 7).Value = modelo.CantidadCajas;
-                    worksheet.Cell(row, 8).Value = modelo.Etapa1;
-                    worksheet.Cell(row, 9).Value = modelo.Etapa2;
-                    worksheet.Cell(row, 10).Value = modelo.Activo;
-                    row++;
+                    MessageBox.Show("Por favor, selecciona un modelo para eliminar.");
+                    return;
                 }
 
-                workbook.Save();
+                Modelos.Remove(selectedModelo);
 
-                MessageBox.Show("Modelo eliminado.");
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var modeloDb = db.Modelos.Find(selectedModelo.Id);
+                    if (modeloDb == null)
+                    {
+                        MessageBox.Show("Modelo no encontrado en la base de datos.");
+                        return;
+                    }
+
+                    db.Modelos.Remove(modeloDb);
+                    db.SaveChanges();
+                }
+                CargarDatosModelos();
+                MessageBox.Show("Modelo eliminado correctamente.", "Éxito", MessageBoxButton.OK,
+                                       MessageBoxImage.Information);
             }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"Error al eliminar el modelo: {exception.Message}");
+                throw;
+            }
+
         }
 
-        private void GuardarArticulosEnExcel()
+        private void GuardarArticulos()
         {
             try
             {
-                using (var workbook = new XLWorkbook(filePathExcel))
+
+                using (var db = new dc_missingpartsEntities())
                 {
-                    var worksheet = workbook.Worksheet("Articulos");
-                    worksheet.Clear();
+                    var articulosDb = db.Articulos
+                        .OrderBy(m => m.ModProceso)
+                        .ThenBy(p => p.Paso)
+                        .ToList();
 
-                    worksheet.Cell(1, 1).Value = "NoParte";
-                    worksheet.Cell(1, 2).Value = "ModProceso";
-                    worksheet.Cell(1, 3).Value = "Proceso";
-                    worksheet.Cell(1, 4).Value = "Paso";
-                    worksheet.Cell(1, 5).Value = "Descripcion";
-                    worksheet.Cell(1, 6).Value = "PesoMin";
-                    worksheet.Cell(1, 7).Value = "PesoMax";
-                    worksheet.Cell(1, 8).Value = "Cantidad";
-
-                    var row = 2;
-                    foreach (var articulo in Articulos)
-                    {
-                        worksheet.Cell(row, 1).Value = articulo.NoParte;
-                        worksheet.Cell(row, 2).Value = articulo.ModProceso;
-                        worksheet.Cell(row, 3).Value = articulo.Proceso;
-                        worksheet.Cell(row, 4).Value = articulo.Paso;
-                        worksheet.Cell(row, 5).Value = articulo.Descripcion;
-                        worksheet.Cell(row, 6).Value = articulo.PesoMin;
-                        worksheet.Cell(row, 7).Value = articulo.PesoMax;
-                        worksheet.Cell(row, 8).Value = articulo.Cantidad;
-                        row++;
-                    }
-
-                    workbook.Save();
+                    Articulos = new ObservableCollection<Articulo>(articulosDb);
+                    db.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar los artículos en el archivo Excel: {ex.Message}", "Error",
+                MessageBox.Show($"Error al guardar los artículos: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -370,22 +248,10 @@ namespace Scale_Program
                     Cantidad = cantidad
                 };
 
-                using (var workbook = new XLWorkbook(filePathExcel))
+                using (var db = new dc_missingpartsEntities())
                 {
-                    var worksheet = workbook.Worksheet("Articulos");
-                    var lastRow = worksheet.LastRowUsed().RowNumber();
-                    var newRow = lastRow + 1;
-
-                    worksheet.Cell(newRow, 1).Value = articulo.NoParte;
-                    worksheet.Cell(newRow, 2).Value = articulo.ModProceso;
-                    worksheet.Cell(newRow, 3).Value = articulo.Proceso;
-                    worksheet.Cell(newRow, 4).Value = articulo.Paso;
-                    worksheet.Cell(newRow, 5).Value = articulo.Descripcion;
-                    worksheet.Cell(newRow, 6).Value = articulo.PesoMin;
-                    worksheet.Cell(newRow, 7).Value = articulo.PesoMax;
-                    worksheet.Cell(newRow, 8).Value = articulo.Cantidad;
-
-                    workbook.Save();
+                    db.Articulos.Add(articulo);
+                    db.SaveChanges();
                 }
 
                 MessageBox.Show("Artículo agregado correctamente.", "Éxito", MessageBoxButton.OK,
@@ -420,43 +286,19 @@ namespace Scale_Program
                     return;
                 }
 
-                if (!File.Exists(filePathExcel))
+                using (var db = new dc_missingpartsEntities())
                 {
-                    MessageBox.Show("El archivo Excel no existe.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                using (var workbook = new XLWorkbook(filePathExcel))
-                {
-                    var worksheet = workbook.Worksheet("Articulos");
-                    var rows = worksheet.RowsUsed().Skip(1);
-
-                    var rowToDelete = rows.FirstOrDefault(row =>
-                        row.Cell(1).GetValue<string>() == selectedArticulo.NoParte &&
-                        row.Cell(2).GetValue<int>() == selectedArticulo.ModProceso &&
-                        row.Cell(3).GetValue<int>() == selectedArticulo.Proceso &&
-                        row.Cell(4).GetValue<int>() == selectedArticulo.Paso &&
-                        row.Cell(5).GetValue<string>() == selectedArticulo.Descripcion &&
-                        Math.Abs(row.Cell(6).GetValue<double>() - selectedArticulo.PesoMin) < 0.0001 &&
-                        Math.Abs(row.Cell(7).GetValue<double>() - selectedArticulo.PesoMax) < 0.0001 &&
-                        row.Cell(8).GetValue<int>() == selectedArticulo.Cantidad);
-
-                    if (rowToDelete != null)
+                    var articuloDb = db.Articulos.Find(selectedArticulo.Id);
+                    if (articuloDb != null)
                     {
-                        rowToDelete.Delete();
-                        workbook.Save();
-
-                        MessageBox.Show("Artículo eliminado correctamente.", "Éxito", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-
-                        CargarDatosArticulos();
+                        db.Articulos.Remove(articuloDb);
+                        db.SaveChanges();
                     }
-                    else
-                    {
-                        MessageBox.Show("No se encontró el artículo en el archivo Excel.", "Error", MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
+                
                 }
+                CargarDatosArticulos();
+                MessageBox.Show("Artículo eliminado correctamente.", "Éxito", MessageBoxButton.OK,
+                                       MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -465,60 +307,65 @@ namespace Scale_Program
             }
         }
 
-        private void GuardarModelosEnExcel()
+        private void GuardarModelos()
         {
             try
             {
-                using (var workbook = new XLWorkbook(filePathExcel))
+                using (var db = new dc_missingpartsEntities())
                 {
-                    var worksheet = workbook.Worksheet("Modelos");
-                    worksheet.Clear();
+                    var modProcesosEnBD = db.Modelos.Select(m => m.ModProceso).ToList();
+                    var modProcesosEnPantalla = Modelos.Select(m => m.ModProceso).ToList();
 
-                    worksheet.Cell(1, 1).Value = "NoModelo";
-                    worksheet.Cell(1, 2).Value = "ModProceso";
-                    worksheet.Cell(1, 3).Value = "Descripcion";
-                    worksheet.Cell(1, 4).Value = "UsaBascula1";
-                    worksheet.Cell(1, 5).Value = "UsaBascula2";
-                    worksheet.Cell(1, 6).Value = "UsaConteoCajas";
-                    worksheet.Cell(1, 7).Value = "CantidadCajas";
-                    worksheet.Cell(1, 8).Value = "Etapa1";
-                    worksheet.Cell(1, 9).Value = "Etapa2";
-                    worksheet.Cell(1, 10).Value = "Activo";
+                    var modProcesosAEliminar = modProcesosEnBD.Except(modProcesosEnPantalla).ToList();
 
-                    var row = 2;
-                    foreach (var modelo in Modelos)
+                    foreach (var modProceso in modProcesosAEliminar)
                     {
-                        worksheet.Cell(row, 1).Value = modelo.NoModelo;
-                        worksheet.Cell(row, 2).Value = modelo.ModProceso;
-                        worksheet.Cell(row, 3).Value = modelo.Descripcion;
-                        worksheet.Cell(row, 4).Value = modelo.UsaBascula1;
-                        worksheet.Cell(row, 5).Value = modelo.UsaBascula2;
-                        worksheet.Cell(row, 6).Value = modelo.UsaConteoCajas;
-                        worksheet.Cell(row, 7).Value = modelo.CantidadCajas;
-                        worksheet.Cell(row, 8).Value = modelo.Etapa1;
-                        worksheet.Cell(row, 9).Value = modelo.Etapa2;
-                        worksheet.Cell(row, 10).Value = modelo.Activo;
-                        row++;
+                        var modeloEliminar = db.Modelos.FirstOrDefault(m => m.ModProceso == modProceso);
+                        if (modeloEliminar != null)
+                            db.Modelos.Remove(modeloEliminar);
                     }
 
-                    workbook.Save();
+                    foreach (var modeloLocal in Modelos)
+                    {
+                        var modeloBD = db.Modelos.FirstOrDefault(m => m.ModProceso == modeloLocal.ModProceso);
+
+                        if (modeloBD != null)
+                        {
+                            modeloBD.NoModelo = modeloLocal.NoModelo;
+                            modeloBD.Descripcion = modeloLocal.Descripcion;
+                            modeloBD.UsaBascula1 = modeloLocal.UsaBascula1;
+                            modeloBD.UsaBascula2 = modeloLocal.UsaBascula2;
+                            modeloBD.UsaConteoCajas = modeloLocal.UsaConteoCajas;
+                            modeloBD.CantidadCajas = modeloLocal.CantidadCajas;
+                            modeloBD.Etapa1 = modeloLocal.Etapa1;
+                            modeloBD.Etapa2 = modeloLocal.Etapa2;
+                            modeloBD.Activo = modeloLocal.Activo;
+                        }
+                        else
+                        {
+                            db.Modelos.Add(modeloLocal);
+                        }
+                    }
+
+                    db.SaveChanges();
                 }
+
+                MessageBox.Show("Los cambios se guardaron correctamente en la base de datos.", "Éxito",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar los modelos en el archivo: {ex.Message}", "Error",
+                MessageBox.Show($"Error al guardar los modelos en la base de datos: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+
         private void BtnGuardarModelos_Click(object sender, RoutedEventArgs e)
         {
-            GuardarModelosEnExcel();
+            GuardarModelos();
             CambiosGuardados?.Invoke();
             CargarDatosArticulos();
-
-            MessageBox.Show("Cambios guardados correctamente en el archivo.", "Éxito", MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
 
         private void ckb_Bascula1_Checked(object sender, RoutedEventArgs e)
@@ -615,7 +462,7 @@ namespace Scale_Program
 
         private void btnGuardarArticulos_Click(object sender, RoutedEventArgs e)
         {
-            GuardarArticulosEnExcel();
+            GuardarArticulos();
             CargarDatosModelos();
 
             MessageBox.Show("Cambios guardados correctamente en el archivo.", "Éxito", MessageBoxButton.OK,

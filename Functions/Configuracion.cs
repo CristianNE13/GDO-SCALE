@@ -9,22 +9,30 @@ namespace Scale_Program.Functions
     public class Configuracion
     {
         public string PuertoBascula1 { get; set; }
-        public string PuertoBascula2 { get; set; }
         public int BaudRateBascula12 { get; set; }
         public string ParityBascula12 { get; set; }
         public string StopBitsBascula12 { get; set; }
         public int DataBitsBascula12 { get; set; }
-        public int EntradaSensorUnitaria { get; set; }
-        public int EntradaSensorProp65 { get; set; }
-        public int EntradaSensorMaster { get; set; }
-        public int EntradaSensorSelladora { get; set; }
-        public int SalidaDispensadoraUnitaria { get; set; }
-        public int SalidaDispensadoraProp65 { get; set; }
-        public int SalidaDispensadoraMaster { get; set; }
-        public int SalidaSelladora { get; set; }
         public string PuertoSealevel { get; set; }
         public int BaudRateSea { get; set; }
-        public string ZebraName { get; set; }
+        public string User { get; set; }
+        public bool PickToLight { get; set; }
+        public int InputPick2L0 { get; set; }
+        public int InputPick2L1 { get; set; }
+        public int InputPick2L2 { get; set; }
+        public int InputPick2L3 { get; set; }
+        public int InputPick2L4 { get; set; }
+        public int InputPick2L5 { get; set; }
+        public int InputPick2L6 { get; set; }
+        public int InputPick2L7 { get; set; }
+        public int OutputPick2L0 { get; set; }
+        public int OutputPick2L1 { get; set; }
+        public int OutputPick2L2 { get; set; }
+        public int OutputPick2L3 { get; set; }
+        public int OutputPick2L4 { get; set; }
+        public int OutputPick2L5 { get; set; }
+        public int OutputPick2L6 { get; set; }
+        public int OutputPick2L7 { get; set; }
 
         public static string RutaArchivoConf { get; } =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");

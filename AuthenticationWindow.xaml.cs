@@ -1,22 +1,26 @@
-﻿using System;
+﻿using Scale_Program.Functions;
+using System;
+using System.Linq;
 using System.Windows;
 
 namespace Scale_Program
 {
     public partial class AuthenticationWindow : Window
     {
-        private const string pass = "12345";
-        
+        private dc_missingpartsEntities db;
+        private Configuracion defaultSettings;
+
         public AuthenticationWindow()
         {
             InitializeComponent();
-
+            db = new dc_missingpartsEntities();
             this.Loaded += OnAuthenticationWindowLoaded;
         }
 
         private void OnAuthenticationWindowLoaded(object sender, RoutedEventArgs e)
         {
             txtPassword.Focus();
+            defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
         }
 
         private void OnLoginButtonClick(object sender, RoutedEventArgs e)
@@ -29,23 +33,36 @@ namespace Scale_Program
 
         private bool AuthenticateUser()
         {
-            bool succedded = false;
-
             try
             {
-                if (txtPassword.Password == pass)
-                    succedded = true;
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var usuario = db.users.FirstOrDefault(u => u.username == defaultSettings.User);
 
-                if(!succedded)
-                    ShowErroMessage("Contraseña incorrecta.");
+                    if (usuario == null)
+                    {
+                        ShowErroMessage("Usuario no encontrado.");
+                        return false;
+                    }
+
+                    if (ConfiguracionWindow.PasswordHash.VerifyPassword(txtPassword.Password, usuario.password))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        ShowErroMessage("Contraseña incorrecta.");
+                        return false;
+                    }
+                }
             }
-            catch(Exception)
+            catch (Exception)
             {
-                ShowErroMessage("Error.");
+                ShowErroMessage("Error al autenticar usuario.");
+                return false;
             }
-
-            return succedded;
         }
+
 
         private void ShowErroMessage(string message )
         {

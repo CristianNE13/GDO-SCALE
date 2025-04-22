@@ -154,7 +154,7 @@
             <Button x:Name="btnSelladora" Grid.Column="2" Content="" HorizontalAlignment="Left"
                     Margin="292,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnSelladora_Click" Visibility="Hidden">
+                    Template="{StaticResource ButtonControlTemplate1}" Visibility="Hidden">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -186,7 +186,7 @@
             <Button x:Name="btnEtiqueta" Grid.Column="2" Content="" HorizontalAlignment="Left"
                     Margin="231,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnEtiqueta_Click" Visibility="Hidden">
+                    Template="{StaticResource ButtonControlTemplate1}" Visibility="Hidden">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -211,7 +211,7 @@
             </TextBox>
             <Button x:Name="btnEtiquetaManual" Grid.Column="2" Content="" HorizontalAlignment="Left"
                     Margin="174,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584"
-                    Height="36" Width="36" BorderBrush="{x:Null}" Click="BtnEtiquetaManual_Click"
+                    Height="36" Width="36" BorderBrush="{x:Null}"
                     Template="{StaticResource ButtonControlTemplate1}"
                     Tag="off" Visibility="Hidden">
                 <Button.Foreground>
@@ -271,7 +271,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background0" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background0" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen0" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" Margin="0,-2,0,0" />
                 <Rectangle x:Name="Part_Indicator0" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -298,7 +298,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background1" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background1" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen1" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator1" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -329,7 +329,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background2" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background2" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen2" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator2" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -356,7 +356,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background3" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background3" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen3" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator3" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -383,7 +383,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background4" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background4" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen4" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator4" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -410,7 +410,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background5" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background5" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen5" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator5" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -437,7 +437,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background6" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background6" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen6" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator6" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -464,7 +464,7 @@
                     <RowDefinition Height="118*" />
                     <RowDefinition Height="56*" />
                 </Grid.RowDefinitions>
-                <Rectangle x:Name="Part_Background7" Fill="#FF353535" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
+                <Rectangle x:Name="Part_Background7" Fill="#FFFFFFFF" Stroke="#FFE2E2E2" Grid.RowSpan="3" />
                 <Image x:Name="Part_Imagen7" Source="Content/img/Picture.png" Margin="0,55,0.333,29" Grid.RowSpan="2" />
                 <Rectangle Fill="#FFDEDEE2" Stroke="#FFE2E2E2" Height="53" VerticalAlignment="Top" />
                 <Rectangle x:Name="Part_Indicator7" Fill="#FFB20000" Stroke="#FFE2E2E2" Grid.Row="2" Height="56"
@@ -492,13 +492,12 @@
         </TextBlock>
 
         <Rectangle x:Name="recValidacion" Fill="#FFFEE141" Height="290" Stroke="Black"
-                   Width="676" RadiusY="2" RadiusX="2" Panel.ZIndex="10" Visibility="Hidden" VerticalAlignment="Bottom"
-                   HorizontalAlignment="Right" Grid.Column="4"
-                   Grid.Row="2"
-                   Margin="0,0,75,75" />
+                   Width="676" RadiusY="2" RadiusX="2" Panel.ZIndex="10" Visibility="Hidden" VerticalAlignment="Top"
+                   HorizontalAlignment="Center"
+                   Margin="0,286,0,0" />
         <Grid x:Name="grdValidacion" Height="290"
-              VerticalAlignment="Bottom" Width="676" Panel.ZIndex="11" Visibility="Hidden" Grid.Row="2" Grid.Column="4"
-              HorizontalAlignment="Right" Margin="0,0,75,75">
+              VerticalAlignment="Top" Width="676" Panel.ZIndex="11" Visibility="Hidden"
+              HorizontalAlignment="Center" Margin="0,286,0,0">
             <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO" HorizontalAlignment="Left"
                      VerticalAlignment="Top" FontSize="32" Width="616" Foreground="Red"
                      FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,0,0"
@@ -531,10 +530,13 @@
             <TextBox x:Name="txbScanner" Visibility="Hidden" HorizontalAlignment="Left" Margin="115,0,0,0"
                      TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="450" Height="38"
                      Background="#FFFFFADB" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                     FontSize="25" KeyDown="TxbScanner_KeyDown" />
+                     FontSize="25" />
             <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
                     VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
                     RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
+            <Button x:Name="btnRechazo_Copy" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
+                VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
+                RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
         </Grid>
         <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
                  d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />

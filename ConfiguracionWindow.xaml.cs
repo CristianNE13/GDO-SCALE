@@ -2,9 +2,12 @@
 using System.Drawing.Printing;
 using System.IO;
 using System.IO.Ports;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Xml.Serialization;
 using Scale_Program.Functions;
 
@@ -15,6 +18,8 @@ namespace Scale_Program
         private readonly BasculaFunc bascula1 = new BasculaFunc();
         private readonly BasculaFunc bascula2 = new BasculaFunc();
         private readonly PuertosFunc ports = new PuertosFunc();
+        private readonly int MinLenght = 5;
+        private int MaxPick2Light = 8;
 
 
         public ConfiguracionWindow()
@@ -52,29 +57,16 @@ namespace Scale_Program
             bascula1.EnviarComandoABascula("ZRO");
         }
 
-        private void btnZero_2_Click(object sender, RoutedEventArgs e)
-        {
-            bascula2.EnviarComandoABascula("ZRO");
-        }
-
         private void InicializarComboBox(int maxInputs, int maxOutputs)
         {
-            LlenarComboBox(cboxOutputUnitaria, maxOutputs);
-            LlenarComboBox(cboxOutputProp65, maxOutputs);
-            LlenarComboBox(cboxInputUnitaria, maxInputs);
-            LlenarComboBox(cboxInputProp65, maxInputs);
-            LlenarComboBox(cboxInputMaster, maxInputs);
-            LlenarComboBox(cboxOutputMaster, maxOutputs);
-            LlenarComboBox(cboxOutputSelladora, maxInputs);
-            LlenarComboBox(cboxInputSelladora, maxInputs);
+            for (int i = 0; i < MaxPick2Light; i++)
+            {
+                if (FindName($"cboxInputPick2L{i}") is ComboBox comboIn)
+                    LlenarComboBox(comboIn,maxInputs);
 
-            cboxOutputUnitaria.SelectedIndex = 0;
-            cboxOutputProp65.SelectedIndex = 1;
-            cboxOutputProp65.SelectedIndex = 2;
-            cboxInputUnitaria.SelectedIndex = 0;
-            cboxInputProp65.SelectedIndex = 1;
-            cboxInputMaster.SelectedIndex = 2;
-            cboxOutputSelladora.SelectedIndex = 3;
+                if (FindName($"cboxOutputPick2L{i}") is ComboBox comboOut)
+                    LlenarComboBox(comboOut,maxOutputs);
+            }
         }
 
         private void LlenarComboBox(ComboBox comboBox, int maxItems)
@@ -97,16 +89,12 @@ namespace Scale_Program
             }
 
             AgregarPuertosAComboBox(cboxScalePort_1);
-            AgregarPuertosAComboBox(cboxScalePort_2);
             AgregarPuertosAComboBox(cboxPortSeaLevel);
 
             if (puertos.Count > 0) cboxScalePort_1.SelectedIndex = 0;
 
             if (puertos.Count > 1)
-            {
-                cboxScalePort_2.SelectedIndex = 1;
                 cboxPortSeaLevel.SelectedIndex = 1;
-            }
         }
 
         private void MostrarVentanaDeError(string titulo, string mensaje)
@@ -162,22 +150,30 @@ namespace Scale_Program
                 var configuracion = new Configuracion
                 {
                     PuertoBascula1 = cboxScalePort_1.Text,
-                    PuertoBascula2 = cboxScalePort_2.Text,
                     BaudRateBascula12 = 9600,
                     ParityBascula12 = Parity.None.ToString(),
                     StopBitsBascula12 = StopBits.One.ToString(),
                     DataBitsBascula12 = 8,
-                    EntradaSensorUnitaria = cboxInputUnitaria.SelectedIndex,
-                    EntradaSensorProp65 = cboxInputProp65.SelectedIndex,
-                    EntradaSensorMaster = cboxInputMaster.SelectedIndex,
-                    EntradaSensorSelladora = cboxInputSelladora.SelectedIndex,
-                    SalidaDispensadoraMaster = cboxOutputMaster.SelectedIndex,
-                    SalidaDispensadoraUnitaria = cboxOutputUnitaria.SelectedIndex,
-                    SalidaDispensadoraProp65 = cboxOutputProp65.SelectedIndex,
-                    SalidaSelladora = cboxOutputSelladora.SelectedIndex,
+                    User = txbUser.Text,
+                    PickToLight = chboxEnablePick2Light.IsChecked ?? false,
+                    InputPick2L0 = cboxInputPick2L0.SelectedIndex,
+                    InputPick2L1 = cboxInputPick2L1.SelectedIndex,
+                    InputPick2L2 = cboxInputPick2L2.SelectedIndex,
+                    InputPick2L3 = cboxInputPick2L3.SelectedIndex,
+                    InputPick2L4 = cboxInputPick2L4.SelectedIndex,
+                    InputPick2L5 = cboxInputPick2L5.SelectedIndex,
+                    InputPick2L6 = cboxInputPick2L6.SelectedIndex,
+                    InputPick2L7 = cboxInputPick2L7.SelectedIndex,
+                    OutputPick2L0 = cboxOutputPick2L0.SelectedIndex,
+                    OutputPick2L1 = cboxOutputPick2L1.SelectedIndex,
+                    OutputPick2L2 = cboxOutputPick2L2.SelectedIndex,
+                    OutputPick2L3 = cboxOutputPick2L3.SelectedIndex,
+                    OutputPick2L4 = cboxOutputPick2L4.SelectedIndex,
+                    OutputPick2L5 = cboxOutputPick2L5.SelectedIndex,
+                    OutputPick2L6 = cboxOutputPick2L6.SelectedIndex,
+                    OutputPick2L7 = cboxOutputPick2L7.SelectedIndex,
                     PuertoSealevel = cboxPortSeaLevel.Text,
                     BaudRateSea = int.TryParse(cboxBaudSea.Text, out var baudRate) ? baudRate : 9600,
-                    ZebraName = txbZebra.Text
                 };
 
                 var serializer = new XmlSerializer(typeof(Configuracion));
@@ -212,20 +208,25 @@ namespace Scale_Program
                     if (configuracion != null)
                     {
                         cboxScalePort_1.Text = configuracion.PuertoBascula1;
-                        cboxScalePort_2.Text = configuracion.PuertoBascula2;
-
-                        cboxInputUnitaria.SelectedIndex = configuracion.EntradaSensorUnitaria;
-                        cboxInputProp65.SelectedIndex = configuracion.EntradaSensorProp65;
-                        cboxInputMaster.SelectedIndex = configuracion.EntradaSensorMaster;
-                        cboxInputSelladora.SelectedIndex = configuracion.EntradaSensorSelladora;
-
-                        cboxOutputProp65.SelectedIndex = configuracion.SalidaDispensadoraProp65;
-                        cboxOutputUnitaria.SelectedIndex = configuracion.SalidaDispensadoraUnitaria;
-                        cboxOutputMaster.SelectedIndex = configuracion.SalidaDispensadoraMaster;
-                        cboxOutputSelladora.SelectedIndex = configuracion.SalidaSelladora;
-
                         cboxPortSeaLevel.Text = configuracion.PuertoSealevel;
-                        txbZebra.Text = configuracion.ZebraName;
+
+                        cboxInputPick2L0.Text = configuracion.InputPick2L0.ToString();
+                        cboxInputPick2L1.Text = configuracion.InputPick2L1.ToString();
+                        cboxInputPick2L2.Text = configuracion.InputPick2L2.ToString();
+                        cboxInputPick2L3.Text = configuracion.InputPick2L3.ToString();
+                        cboxInputPick2L4.Text = configuracion.InputPick2L4.ToString();
+                        cboxInputPick2L5.Text = configuracion.InputPick2L5.ToString();
+                        cboxInputPick2L6.Text = configuracion.InputPick2L6.ToString();
+                        cboxInputPick2L7.Text = configuracion.InputPick2L7.ToString();
+
+                        cboxOutputPick2L0.Text = configuracion.OutputPick2L0.ToString();
+                        cboxOutputPick2L1.Text = configuracion.OutputPick2L1.ToString();
+                        cboxOutputPick2L2.Text = configuracion.OutputPick2L2.ToString();
+                        cboxOutputPick2L3.Text = configuracion.OutputPick2L3.ToString();
+                        cboxOutputPick2L4.Text = configuracion.OutputPick2L4.ToString();
+                        cboxOutputPick2L5.Text = configuracion.OutputPick2L5.ToString();
+                        cboxOutputPick2L6.Text = configuracion.OutputPick2L6.ToString();
+                        cboxOutputPick2L7.Text = configuracion.OutputPick2L7.ToString();
 
                         foreach (ComboBoxItem item in cboxBaudSea.Items)
                             if (item.Content.ToString() == configuracion.BaudRateSea.ToString())
@@ -263,15 +264,6 @@ namespace Scale_Program
                     bascula1.OnDataReady += Bascula1_OnDataReady;
                 }
 
-                if (cboxScalePort_2.SelectedIndex >= 0)
-                {
-                    bascula2.AsignarPuertoBascula(new SerialPort(cboxScalePort_2.Text, 9600, Parity.None, 8,
-                        StopBits.One));
-                    bascula2.OpenPort();
-                    bascula2.AsignarControles(Dispatcher);
-                    bascula2.OnDataReady += Bascula2_OnDataReady;
-                }
-
                 MessageBox.Show("Conexión exitosa a las básculas.", "Éxito", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -297,16 +289,6 @@ namespace Scale_Program
             });
         }
 
-        private void Bascula2_OnDataReady(object sender, BasculaEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var weight = e.Value;
-                var isStable = e.IsStable;
-                listLogEntries_2.Items.Add($"Peso: {weight} kg - Estable: {isStable}");
-            });
-        }
-
         private void cboxUnidades_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
@@ -324,22 +306,109 @@ namespace Scale_Program
                 }
         }
 
-        private void cboxUnidades2_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void btnChangePassword_Click(object sender, RoutedEventArgs e)
+        { 
+            ChangePassword();
+        }
+
+        private void ChangePassword()
         {
-            if (e.AddedItems.Count > 0)
-
-                if (e.AddedItems[0] is ComboBoxItem nuevoItem)
+            try
+            {
+                using (var db = new dc_missingpartsEntities())
                 {
-                    var nuevaSeleccion = nuevoItem.Content.ToString();
 
-                    if (bascula2.GetPuerto() != null && bascula2.GetPuerto().IsOpen)
+                    user usuario = db.users.FirstOrDefault(s => s.username == txbUser.Text);
+
+                    if (PasswordHash.VerifyPassword(txtPassword.Password, usuario.password))
                     {
-                        if (nuevaSeleccion == "lb")
-                            bascula2.EnviarComandoABascula("UNP");
-                        else if (nuevaSeleccion == "kg")
-                            bascula2.EnviarComandoABascula("UNS");
+                        if (txtNewPassword.Password.Length < MinLenght)
+                        {
+                            MessageBox.Show($"La contraseña debe tener al menos {MinLenght} caracteres.", "Error");
+                            txtNewPassword.Focus();
+                        }
+                        else if (txtPassword.Password == txtNewPassword.Password)
+                        {
+                            MessageBox.Show("La nueva contraseña no debe ser igual a la anterior.", "Error");
+                            txtPassword.Focus();
+                        }
+                        else if (txtNewPassword.Password != txtPasswordConfirmation.Password)
+                        {
+                            MessageBox.Show("La nueva contraseña no coincide con la confirmación.", "Error");
+                            txtPasswordConfirmation.Focus();
+                        }
+                        else
+                        {
+                            usuario.password = PasswordHash.CreateHash(txtNewPassword.Password);
+                            db.SaveChanges();
+
+                            lblSuccess.Visibility = Visibility.Visible;
+
+                            txtPassword.Clear();
+                            txtNewPassword.Clear();
+                            txtPasswordConfirmation.Clear();
+                            txtPassword.Focus();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Contraseña actual incorrecta.", "Error");
+                        txtPassword.Focus();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message}", "Error");
+            }
+        }
+
+        public static class PasswordHash
+        {
+            private const int SaltSize = 16;
+            private const int KeySize = 32;
+            private const int Iterations = 10000;
+
+            public static string CreateHash(string password)
+            {
+                using (var rng = new RNGCryptoServiceProvider())
+                {
+                    byte[] salt = new byte[SaltSize];
+                    rng.GetBytes(salt);
+
+                    using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
+                    {
+                        byte[] key = pbkdf2.GetBytes(KeySize);
+                        var hashBytes = new byte[SaltSize + KeySize];
+                        Array.Copy(salt, 0, hashBytes, 0, SaltSize);
+                        Array.Copy(key, 0, hashBytes, SaltSize, KeySize);
+                        return Convert.ToBase64String(hashBytes);
                     }
                 }
+            }
+
+            public static bool VerifyPassword(string password, string hashedPassword)
+            {
+                var hashBytes = Convert.FromBase64String(hashedPassword);
+
+                byte[] salt = new byte[SaltSize];
+                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
+                {
+                    byte[] key = pbkdf2.GetBytes(KeySize);
+
+                    for (int i = 0; i < KeySize; i++)
+                    {
+                        if (hashBytes[i + SaltSize] != key[i])
+                            return false;
+                    }
+
+                    return true;
+                }
+            }
         }
+
     }
 }

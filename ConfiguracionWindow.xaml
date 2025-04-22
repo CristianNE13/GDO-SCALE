@@ -30,9 +30,8 @@
                    Height="54" FontFamily="Open Sans" FontSize="33.333" Width="268" FontWeight="Bold"
                    Foreground="White" />
         </Grid>
-        <TabControl Margin="20,20,20,5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="1"
-                    Grid.ColumnSpan="2">
-            <TabItem Header="Bascula-1">
+        <TabControl Margin="20,20,20,63" Grid.Row="1" Grid.RowSpan="2">
+            <TabItem Header="Bascula">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="155*" />
@@ -75,52 +74,7 @@
                             Background="#FFF9F9F9" Grid.Column="1" Click="btnConectar_Click" FontSize="18" />
                 </Grid>
             </TabItem>
-            <TabItem Header="Bascula-2">
-                <Grid Background="#FFE5E5E5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="155*" />
-                        <ColumnDefinition Width="461*" />
-                    </Grid.ColumnDefinitions>
-                    <!--  -->
-                    <Label x:Name="lblPuerto_2" Content="Puerto:" HorizontalAlignment="Left" Margin="15,49,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="140"
-                           Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxScalePort_2"
-                              HorizontalAlignment="Left" Margin="125,48,0,0" VerticalAlignment="Top" Width="229"
-                              Height="32" Background="White" SelectedIndex="1" FontSize="18" Grid.ColumnSpan="2"
-                              FontFamily="Arial" />
-
-                    <!--  -->
-                    <Label x:Name="lblFormato_2" Content="Unidades:" HorizontalAlignment="Left" Margin="15,101,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="140"
-                           Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxUnidades2" HorizontalAlignment="Left" Margin="125,101,0,0"
-                              VerticalAlignment="Top" Width="229" Height="32" Background="White" FontSize="18"
-                              Grid.ColumnSpan="2" SelectedIndex="0" FontFamily="Arial"
-                              SelectionChanged="cboxUnidades2_SelectionChanged">
-                        <ComboBoxItem Content="lb" />
-                        <ComboBoxItem Content="kg" />
-                    </ComboBox>
-
-                    <Button x:Name="btnZero_2" Content="ZERO" HorizontalAlignment="Left" Margin="324.345,194,0,0"
-                            VerticalAlignment="Top" Width="127" Height="48"
-                            Background="#FFF9F9F9" Grid.Column="1" Click="btnZero_2_Click" FontFamily="Arial"
-                            FontSize="18" />
-
-                    <Button x:Name="btnConectar2" Content="Conectar" HorizontalAlignment="Left" Margin="325,456,0,0"
-                            VerticalAlignment="Top" Width="127" Height="48"
-                            Background="#FFF9F9F9" Grid.Column="1" Click="btnConectar_Click" FontSize="18" />
-
-                    <!-- Scale comm log -->
-                    <Label x:Name="lblLectura_2" Content="Lectura:" HorizontalAlignment="Left" Margin="15,162,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="175"
-                           Grid.ColumnSpan="2" />
-                    <ListBox Name="listLogEntries_2" HorizontalAlignment="Left" Height="310" Margin="18,194,0,0"
-                             VerticalAlignment="Top" Width="451" FontFamily="Courier New" FontSize="12"
-                             Grid.ColumnSpan="2" />
-                </Grid>
-            </TabItem>
-            <TabItem Header="SeaLevel - Zebra">
+            <TabItem Header="SeaLevel">
                 <Grid Background="#FFE5E5E5">
                     <Label x:Name="lblPuertoES" Content="Puerto Sealevel:" HorizontalAlignment="Left"
                            Margin="30,24,0,0"
@@ -128,48 +82,28 @@
                     <ComboBox x:Name="cboxPortSeaLevel" HorizontalAlignment="Left" Margin="181,24,0,0"
                               VerticalAlignment="Top" Width="113" Height="32" Background="White" SelectedIndex="1"
                               FontSize="18" FontFamily="Arial" />
-                    <Label Content="Dispensadora unitaria" HorizontalAlignment="Left" Margin="25,133,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="196" />
-                    <ComboBox x:Name="cboxOutputUnitaria" HorizontalAlignment="Left" Margin="238,133,0,0"
-                              VerticalAlignment="Top" Width="98" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="Sensor D. unitaria" HorizontalAlignment="Left" Margin="25,268,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxInputUnitaria" HorizontalAlignment="Left" Margin="195,268,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="Sensor D. prop65" HorizontalAlignment="Left" Margin="25,309,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
-                           Visibility="Visible" />
-                    <ComboBox x:Name="cboxInputProp65" HorizontalAlignment="Left" Margin="195,309,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label x:Name="lblInputs" Content="Asignación de Entradas" Margin="0,222,30,0"
+                    <Label x:Name="lblInputs" Content="Asignación de Entradas" Margin="26,279,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="21.333" Height="35"
+                           Foreground="#FF005288" FontWeight="Bold" BorderBrush="Black" BorderThickness="0,0,0,1"
+                           HorizontalAlignment="Left" Width="570" />
+                    <Label x:Name="lblOutputs" Content="Asignación de Salidas" Margin="0,65,30,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="21.333" Height="35"
                            Foreground="#FF005288" FontWeight="Bold" BorderBrush="Black" BorderThickness="0,0,0,1"
                            HorizontalAlignment="Right" Width="570" />
-                    <Label x:Name="lblOutputs" Content="Asignación de Salidas" Margin="0,87,30,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="21.333" Height="35"
-                           Foreground="#FF005288" FontWeight="Bold" BorderBrush="Black" BorderThickness="0,0,0,1"
-                           HorizontalAlignment="Right" Width="570" />
-                    <Label Content="Dispensadora prop65" HorizontalAlignment="Left" Margin="25,177,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="196" />
-                    <ComboBox x:Name="cboxOutputProp65" HorizontalAlignment="Left" Margin="238,177,0,0"
-                              VerticalAlignment="Top" Width="98" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
                     <Label x:Name="lblZebra" Content="Zebra" Margin="0,374,30,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="21.333" Height="35"
                            Foreground="#FF005288" FontWeight="Bold" BorderBrush="Black" BorderThickness="0,0,0,1"
-                           HorizontalAlignment="Right" Width="570" />
+                           HorizontalAlignment="Right" Width="570" Visibility="Hidden" />
                     <Label x:Name="lblPuertoZebra" Content="Nombre de impresora Zebra:" HorizontalAlignment="Left"
                            Margin="30,423,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="264" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="264"
+                           Visibility="Hidden" />
                     <Button x:Name="btPrintTest" Content="Test Print" HorizontalAlignment="Left" Margin="195,466,0,0"
                             VerticalAlignment="Top" Width="204" Height="41" IsDefault="True" TabIndex="8"
-                            Click="btPrintTest_Click" />
+                            Click="btPrintTest_Click" Visibility="Hidden" />
                     <TextBox x:Name="txbZebra" HorizontalAlignment="Left" Margin="294,422,0,0" TextWrapping="Wrap"
                              Text="" VerticalAlignment="Top" Width="256" Height="34" VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center" />
+                             HorizontalContentAlignment="Center" Visibility="Hidden" />
                     <Label x:Name="lblBaudSea" Content="Baudrate Sealevel:" HorizontalAlignment="Left"
                            Margin="315,24,0,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="170" />
@@ -183,37 +117,198 @@
                         <ComboBoxItem Content="57600" />
                         <ComboBoxItem Content="115200" />
                     </ComboBox>
-                    <Label Content="Sensor D. master" HorizontalAlignment="Left" Margin="318,268,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="210"
-                           Visibility="Visible" />
-                    <ComboBox x:Name="cboxInputMaster" HorizontalAlignment="Left" Margin="480,268,0,0"
-                              VerticalAlignment="Top" Width="126" Height="32" Background="White" FontSize="18"
+                    <Label Content="PickToLight 0:" HorizontalAlignment="Left" Margin="48,108,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L0" HorizontalAlignment="Left" Margin="218,108,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
-                    <Label Content="Dispensadora master" HorizontalAlignment="Left" Margin="338,133,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="205" />
-                    <ComboBox x:Name="cboxOutputMaster" HorizontalAlignment="Left" Margin="528,133,0,0"
-                              VerticalAlignment="Top" Width="78" Height="32" Background="White" FontSize="18"
+                    <Label Content="PickToLight 1:" HorizontalAlignment="Left" Margin="333,108,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L1" HorizontalAlignment="Left" Margin="503,108,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
-                    <Label Content="Selladora" HorizontalAlignment="Left" Margin="341,177,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="205" />
-                    <ComboBox x:Name="cboxOutputSelladora" HorizontalAlignment="Left" Margin="452,177,0,0"
-                              VerticalAlignment="Top" Width="154" Height="32" Background="White" FontSize="18"
+                    <Label Content="PickToLight 2:" HorizontalAlignment="Left" Margin="48,146,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L2" HorizontalAlignment="Left" Margin="218,145,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
-                    <Label Content="Sensor selladora" HorizontalAlignment="Left" Margin="318,309,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="210"
-                           Visibility="Visible" />
-                    <ComboBox x:Name="cboxInputSelladora" HorizontalAlignment="Left" Margin="480,309,0,0"
-                              VerticalAlignment="Top" Width="126" Height="32" Background="White" FontSize="18"
+                    <Label Content="PickToLight 3:" HorizontalAlignment="Left" Margin="333,145,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L3" HorizontalAlignment="Left" Margin="503,145,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
+                    <Label Content="PickToLight 4:" HorizontalAlignment="Left" Margin="48,182,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L4" HorizontalAlignment="Left" Margin="218,182,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 5:" HorizontalAlignment="Left" Margin="333,182,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L5" HorizontalAlignment="Left" Margin="503,182,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 6:" HorizontalAlignment="Left" Margin="48,219,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L6" HorizontalAlignment="Left" Margin="218,219,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 7:" HorizontalAlignment="Left" Margin="333,219,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxOutputPick2L7" HorizontalAlignment="Left" Margin="503,219,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 0:" HorizontalAlignment="Left" Margin="25,336,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L0" HorizontalAlignment="Left" Margin="195,336,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label x:Name="lblPick2Light" Content="Pick2Light:" HorizontalAlignment="Left" Margin="224,494,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="174"
+                           RenderTransformOrigin="0.514,2.328" />
+                    <CheckBox x:Name="chboxEnablePick2Light" Content="Habilitar" HorizontalAlignment="Left"
+                              Margin="332,499,0,0" VerticalAlignment="Top" FontSize="18" Height="22" Width="98"
+                              RenderTransformOrigin="0.49,1.029" HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Center" />
+                    <Label Content="PickToLight 1:" HorizontalAlignment="Left" Margin="310,336,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L1" HorizontalAlignment="Left" Margin="480,336,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 2:" HorizontalAlignment="Left" Margin="25,374,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L2" HorizontalAlignment="Left" Margin="195,373,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 3:" HorizontalAlignment="Left" Margin="310,373,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L3" HorizontalAlignment="Left" Margin="480,373,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 4:" HorizontalAlignment="Left" Margin="25,410,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L4" HorizontalAlignment="Left" Margin="195,410,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 5:" HorizontalAlignment="Left" Margin="310,410,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L5" HorizontalAlignment="Left" Margin="480,410,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 6:" HorizontalAlignment="Left" Margin="25,446,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L6" HorizontalAlignment="Left" Margin="195,446,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="PickToLight 7:" HorizontalAlignment="Left" Margin="310,446,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                    <ComboBox x:Name="cboxInputPick2L7" HorizontalAlignment="Left" Margin="480,446,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Ajustes - Contraseña">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="310" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Grid Contraseña -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10" Grid.RowSpan="2">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="50" />
+                                <RowDefinition Height="50" />
+                                <RowDefinition Height="50" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="50" />
+                                <RowDefinition Height="50" />
+                                <RowDefinition Height="70" />
+                                <RowDefinition Height="70*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="15" />
+                                <ColumnDefinition Width="200*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Content="Contraseña" Grid.Column="0" Grid.ColumnSpan="4" Margin="10,8"
+                                   FontFamily="Arial" FontSize="21.333" Height="34" Foreground="#FF005288"
+                                   FontWeight="Bold" BorderBrush="Black" BorderThickness="0,0,0,1"
+                                   HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+
+                            <Label Content="Contraseña" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"
+                                   HorizontalAlignment="Right" Margin="0,0" FontFamily="Arial" FontSize="18.667"
+                                   Height="32" />
+                            <Label Content="*" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"
+                                   HorizontalAlignment="Left" Margin="0,11" Foreground="Red" />
+                            <PasswordBox Name="txtPassword" PasswordChar="*" Grid.Column="2" Grid.Row="1"
+                                         VerticalAlignment="Center" HorizontalAlignment="Left" Width="300" Margin="0,7"
+                                         FontSize="24" TabIndex="4" />
+
+                            <Label Content="Nueva Contraseña" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"
+                                   HorizontalAlignment="Right" Margin="0,0" FontFamily="Arial" FontSize="18.667"
+                                   Height="32" />
+                            <Label Content="*" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"
+                                   HorizontalAlignment="Left" Margin="0,11" Foreground="Red" />
+                            <PasswordBox Name="txtNewPassword" PasswordChar="*" Grid.Row="2" Grid.Column="2"
+                                         VerticalAlignment="Center" HorizontalAlignment="Left" Width="300"
+                                         FontSize="24" TabIndex="5" />
+
+                            <Label Content="Confirmación" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"
+                                   HorizontalAlignment="Right" Margin="0,0" FontFamily="Arial" FontSize="18.667"
+                                   Height="32" />
+                            <Label Content="*" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center"
+                                   HorizontalAlignment="Left" Margin="0,11" Foreground="Red" />
+                            <PasswordBox Name="txtPasswordConfirmation" PasswordChar="*" Grid.Row="4" Grid.Column="3"
+                                         VerticalAlignment="Center" HorizontalAlignment="Left" Width="300" Margin="0,7"
+                                         FontSize="24" TabIndex="6" />
+
+                            <Border Name="boxSuccess" Visibility="Hidden" Grid.Row="5" Grid.ColumnSpan="3"
+                                    Panel.ZIndex="10" Margin="10" Background="#FFB0F7A4" Opacity="0.85"
+                                    BorderBrush="#FF063E03" BorderThickness="2" CornerRadius="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="32*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Source="Content/img/icon-checkmark-32.png"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Width="32"
+                                           Height="32" />
+                                    <Label Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                           FontSize="24" Foreground="#FF063E03">
+                                        Contraseña modificada exitosamente.
+                                    </Label>
+                                </Grid>
+                            </Border>
+                            <Label Name="lblSuccess" Visibility="Hidden" Grid.Column="0" Grid.ColumnSpan="3"
+                                   Grid.Row="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Center" Height="30" Background="#FF4ED154">
+                                Se Actualizo la Contraseña con exito!
+                            </Label>
+                            <Button Name="btnChangePassword" Grid.Row="6" Grid.Column="2" Content="Cambiar Contraseña"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Width="206" Height="48"
+                                    Margin="0,10,121,0" TabIndex="7" Click="btnChangePassword_Click" />
+                            <TextBox x:Name="txbUser" Grid.Column="2" Text="admin"
+                                     VerticalAlignment="Top" HorizontalAlignment="Left" Width="259"
+                                     FontSize="24" TabIndex="4" Margin="150,8,0,0" TextWrapping="Wrap" TextAlignment="Center" />
+                            <Label Content="User:" Grid.Column="2" VerticalAlignment="Center"
+                                HorizontalAlignment="Left" Margin="98,0,0,0" FontFamily="Arial" FontSize="18.667"
+                                Height="32" />
+                        </Grid>
+                    </Grid>
                 </Grid>
             </TabItem>
         </TabControl>
 
-        <Button x:Name="btnCancel" Content="Cancelar" HorizontalAlignment="Right" Margin="0,0,22,18"
-                VerticalAlignment="Bottom" Width="158" Height="48" Grid.Column="1" Grid.Row="2" IsCancel="True"
+        <Button x:Name="btnCancel" Content="Cancelar" HorizontalAlignment="Right" Margin="0,0,22,10"
+                VerticalAlignment="Bottom" Width="158" Height="48" Grid.Row="2" IsCancel="True"
                 Click="OnCancelButtonClick" TabIndex="9" />
-        <Button x:Name="btnSave" Content="Guardar" HorizontalAlignment="Right" Margin="0,0,202,18"
-                VerticalAlignment="Bottom" Width="158" Height="48" Grid.Column="1" Grid.Row="2" IsDefault="True"
+        <Button x:Name="btnSave" Content="Guardar" HorizontalAlignment="Right" Margin="0,0,202,10"
+                VerticalAlignment="Bottom" Width="158" Height="48" Grid.Row="2" IsDefault="True"
                 Click="OnSaveButtonClick" TabIndex="8" />
     </Grid>
 

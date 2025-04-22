@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Scale_Program.Functions;
 
 namespace Scale_Program
@@ -46,9 +44,16 @@ namespace Scale_Program
 
             using (var db = new dc_missingpartsEntities())
             {
+                var modelosDb = db.Modelos
+                    .Where(m => m.Activo)
+                    .Select(m => m.ModProceso)
+                    .ToList();
+
                 var articulosDb = db.Articulos
+                    .Where(articulo => modelosDb.Contains(articulo.ModProceso))
                     .OrderBy(m => m.ModProceso)
-                    .ThenBy(p => p.Paso)
+                    .ThenBy(p => p.Proceso)
+                    .ThenBy(s => s.Paso)
                     .ToList();
 
                 Articulos = new ObservableCollection<Articulo>(articulosDb);
@@ -170,17 +175,44 @@ namespace Scale_Program
         {
             try
             {
-
                 using (var db = new dc_missingpartsEntities())
                 {
-                    var articulosDb = db.Articulos
-                        .OrderBy(m => m.ModProceso)
-                        .ThenBy(p => p.Paso)
-                        .ToList();
+                    var idsEnBD = db.Articulos.Select(a => a.Id).ToList();
+                    var idsEnPantalla = Articulos.Select(a => a.Id).ToList();
 
-                    Articulos = new ObservableCollection<Articulo>(articulosDb);
+                    var idsAEliminar = idsEnBD.Except(idsEnPantalla).ToList();
+
+                    foreach (var id in idsAEliminar)
+                    {
+                        var articuloEliminar = db.Articulos.FirstOrDefault(a => a.Id == id);
+                        if (articuloEliminar != null)
+                            db.Articulos.Remove(articuloEliminar);
+                    }
+
+                    foreach (var articuloLocal in Articulos)
+                    {
+                        var articuloBD = db.Articulos.FirstOrDefault(a => a.Id == articuloLocal.Id);
+
+                        if (articuloBD != null)
+                        {
+                            articuloBD.NoParte = articuloLocal.NoParte;
+                            articuloBD.ModProceso = articuloLocal.ModProceso;
+                            articuloBD.Proceso = articuloLocal.Proceso;
+                            articuloBD.Paso = articuloLocal.Paso;
+                            articuloBD.Descripcion = articuloLocal.Descripcion;
+                            articuloBD.PesoMin = articuloLocal.PesoMin;
+                            articuloBD.PesoMax = articuloLocal.PesoMax;
+                            articuloBD.Cantidad = articuloLocal.Cantidad;
+                        }
+                        else
+                            db.Articulos.Add(articuloLocal);
+                    }
+
                     db.SaveChanges();
                 }
+
+                MessageBox.Show("Los artículos se guardaron correctamente en la base de datos.", "Éxito",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -313,22 +345,15 @@ namespace Scale_Program
             {
                 using (var db = new dc_missingpartsEntities())
                 {
-                    var modProcesosEnBD = db.Modelos.Select(m => m.ModProceso).ToList();
-                    var modProcesosEnPantalla = Modelos.Select(m => m.ModProceso).ToList();
+                    var modelosBD = db.Modelos.ToList();
+                    var idsPantalla = Modelos.Select(m => m.Id).ToHashSet();
 
-                    var modProcesosAEliminar = modProcesosEnBD.Except(modProcesosEnPantalla).ToList();
-
-                    foreach (var modProceso in modProcesosAEliminar)
-                    {
-                        var modeloEliminar = db.Modelos.FirstOrDefault(m => m.ModProceso == modProceso);
-                        if (modeloEliminar != null)
-                            db.Modelos.Remove(modeloEliminar);
-                    }
+                    var modelosAEliminar = modelosBD.Where(m => !idsPantalla.Contains(m.Id)).ToList();
+                    db.Modelos.RemoveRange(modelosAEliminar);
 
                     foreach (var modeloLocal in Modelos)
                     {
-                        var modeloBD = db.Modelos.FirstOrDefault(m => m.ModProceso == modeloLocal.ModProceso);
-
+                        var modeloBD = modelosBD.FirstOrDefault(m => m.Id == modeloLocal.Id);
                         if (modeloBD != null)
                         {
                             modeloBD.NoModelo = modeloLocal.NoModelo;
@@ -342,13 +367,12 @@ namespace Scale_Program
                             modeloBD.Activo = modeloLocal.Activo;
                         }
                         else
-                        {
                             db.Modelos.Add(modeloLocal);
-                        }
                     }
 
                     db.SaveChanges();
                 }
+
 
                 MessageBox.Show("Los cambios se guardaron correctamente en la base de datos.", "Éxito",
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -464,9 +488,6 @@ namespace Scale_Program
         {
             GuardarArticulos();
             CargarDatosModelos();
-
-            MessageBox.Show("Cambios guardados correctamente en el archivo.", "Éxito", MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
     }
 }

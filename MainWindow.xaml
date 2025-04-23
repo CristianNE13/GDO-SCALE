@@ -532,11 +532,14 @@
                      Background="#FFFFFADB" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                      FontSize="25" />
             <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
-                    VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
+                    VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
                     RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
-            <Button x:Name="btnRechazo_Copy" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
-                VerticalAlignment="Top" Width="210" Height="53" Background="{x:Null}" FontSize="24"
-                RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
+            <Button x:Name="btnIniciarZero" Content="Iniciar" HorizontalAlignment="Left" Margin="235,191,0,0"
+                VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
+                RenderTransformOrigin="0.378,4.807" Click="btnIniciarInspeccion_Click" Visibility="Hidden"/>
+            <Button x:Name="btnInspeccionCamara" Content="Inspeccion" HorizontalAlignment="Left" Margin="235,203,0,0"
+                VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
+                RenderTransformOrigin="0.378,4.807" Click="btnInspeccion_Click" Visibility="Hidden"/>
         </Grid>
         <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
                  d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />

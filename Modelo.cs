@@ -19,11 +19,9 @@ namespace Scale_Program
         public int ModProceso { get; set; }
         public string Descripcion { get; set; }
         public bool UsaBascula1 { get; set; }
-        public bool UsaBascula2 { get; set; }
-        public bool UsaConteoCajas { get; set; }
-        public Nullable<int> CantidadCajas { get; set; }
         public string Etapa1 { get; set; }
-        public string Etapa2 { get; set; }
         public bool Activo { get; set; }
+        public bool UsaPick2Light { get; set; }
+        public bool UsaCamaraVision { get; set; }
     }
 }

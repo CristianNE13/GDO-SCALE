@@ -41,11 +41,9 @@
           <Property Name="ModProceso" Type="int" Nullable="false" />
           <Property Name="Descripcion" Type="nvarchar" MaxLength="255" />
           <Property Name="UsaBascula1" Type="bit" Nullable="false" />
-          <Property Name="UsaBascula2" Type="bit" Nullable="false" />
-          <Property Name="UsaConteoCajas" Type="bit" Nullable="false" />
-          <Property Name="CantidadCajas" Type="int" />
+          <Property Name="UsaPick2Light" Type="bit" Nullable="false" />
+          <Property Name="UsaCamaraVision" Type="bit" Nullable="false" />
           <Property Name="Etapa1" Type="nvarchar" MaxLength="255" />
-          <Property Name="Etapa2" Type="nvarchar" MaxLength="255" />
           <Property Name="Activo" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="users">
@@ -139,12 +137,10 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="ModProceso" Type="Int32" Nullable="false" />
           <Property Name="Descripcion" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="UsaBascula1" Type="Boolean" Nullable="false" />
-          <Property Name="UsaBascula2" Type="Boolean" Nullable="false" />
-          <Property Name="UsaConteoCajas" Type="Boolean" Nullable="false" />
-          <Property Name="CantidadCajas" Type="Int32" />
           <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Etapa2" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="UsaPick2Light" Type="Boolean" Nullable="false" />
+          <Property Name="UsaCamaraVision" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityContainer Name="dc_missingpartsEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Articulos" EntityType="Self.Articulo" />
@@ -239,16 +235,14 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <EntitySetMapping Name="Modelos">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
               <MappingFragment StoreEntitySet="Modelos">
+                <ScalarProperty Name="UsaCamaraVision" ColumnName="UsaCamaraVision" />
+                <ScalarProperty Name="UsaPick2Light" ColumnName="UsaPick2Light" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="NoModelo" ColumnName="NoModelo" />
                 <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
                 <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
                 <ScalarProperty Name="UsaBascula1" ColumnName="UsaBascula1" />
-                <ScalarProperty Name="UsaBascula2" ColumnName="UsaBascula2" />
-                <ScalarProperty Name="UsaConteoCajas" ColumnName="UsaConteoCajas" />
-                <ScalarProperty Name="CantidadCajas" ColumnName="CantidadCajas" />
                 <ScalarProperty Name="Etapa1" ColumnName="Etapa1" />
-                <ScalarProperty Name="Etapa2" ColumnName="Etapa2" />
                 <ScalarProperty Name="Activo" ColumnName="Activo" />
               </MappingFragment>
             </EntityTypeMapping>

@@ -31,11 +31,9 @@
                             <DataGridTextColumn Binding="{Binding ModProceso}" Header="ModProceso" />
                             <DataGridTextColumn Binding="{Binding Descripcion}" Header="Descripción" />
                             <DataGridCheckBoxColumn Binding="{Binding UsaBascula1}" Header="Usa bascula 1" />
-                            <DataGridCheckBoxColumn Binding="{Binding UsaBascula2}" Header="Usa bascula 2" />
-                            <DataGridCheckBoxColumn Binding="{Binding UsaConteoCajas}" Header="Usa conteo cajas" />
-                            <DataGridTextColumn Binding="{Binding CantidadCajas}" Header="Cantidad cajas" />
-                            <DataGridTextColumn Binding="{Binding Etapa1}" Header="Etapa 1 - Ferretería" />
-                            <DataGridTextColumn Binding="{Binding Etapa2}" Header="Etapa 2 - Empaque" />
+                            <DataGridCheckBoxColumn Binding="{Binding UsaPick2Light}" Header="Usa Pick2Light" />
+                            <DataGridCheckBoxColumn Binding="{Binding UsaCamaraVision}" Header="Usa camara de vision" />
+                            <DataGridTextColumn Binding="{Binding Etapa1}" Header="Etapa 1" />
                             <DataGridCheckBoxColumn Binding="{Binding Activo}" Header="Activo" />
                         </DataGrid.Columns>
                     </DataGrid>
@@ -55,9 +53,9 @@
                     <Button x:Name="BtnGuardarModelos" Content="Guardar Cambios" Margin="674,176,352,0"
                             VerticalAlignment="Top" Height="28" Background="#FF0077D4" Foreground="White"
                             Grid.Column="1" Click="BtnGuardarModelos_Click" Width="140" TabIndex="6" />
-                    <Label Content="Usa bascula 1:" Grid.Column ="1" Margin="16,49,1037,0" VerticalAlignment="Top" />
-                    <CheckBox x:Name="ckb_Bascula1" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="124,59,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked"/>
-                    <Label Content="Usa bascula 2:" Margin="543,49,502,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <Label Content="Usa bascula 1:" Grid.Column ="1" Margin="16,57,1037,0" VerticalAlignment="Top" />
+                    <CheckBox x:Name="ckb_Bascula1" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="124,67,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked" IsChecked="False"/>
+                    <Label Content="Usa bascula 2:" Margin="543,49,502,0" VerticalAlignment="Top" Grid.Column="1" Visibility="Hidden" />
                     <Label x:Name="lblConteoCajas" Content="Usa conteo cajas:" Margin="152,49,862,0" VerticalAlignment="Top" RenderTransformOrigin="0.543,0.616" Grid.Column="1" Visibility="Hidden" />
                     <CheckBox x:Name="ckb_ConteoCajas" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="285,59,0,0" VerticalAlignment="Top" Height="16" Width="20" Checked="ckb_ConteoCajas_Checked" Visibility="Hidden" Unchecked="ckb_ConteoCajas_Unchecked"/>
                     <Label x:Name="lblCantidad" Content="Cantidad:" Margin="309,49,705,0" VerticalAlignment="Top" RenderTransformOrigin="0.543,0.616" Grid.Column="1" Visibility="Hidden" />
@@ -66,11 +64,15 @@
                     <TextBox x:Name="txb_Etapa1" Height="28" Margin="234,89,0,0" VerticalAlignment="Top" FontSize="18.667" HorizontalAlignment="Left" Width="245" Grid.Column="1" Visibility="Hidden" />
                     <Label x:Name="lblUltimoEtapa2" Content="Ultimo artículo de báscula 2:" Margin="675,49,280,0" VerticalAlignment="Top" RenderTransformOrigin="0.543,0.616" Grid.Column="1" Visibility="Hidden" />
                     <Label x:Name="lblPrimerEtapa2" Content="Primer artículo de báscula 2:" Margin="543,86,412,0" VerticalAlignment="Top" RenderTransformOrigin="0.543,0.616" Grid.Column="1" Visibility="Hidden" />
-                    <CheckBox x:Name="ckb_Bascula2" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="653,59,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula2_Checked" Unchecked="ckb_Bascula2_Unchecked"/>
+                    <CheckBox x:Name="ckb_Bascula2" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="653,59,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula2_Checked" Unchecked="ckb_Bascula2_Unchecked" Visibility="Hidden"/>
                     <TextBox x:Name="txb_Etapa1Bascula2" Height="28" Margin="887,49,0,0" VerticalAlignment="Top" FontSize="18.667" HorizontalAlignment="Left" Width="206" Grid.Column="1" Visibility="Hidden" />
                     <TextBox x:Name="txb_Etapa2" Height="28" Margin="755,89,0,0" VerticalAlignment="Top" FontSize="18.667" HorizontalAlignment="Left" Width="206" Grid.Column="1" Visibility="Hidden" />
                     <TextBox x:Name="ModeloDescripcionTBox" Height="28" Margin="482,12,0,0" VerticalAlignment="Top"
                              FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="3" />
+                    <Label Content="Usa Pick2Light:" Grid.Column ="1" Margin="194,56,855,0" VerticalAlignment="Top" />
+                    <CheckBox x:Name="ckb_Pick2Light" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="308,66,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked"/>
+                    <Label Content="Usa Camara de Vision:" Grid.Column ="1" Margin="367,56,632,0" VerticalAlignment="Top" />
+                    <CheckBox x:Name="ckb_CamaraVision" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="531,67,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked"/>
                 </Grid>
             </TabItem>
             <!-- Pestaña de Artículos -->

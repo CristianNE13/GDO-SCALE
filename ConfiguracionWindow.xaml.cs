@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.IO;
 using System.IO.Ports;
@@ -15,8 +16,7 @@ namespace Scale_Program
 {
     public partial class ConfiguracionWindow : Window
     {
-        private readonly BasculaFunc bascula1 = new BasculaFunc();
-        private readonly BasculaFunc bascula2 = new BasculaFunc();
+        private IBasculaFunc bascula1;
         private readonly PuertosFunc ports = new PuertosFunc();
         private readonly int MinLenght = 5;
         private int MaxPick2Light = 8;
@@ -54,7 +54,7 @@ namespace Scale_Program
 
         private void btnZero_1_Click(object sender, RoutedEventArgs e)
         {
-            bascula1.EnviarComandoABascula("ZRO");
+            bascula1.EnviarZero();
         }
 
         private void InicializarComboBox(int maxInputs, int maxOutputs)
@@ -155,7 +155,6 @@ namespace Scale_Program
                     StopBitsBascula12 = StopBits.One.ToString(),
                     DataBitsBascula12 = 8,
                     User = txbUser.Text,
-                    PickToLight = chboxEnablePick2Light.IsChecked ?? false,
                     InputPick2L0 = cboxInputPick2L0.SelectedIndex,
                     InputPick2L1 = cboxInputPick2L1.SelectedIndex,
                     InputPick2L2 = cboxInputPick2L2.SelectedIndex,
@@ -174,6 +173,9 @@ namespace Scale_Program
                     OutputPick2L7 = cboxOutputPick2L7.SelectedIndex,
                     PuertoSealevel = cboxPortSeaLevel.Text,
                     BaudRateSea = int.TryParse(cboxBaudSea.Text, out var baudRate) ? baudRate : 9600,
+                    IpCamara = txbIPCamara.Text,
+                    PuertoCamara = int.TryParse(txbPuerto.Text, out var puertoCamara) ? puertoCamara : 0,
+                    BasculaMarca = cboxMarca.Text
                 };
 
                 var serializer = new XmlSerializer(typeof(Configuracion));
@@ -228,6 +230,15 @@ namespace Scale_Program
                         cboxOutputPick2L6.Text = configuracion.OutputPick2L6.ToString();
                         cboxOutputPick2L7.Text = configuracion.OutputPick2L7.ToString();
 
+                        txbUser.Text = configuracion.User;
+                        txbIPCamara.Text = configuracion.IpCamara;
+                        txbPuerto.Text = configuracion.PuertoCamara.ToString();
+
+                        if (configuracion.BasculaMarca == "Pennsylvania")
+                            cboxMarca.SelectedIndex = 1;
+                        else
+                            cboxMarca.SelectedIndex = 0;
+
                         foreach (ComboBoxItem item in cboxBaudSea.Items)
                             if (item.Content.ToString() == configuracion.BaudRateSea.ToString())
                             {
@@ -257,8 +268,15 @@ namespace Scale_Program
             {
                 if (cboxScalePort_1.SelectedIndex >= 0)
                 {
-                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text, 9600, Parity.None, 8,
-                        StopBits.One));
+                    if (bascula1 != null && bascula1.GetPuerto() != null && bascula1.GetPuerto().IsOpen)
+                        bascula1.ClosePort();
+
+                    if (cboxMarca.Text == "Pennsylvania")
+                        bascula1 = new BasculaFuncPennsylvania();
+                    else
+                        bascula1 = new BasculaFuncGFC();
+
+                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text,9600,Parity.None,8));
                     bascula1.OpenPort();
                     bascula1.AsignarControles(Dispatcher);
                     bascula1.OnDataReady += Bascula1_OnDataReady;
@@ -275,8 +293,16 @@ namespace Scale_Program
 
         private void ConfiguracionWindow1_Closed(object sender, EventArgs e)
         {
-            bascula1.ClosePort();
-            bascula2.ClosePort();
+            try
+            {
+                if (bascula1 != null && bascula1.GetPuerto() != null && bascula1.GetPuerto().IsOpen)
+                    bascula1.ClosePort();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+                throw;
+            }
         }
 
         private void Bascula1_OnDataReady(object sender, BasculaEventArgs e)
@@ -292,11 +318,12 @@ namespace Scale_Program
         private void cboxUnidades_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
+            {
                 if (e.AddedItems[0] is ComboBoxItem nuevoItem)
                 {
                     var nuevaSeleccion = nuevoItem.Content.ToString();
 
-                    if (bascula1.GetPuerto() != null && bascula1.GetPuerto().IsOpen)
+                    if (bascula1 != null && bascula1.GetPuerto() != null && bascula1.GetPuerto().IsOpen)
                     {
                         if (nuevaSeleccion == "lb")
                             bascula1.EnviarComandoABascula("UNP");
@@ -304,7 +331,9 @@ namespace Scale_Program
                             bascula1.EnviarComandoABascula("UNS");
                     }
                 }
+            }
         }
+
 
         private void btnChangePassword_Click(object sender, RoutedEventArgs e)
         { 
@@ -364,6 +393,74 @@ namespace Scale_Program
             }
         }
 
+        private async void btnProbarCamara_Click(object sender, RoutedEventArgs e)
+        {
+            KeyenceTcpClient keyence = null;
+
+            try
+            {
+                lblResultadoVision.Content = "";
+                keyence = new KeyenceTcpClient(txbIPCamara.Text, int.Parse(txbPuerto.Text));
+
+                bool connected = await keyence.ConnectAsync();
+                if (!connected)
+                {
+                    MessageBox.Show("No se pudo conectar a la cámara.", "Error");
+                    return;
+                }
+
+                string response = await keyence.SendTrigger(); 
+                List<string> resultado= keyence.Formato(response);
+                foreach (var text in resultado)
+                    lblResultadoVision.Content += text + "\n";
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Error: {error.Message}", "Error");
+            }
+            finally
+            {
+                if (keyence != null)
+                    keyence.Dispose();
+            }
+        }
+
+
+        private async void btnCambiarPrograma_Click(object sender, RoutedEventArgs e)
+        {
+            KeyenceTcpClient keyence = null;
+
+            try
+            {
+                lblResultadoVision.Content = "";
+                keyence = new KeyenceTcpClient(txbIPCamara.Text, int.Parse(txbPuerto.Text));
+
+                bool connected = await keyence.ConnectAsync();
+                if (!connected)
+                {
+                    MessageBox.Show("No se pudo conectar a la cámara.", "Error");
+                    return;
+                }
+
+                int programa = int.Parse(txbPrograma.Text);
+                string response = await keyence.ChangeProgram(programa);
+                List<string> resultado= keyence.Formato(response);
+                foreach (var text in resultado)
+                    lblResultadoVision.Content += text + "\n";
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Error: {error.Message}", "Error");
+            }
+            finally
+            {
+                if (keyence != null)
+                    keyence.Dispose();
+            }
+        }
+
+
+
         public static class PasswordHash
         {
             private const int SaltSize = 16;
@@ -409,6 +506,5 @@ namespace Scale_Program
                 }
             }
         }
-
     }
 }

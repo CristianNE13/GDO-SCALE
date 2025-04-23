@@ -9,9 +9,9 @@ using log4net;
 
 namespace Scale_Program.Functions
 {
-    public sealed class BasculaFunc
+    public sealed class BasculaFuncPennsylvania : IBasculaFunc
     {
-        public delegate void DataReadyEventHandler(object sender, BasculaEventArgs e);
+        public event EventHandler<BasculaEventArgs> OnDataReady;
 
         private const int MaxLogEntries = 100;
         private const int EntriesToKeep = 10;
@@ -34,7 +34,7 @@ namespace Scale_Program.Functions
 
         public SerialPort sPort;
 
-        public BasculaFunc()
+        public BasculaFuncPennsylvania()
         {
             waitHandle = new ManualResetEvent(true);
         }
@@ -42,8 +42,6 @@ namespace Scale_Program.Functions
         public string Puerto => sPort == null ? string.Empty : sPort.PortName;
 
         public static IList<LogEntry> LogEntries => log.AsReadOnly();
-
-        public event DataReadyEventHandler OnDataReady;
 
         public void AsignarControles(Dispatcher dispatcher)
         {
@@ -203,8 +201,7 @@ namespace Scale_Program.Functions
 
         private void RaiseEvent(BasculaEventArgs e)
         {
-            var rdy = OnDataReady;
-            if (rdy != null) rdy(this, e);
+            OnDataReady?.Invoke(this, e);
         }
 
 
@@ -221,6 +218,16 @@ namespace Scale_Program.Functions
                 sPort.Write(comando + "\r\n");
 
                 LogMessage(comando);
+            }
+        }
+
+        public void EnviarZero()
+        {
+            if (sPort.IsOpen)
+            {
+                sPort.Write("ZRO" + "\r\n");
+
+                LogMessage("ZRO");
             }
         }
 

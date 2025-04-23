@@ -102,11 +102,11 @@ namespace Scale_Program
                     ModProceso = proceso,
                     Descripcion = ModeloDescripcionTBox.Text,
                     UsaBascula1 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value,
-                    UsaBascula2 = ckb_Bascula2.IsChecked != null && ckb_Bascula2.IsChecked.Value,
-                    UsaConteoCajas = ckb_ConteoCajas.IsChecked != null && ckb_ConteoCajas.IsChecked.Value,
-                    CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
+                    UsaCamaraVision = ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value,
+                    UsaPick2Light = ckb_Pick2Light.IsChecked != null && ckb_Pick2Light.IsChecked.Value,
+                    //CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
                     Etapa1 = txb_Etapa1.Text,
-                    Etapa2 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
+                    //Etapa2 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
                     Activo = true
                 };
 
@@ -359,11 +359,9 @@ namespace Scale_Program
                             modeloBD.NoModelo = modeloLocal.NoModelo;
                             modeloBD.Descripcion = modeloLocal.Descripcion;
                             modeloBD.UsaBascula1 = modeloLocal.UsaBascula1;
-                            modeloBD.UsaBascula2 = modeloLocal.UsaBascula2;
-                            modeloBD.UsaConteoCajas = modeloLocal.UsaConteoCajas;
-                            modeloBD.CantidadCajas = modeloLocal.CantidadCajas;
+                            modeloBD.UsaPick2Light = modeloLocal.UsaPick2Light;
+                            modeloBD.UsaCamaraVision = modeloLocal.UsaCamaraVision;
                             modeloBD.Etapa1 = modeloLocal.Etapa1;
-                            modeloBD.Etapa2 = modeloLocal.Etapa2;
                             modeloBD.Activo = modeloLocal.Activo;
                         }
                         else

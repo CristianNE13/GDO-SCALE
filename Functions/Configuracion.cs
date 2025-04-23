@@ -16,7 +16,6 @@ namespace Scale_Program.Functions
         public string PuertoSealevel { get; set; }
         public int BaudRateSea { get; set; }
         public string User { get; set; }
-        public bool PickToLight { get; set; }
         public int InputPick2L0 { get; set; }
         public int InputPick2L1 { get; set; }
         public int InputPick2L2 { get; set; }
@@ -33,6 +32,9 @@ namespace Scale_Program.Functions
         public int OutputPick2L5 { get; set; }
         public int OutputPick2L6 { get; set; }
         public int OutputPick2L7 { get; set; }
+        public string IpCamara { get; set; }
+        public int PuertoCamara { get; set; }
+        public string BasculaMarca { get; set; }
 
         public static string RutaArchivoConf { get; } =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");

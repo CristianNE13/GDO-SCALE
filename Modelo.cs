@@ -23,5 +23,6 @@ namespace Scale_Program
         public bool Activo { get; set; }
         public bool UsaPick2Light { get; set; }
         public bool UsaCamaraVision { get; set; }
+        public Nullable<int> ProgramaVision { get; set; }
     }
 }

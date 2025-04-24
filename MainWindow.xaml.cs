@@ -67,6 +67,8 @@ namespace Scale_Program
 
             defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
 
+            keyence = new KeyenceTcpClient(defaultSettings.IpCamara, defaultSettings.PuertoCamara);
+
             if (defaultSettings.BasculaMarca == "Pennsylvania")
                 bascula = new BasculaFuncPennsylvania();
             else
@@ -82,7 +84,7 @@ namespace Scale_Program
             try
             {
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
-                //IniciarSealevel();
+                IniciarSealevel();
 
                 ModeloData = Cbox_Modelo.SelectedValue as Modelo ?? throw new Exception("Modelo no reconocido.");
 
@@ -107,7 +109,7 @@ namespace Scale_Program
             Cbox_Proceso.Text = "";
         }
 
-        private void Cbox_Proceso_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void Cbox_Proceso_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing || Cbox_Proceso.SelectedValue == null || Cbox_Modelo.SelectedValue == null)
                 return;
@@ -128,9 +130,17 @@ namespace Scale_Program
                 _inicioZero = true;
                 ShowIniciar();
 
+
+                var connected = await keyence.ConnectAsync();
+                if (!connected)
+                    MessageBox.Show("No se pudo conectar a la cámara.", "Error");
+
+                if (ModeloData.ProgramaVision != null) await keyence.ChangeProgram(ModeloData.ProgramaVision);
+
+
                 //var currentStep = pasosFiltrados[_currentStepIndex];
                 //ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight, pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
-                
+
             }
             catch (Exception ex)
             {
@@ -837,12 +847,12 @@ namespace Scale_Program
 
         private void ActivarSalida(int tipo)
         {
-            //ioInterface.WriteSingleOutput(tipo, true);
+            ioInterface.WriteSingleOutput(tipo, true);
         }
 
         private void DesactivarSalida(int tipo)
         {
-            //ioInterface.WriteSingleOutput(tipo, false);
+            ioInterface.WriteSingleOutput(tipo, false);
         }
 
         private void IniciarSealevel()
@@ -889,7 +899,7 @@ namespace Scale_Program
                 {
                     if (!int.TryParse(_stepEsperandoPick.PartOrden, out int ordenPaso)) return;
 
-                    var sensorPick = (inputsState & (1 << ordenPaso)) != 0;
+                    var sensorPick = (inputsState & (1 << ordenPaso-1)) != 0;
 
                     if (sensorPick)
                     {
@@ -1148,10 +1158,6 @@ namespace Scale_Program
 
                 if (_currentStepIndex < pasosFiltrados.Count)
                 {
-                    if (ModeloData.UsaPick2Light)
-                        ShowPickToLight(currentStep); 
-
-
                     pasosPorPagina = 8;
 
                     if (_currentStepIndex % pasosPorPagina == 0)
@@ -1172,6 +1178,9 @@ namespace Scale_Program
 
                     currentStep = pasosFiltrados[_currentStepIndex];
                     pieceWeight = currentWeight - _accumulatedWeight;
+
+                    if (ModeloData.UsaPick2Light)
+                        ShowPickToLight(currentStep); 
 
                     ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
                         pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
@@ -1411,8 +1420,6 @@ namespace Scale_Program
                 var valoresNG = "";
                 lbx_Codes.Items.Clear();
                 lbx_Codes.Visibility = Visibility.Visible;
-
-                keyence = new KeyenceTcpClient(defaultSettings.IpCamara, defaultSettings.PuertoCamara);
 
                 bool connected = await keyence.ConnectAsync();
                 if (!connected)

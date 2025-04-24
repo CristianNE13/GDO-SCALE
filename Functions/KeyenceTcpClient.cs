@@ -66,7 +66,7 @@ namespace Scale_Program.Functions
             return resultado;
         }
 
-        public Task<string> ChangeProgram(int program)
+        public Task<string> ChangeProgram(int? program)
         {
             var resultado = SendCommandAsync($"PW,{program}");
             return resultado;

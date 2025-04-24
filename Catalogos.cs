@@ -104,6 +104,7 @@ namespace Scale_Program
                     UsaBascula1 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value,
                     UsaCamaraVision = ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value,
                     UsaPick2Light = ckb_Pick2Light.IsChecked != null && ckb_Pick2Light.IsChecked.Value,
+                    ProgramaVision = int.TryParse(txbProgramaVision.Text, out var valor) ? valor : 0,
                     //CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
                     Etapa1 = txb_Etapa1.Text,
                     //Etapa2 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
@@ -357,10 +358,12 @@ namespace Scale_Program
                         if (modeloBD != null)
                         {
                             modeloBD.NoModelo = modeloLocal.NoModelo;
+                            modeloBD.ModProceso = modeloLocal.ModProceso;
                             modeloBD.Descripcion = modeloLocal.Descripcion;
                             modeloBD.UsaBascula1 = modeloLocal.UsaBascula1;
                             modeloBD.UsaPick2Light = modeloLocal.UsaPick2Light;
                             modeloBD.UsaCamaraVision = modeloLocal.UsaCamaraVision;
+                            modeloBD.ProgramaVision = modeloLocal.ProgramaVision;
                             modeloBD.Etapa1 = modeloLocal.Etapa1;
                             modeloBD.Activo = modeloLocal.Activo;
                         }
@@ -486,6 +489,18 @@ namespace Scale_Program
         {
             GuardarArticulos();
             CargarDatosModelos();
+        }
+
+        private void ckb_CamaraVision_Checked(object sender, RoutedEventArgs e)
+        {
+            txbProgramaVision.Visibility = Visibility.Visible;
+            lblNumeroVision.Visibility = Visibility.Visible;
+        }
+
+        private void ckb_CamaraVision_Unchecked(object sender, RoutedEventArgs e)
+        {
+            txbProgramaVision.Visibility = Visibility.Hidden;
+            lblNumeroVision.Visibility = Visibility.Hidden;
         }
     }
 }

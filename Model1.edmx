@@ -43,6 +43,7 @@
           <Property Name="UsaBascula1" Type="bit" Nullable="false" />
           <Property Name="UsaPick2Light" Type="bit" Nullable="false" />
           <Property Name="UsaCamaraVision" Type="bit" Nullable="false" />
+          <Property Name="ProgramaVision" Type="int" />
           <Property Name="Etapa1" Type="nvarchar" MaxLength="255" />
           <Property Name="Activo" Type="bit" Nullable="false" />
         </EntityType>
@@ -141,6 +142,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="Activo" Type="Boolean" Nullable="false" />
           <Property Name="UsaPick2Light" Type="Boolean" Nullable="false" />
           <Property Name="UsaCamaraVision" Type="Boolean" Nullable="false" />
+          <Property Name="ProgramaVision" Type="Int32" />
         </EntityType>
         <EntityContainer Name="dc_missingpartsEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Articulos" EntityType="Self.Articulo" />
@@ -235,6 +237,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <EntitySetMapping Name="Modelos">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
               <MappingFragment StoreEntitySet="Modelos">
+                <ScalarProperty Name="ProgramaVision" ColumnName="ProgramaVision" />
                 <ScalarProperty Name="UsaCamaraVision" ColumnName="UsaCamaraVision" />
                 <ScalarProperty Name="UsaPick2Light" ColumnName="UsaPick2Light" />
                 <ScalarProperty Name="Id" ColumnName="Id" />

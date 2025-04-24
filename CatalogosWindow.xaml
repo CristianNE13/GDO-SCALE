@@ -33,6 +33,7 @@
                             <DataGridCheckBoxColumn Binding="{Binding UsaBascula1}" Header="Usa bascula 1" />
                             <DataGridCheckBoxColumn Binding="{Binding UsaPick2Light}" Header="Usa Pick2Light" />
                             <DataGridCheckBoxColumn Binding="{Binding UsaCamaraVision}" Header="Usa camara de vision" />
+                            <DataGridTextColumn Binding="{Binding ProgramaVision}" Header="Programa camara" />
                             <DataGridTextColumn Binding="{Binding Etapa1}" Header="Etapa 1" />
                             <DataGridCheckBoxColumn Binding="{Binding Activo}" Header="Activo" />
                         </DataGrid.Columns>
@@ -70,9 +71,11 @@
                     <TextBox x:Name="ModeloDescripcionTBox" Height="28" Margin="482,12,0,0" VerticalAlignment="Top"
                              FontSize="18.667" HorizontalAlignment="Left" Width="374" Grid.Column="1" TabIndex="3" />
                     <Label Content="Usa Pick2Light:" Grid.Column ="1" Margin="194,56,855,0" VerticalAlignment="Top" />
-                    <CheckBox x:Name="ckb_Pick2Light" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="308,66,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked"/>
+                    <CheckBox x:Name="ckb_Pick2Light" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="308,66,0,0" VerticalAlignment="Top" Height="16" Width="17" />
                     <Label Content="Usa Camara de Vision:" Grid.Column ="1" Margin="367,56,632,0" VerticalAlignment="Top" />
-                    <CheckBox x:Name="ckb_CamaraVision" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="531,67,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_Bascula1_Checked" Unchecked="ckb_Bascula1_Unchecked"/>
+                    <CheckBox x:Name="ckb_CamaraVision" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="531,67,0,0" VerticalAlignment="Top" Height="16" Width="17" Checked="ckb_CamaraVision_Checked" Unchecked="ckb_CamaraVision_Unchecked" />
+                    <TextBox x:Name="txbProgramaVision" Grid.Column="1" HorizontalAlignment="Left" Margin="533,96,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Visibility="Hidden"/>
+                    <Label x:Name="lblNumeroVision" Content="Numero de programa:" Grid.Column ="1" Margin="367,88,632,0" VerticalAlignment="Top" RenderTransformOrigin="0.494,1.175" Visibility="Hidden" />
                 </Grid>
             </TabItem>
             <!-- Pestaña de Artículos -->

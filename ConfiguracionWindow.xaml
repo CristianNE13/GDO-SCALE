@@ -136,81 +136,27 @@
                     <ComboBox x:Name="cboxOutputPick2L0" HorizontalAlignment="Left" Margin="218,108,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
-                    <Label Content="PickToLight 1:" HorizontalAlignment="Left" Margin="333,108,0,0"
+                    <Label Content="Piston:" HorizontalAlignment="Left" Margin="333,108,0,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxOutputPick2L1" HorizontalAlignment="Left" Margin="111,108,0,0"
+                    <ComboBox x:Name="cboxOutputPiston" HorizontalAlignment="Left" Margin="111,108,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 2:" HorizontalAlignment="Left" Margin="48,146,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxOutputPick2L2" HorizontalAlignment="Left" Margin="218,145,0,0"
+                    <ComboBox x:Name="cboxOutputShutOff" HorizontalAlignment="Left" Margin="275,246,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 3:" HorizontalAlignment="Left" Margin="333,145,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxOutputPick2L3" HorizontalAlignment="Left" Margin="111,145,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 4:" HorizontalAlignment="Left" Margin="48,182,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxOutputPick2L4" HorizontalAlignment="Left" Margin="218,182,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 5:" HorizontalAlignment="Left" Margin="333,182,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxOutputPick2L5" HorizontalAlignment="Left" Margin="111,182,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 6:" HorizontalAlignment="Left" Margin="48,219,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxOutputPick2L6" HorizontalAlignment="Left" Margin="218,219,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 7:" HorizontalAlignment="Left" Margin="333,219,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxOutputPick2L7" HorizontalAlignment="Left" Margin="111,219,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
+                              FontFamily="Arial" Visibility="Hidden" />
                     <Label Content="PickToLight 0:" HorizontalAlignment="Left" Margin="25,336,0,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
                     <ComboBox x:Name="cboxInputPick2L0" HorizontalAlignment="Left" Margin="195,336,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
-                    <Label Content="PickToLight 1:" HorizontalAlignment="Left" Margin="310,336,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxInputPick2L1" HorizontalAlignment="Left" Margin="88,336,0,0"
+                    <Label Content="Boton:" HorizontalAlignment="Left" Margin="310,336,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" HorizontalContentAlignment="Center" />
+                    <ComboBox x:Name="cboxInputBoton" HorizontalAlignment="Left" Margin="88,336,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 2:" HorizontalAlignment="Left" Margin="25,374,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxInputPick2L2" HorizontalAlignment="Left" Margin="195,373,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 3:" HorizontalAlignment="Left" Margin="310,373,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxInputPick2L3" HorizontalAlignment="Left" Margin="88,373,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 4:" HorizontalAlignment="Left" Margin="25,410,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxInputPick2L4" HorizontalAlignment="Left" Margin="195,410,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 5:" HorizontalAlignment="Left" Margin="310,410,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxInputPick2L5" HorizontalAlignment="Left" Margin="88,410,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
-                    <Label Content="PickToLight 6:" HorizontalAlignment="Left" Margin="25,446,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
-                    <ComboBox x:Name="cboxInputPick2L6" HorizontalAlignment="Left" Margin="195,446,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" />
-                    <Label Content="PickToLight 7:" HorizontalAlignment="Left" Margin="310,446,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxInputPick2L7" HorizontalAlignment="Left" Margin="88,446,0,0"
-                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
-                              FontFamily="Arial" Grid.Column="1" />
+                    <CheckBox x:Name="chkBox_Shutoff" Content="Tiene Shutoff" HorizontalAlignment="Left" Margin="30,252,0,0" VerticalAlignment="Top" FontSize="20" VerticalContentAlignment="Center" Width="151" Checked="chkBox_Shutoff_Checked" Unchecked="chkBox_Shutoff_Unchecked"/>
+                    <Label x:Name="lblShutOff" Content="ShutOff:" HorizontalAlignment="Left" Margin="191,246,0,0"
+                        VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="86" Visibility="Hidden" />
                 </Grid>
             </TabItem>
             <TabItem Header="Ajustes - Contraseña">

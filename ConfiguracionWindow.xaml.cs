@@ -19,7 +19,6 @@ namespace Scale_Program
         private IBasculaFunc bascula1;
         private readonly PuertosFunc ports = new PuertosFunc();
         private readonly int MinLenght = 5;
-        private int MaxPick2Light = 8;
 
 
         public ConfiguracionWindow()
@@ -59,14 +58,21 @@ namespace Scale_Program
 
         private void InicializarComboBox(int maxInputs, int maxOutputs)
         {
-            for (int i = 0; i < MaxPick2Light; i++)
-            {
-                if (FindName($"cboxInputPick2L{i}") is ComboBox comboIn)
-                    LlenarComboBox(comboIn,maxInputs);
 
-                if (FindName($"cboxOutputPick2L{i}") is ComboBox comboOut)
-                    LlenarComboBox(comboOut,maxOutputs);
-            }
+            if (FindName("cboxInputPick2L0") is ComboBox pick1)
+                LlenarComboBox(pick1,maxInputs);
+
+            if (FindName("cboxOutputPick2L0") is ComboBox pick2)
+                LlenarComboBox(pick2,maxOutputs);
+
+            if (FindName("cboxOutputPiston") is ComboBox piston)
+                LlenarComboBox(piston,maxOutputs);
+
+            if (FindName("cboxOutputShutOff") is ComboBox shutoff)
+                LlenarComboBox(shutoff,maxOutputs);
+
+            if(FindName("cboxInputBoton") is ComboBox boton)
+                LlenarComboBox(boton, maxInputs);
         }
 
         private void LlenarComboBox(ComboBox comboBox, int maxItems)
@@ -156,21 +162,11 @@ namespace Scale_Program
                     DataBitsBascula12 = 8,
                     User = txbUser.Text,
                     InputPick2L0 = cboxInputPick2L0.SelectedIndex,
-                    InputPick2L1 = cboxInputPick2L1.SelectedIndex,
-                    InputPick2L2 = cboxInputPick2L2.SelectedIndex,
-                    InputPick2L3 = cboxInputPick2L3.SelectedIndex,
-                    InputPick2L4 = cboxInputPick2L4.SelectedIndex,
-                    InputPick2L5 = cboxInputPick2L5.SelectedIndex,
-                    InputPick2L6 = cboxInputPick2L6.SelectedIndex,
-                    InputPick2L7 = cboxInputPick2L7.SelectedIndex,
                     OutputPick2L0 = cboxOutputPick2L0.SelectedIndex,
-                    OutputPick2L1 = cboxOutputPick2L1.SelectedIndex,
-                    OutputPick2L2 = cboxOutputPick2L2.SelectedIndex,
-                    OutputPick2L3 = cboxOutputPick2L3.SelectedIndex,
-                    OutputPick2L4 = cboxOutputPick2L4.SelectedIndex,
-                    OutputPick2L5 = cboxOutputPick2L5.SelectedIndex,
-                    OutputPick2L6 = cboxOutputPick2L6.SelectedIndex,
-                    OutputPick2L7 = cboxOutputPick2L7.SelectedIndex,
+                    InputBoton = cboxInputBoton.SelectedIndex,
+                    CheckShutOff = chkBox_Shutoff.IsChecked ?? false,
+                    ShutOff = cboxOutputShutOff.SelectedIndex,
+                    Piston = cboxOutputPiston.SelectedIndex,
                     PuertoSealevel = cboxPortSeaLevel.Text,
                     BaudRateSea = int.TryParse(cboxBaudSea.Text, out var baudRate) ? baudRate : 9600,
                     IpCamara = txbIPCamara.Text,
@@ -213,22 +209,12 @@ namespace Scale_Program
                         cboxPortSeaLevel.Text = configuracion.PuertoSealevel;
 
                         cboxInputPick2L0.Text = configuracion.InputPick2L0.ToString();
-                        cboxInputPick2L1.Text = configuracion.InputPick2L1.ToString();
-                        cboxInputPick2L2.Text = configuracion.InputPick2L2.ToString();
-                        cboxInputPick2L3.Text = configuracion.InputPick2L3.ToString();
-                        cboxInputPick2L4.Text = configuracion.InputPick2L4.ToString();
-                        cboxInputPick2L5.Text = configuracion.InputPick2L5.ToString();
-                        cboxInputPick2L6.Text = configuracion.InputPick2L6.ToString();
-                        cboxInputPick2L7.Text = configuracion.InputPick2L7.ToString();
+                        cboxInputBoton.Text = configuracion.InputBoton.ToString();
+                        cboxOutputShutOff.Text = configuracion.ShutOff.ToString();
+                        chkBox_Shutoff.IsChecked = configuracion.CheckShutOff;
+                        cboxOutputPiston.Text = configuracion.Piston.ToString();
 
                         cboxOutputPick2L0.Text = configuracion.OutputPick2L0.ToString();
-                        cboxOutputPick2L1.Text = configuracion.OutputPick2L1.ToString();
-                        cboxOutputPick2L2.Text = configuracion.OutputPick2L2.ToString();
-                        cboxOutputPick2L3.Text = configuracion.OutputPick2L3.ToString();
-                        cboxOutputPick2L4.Text = configuracion.OutputPick2L4.ToString();
-                        cboxOutputPick2L5.Text = configuracion.OutputPick2L5.ToString();
-                        cboxOutputPick2L6.Text = configuracion.OutputPick2L6.ToString();
-                        cboxOutputPick2L7.Text = configuracion.OutputPick2L7.ToString();
 
                         txbUser.Text = configuracion.User;
                         txbIPCamara.Text = configuracion.IpCamara;
@@ -505,6 +491,18 @@ namespace Scale_Program
                     return true;
                 }
             }
+        }
+
+        private void chkBox_Shutoff_Checked(object sender, RoutedEventArgs e)
+        {
+            lblShutOff.Visibility = Visibility.Visible;
+            cboxOutputShutOff.Visibility = Visibility.Visible;
+        }
+
+        private void chkBox_Shutoff_Unchecked(object sender, RoutedEventArgs e)
+        {
+            lblShutOff.Visibility = Visibility.Hidden;
+            cboxOutputShutOff.Visibility = Visibility.Hidden;
         }
     }
 }

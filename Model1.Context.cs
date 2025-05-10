@@ -29,8 +29,8 @@ namespace Scale_Program
     
         public virtual DbSet<Articulo> Articulos { get; set; }
         public virtual DbSet<Completado> Completados { get; set; }
-        public virtual DbSet<Modelo> Modelos { get; set; }
         public virtual DbSet<user> users { get; set; }
+        public virtual DbSet<Modelo> Modelos { get; set; }
     
         public virtual int sp_alterdiagram(string diagramname, Nullable<int> owner_id, Nullable<int> version, byte[] definition)
         {

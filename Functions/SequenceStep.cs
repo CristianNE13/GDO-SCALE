@@ -1,7 +1,10 @@
-﻿namespace Scale_Program.Functions
+﻿using System;
+
+namespace Scale_Program.Functions
 {
     public class SequenceStep
     {
+        public int Id { get; set; }
         public double MinWeight { get; set; }
         public double MaxWeight { get; set; }
         public bool IsCompleted { get; set; }

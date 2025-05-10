@@ -243,7 +243,9 @@ namespace Scale_Program.Functions
         {
             if (sPort.IsOpen)
             {
-                sPort.Write("Z" + "\r\n");
+                sPort.Write("C" + "\r\n");
+                Thread.Sleep(100);
+                sPort.Write("T" + "\r\n");
 
                 LogMessage("Z");
             }

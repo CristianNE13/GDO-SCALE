@@ -17,21 +17,11 @@ namespace Scale_Program.Functions
         public int BaudRateSea { get; set; }
         public string User { get; set; }
         public int InputPick2L0 { get; set; }
-        public int InputPick2L1 { get; set; }
-        public int InputPick2L2 { get; set; }
-        public int InputPick2L3 { get; set; }
-        public int InputPick2L4 { get; set; }
-        public int InputPick2L5 { get; set; }
-        public int InputPick2L6 { get; set; }
-        public int InputPick2L7 { get; set; }
         public int OutputPick2L0 { get; set; }
-        public int OutputPick2L1 { get; set; }
-        public int OutputPick2L2 { get; set; }
-        public int OutputPick2L3 { get; set; }
-        public int OutputPick2L4 { get; set; }
-        public int OutputPick2L5 { get; set; }
-        public int OutputPick2L6 { get; set; }
-        public int OutputPick2L7 { get; set; }
+        public int InputBoton { get; set; }
+        public bool CheckShutOff { get; set; }
+        public int ShutOff { get; set; }
+        public int Piston { get; set; }
         public string IpCamara { get; set; }
         public int PuertoCamara { get; set; }
         public string BasculaMarca { get; set; }

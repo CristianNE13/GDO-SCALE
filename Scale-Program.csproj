@@ -384,6 +384,9 @@
     <Resource Include="Content\img\lock.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Content\img\Arrowhead-Down.png" />
+    <Resource Include="Content\img\Up Arrow - 01.png" />
+    <Resource Include="Content\img\Weight-Scale.png" />
     <Content Include="Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>Model1.edmx</DependentUpon>

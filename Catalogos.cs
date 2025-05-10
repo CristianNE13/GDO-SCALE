@@ -96,6 +96,23 @@ namespace Scale_Program
                     return;
                 }
 
+                if (ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value && string.IsNullOrWhiteSpace(txbProgramaVision.Text))
+                {
+                    MessageBox.Show("Error en el campo de numero de programa.", "AGREGAR PROGRAMA");
+                    return;
+                }
+
+                var programasVision = txbProgramaVision.Text.Split(',').Select(p => p.Trim()).ToList();
+                foreach (var programa in programasVision)
+                {
+                    if (!int.TryParse(programa, out int numero))
+                    {
+                        MessageBox.Show($"El programa de visión '{programa}' no es válido.", "Error", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
                 var modelo = new Modelo
                 {
                     NoModelo = NoModeloTBox.Text,
@@ -104,7 +121,7 @@ namespace Scale_Program
                     UsaBascula1 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value,
                     UsaCamaraVision = ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value,
                     UsaPick2Light = ckb_Pick2Light.IsChecked != null && ckb_Pick2Light.IsChecked.Value,
-                    ProgramaVision = int.TryParse(txbProgramaVision.Text, out var valor) ? valor : 0,
+                    ProgramaVision = txbProgramaVision.Text,
                     //CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
                     Etapa1 = txb_Etapa1.Text,
                     //Etapa2 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value ? txb_Etapa2.Text : txb_Etapa1Bascula2.Text,
@@ -146,8 +163,6 @@ namespace Scale_Program
                     return;
                 }
 
-                Modelos.Remove(selectedModelo);
-
                 using (var db = new dc_missingpartsEntities())
                 {
                     var modeloDb = db.Modelos.Find(selectedModelo.Id);
@@ -157,19 +172,41 @@ namespace Scale_Program
                         return;
                     }
 
+                    var existenArticulos = db.Articulos.Any(a => a.ModProceso == selectedModelo.ModProceso);
+
+                    if (existenArticulos)
+                    {
+                        MessageBox.Show(
+                            "No puedes eliminar este modelo porque existe información asociada en la tabla 'Articulos'.",
+                            "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    var existenCompletados = db.Completados.Any(c => c.ModProceso == selectedModelo.ModProceso);
+
+                    if (existenCompletados)
+                    {
+                        MessageBox.Show(
+                            "No puedes eliminar este modelo porque existe información asociada en la tabla 'Completados'.",
+                            "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
                     db.Modelos.Remove(modeloDb);
                     db.SaveChanges();
                 }
+
+                Modelos.Remove(selectedModelo);
                 CargarDatosModelos();
+
                 MessageBox.Show("Modelo eliminado correctamente.", "Éxito", MessageBoxButton.OK,
-                                       MessageBoxImage.Information);
+                    MessageBoxImage.Information);
             }
             catch (Exception exception)
             {
-                MessageBox.Show($"Error al eliminar el modelo: {exception.Message}");
-                throw;
+                MessageBox.Show($"Error al eliminar el modelo: {exception.Message}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
-
         }
 
         private void GuardarArticulos()

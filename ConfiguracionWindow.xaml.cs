@@ -171,7 +171,9 @@ namespace Scale_Program
                     BaudRateSea = int.TryParse(cboxBaudSea.Text, out var baudRate) ? baudRate : 9600,
                     IpCamara = txbIPCamara.Text,
                     PuertoCamara = int.TryParse(txbPuerto.Text, out var puertoCamara) ? puertoCamara : 0,
-                    BasculaMarca = cboxMarca.Text
+                    BasculaMarca = cboxMarca.Text,
+                    CheckSealevelEthernet = chkBox_SeaEthernet.IsChecked ?? false,
+                    SealevelIP = txbIPSealevel.Text
                 };
 
                 var serializer = new XmlSerializer(typeof(Configuracion));
@@ -219,6 +221,9 @@ namespace Scale_Program
                         txbUser.Text = configuracion.User;
                         txbIPCamara.Text = configuracion.IpCamara;
                         txbPuerto.Text = configuracion.PuertoCamara.ToString();
+
+                        chkBox_SeaEthernet.IsChecked = configuracion.CheckSealevelEthernet;
+                        txbIPSealevel.Text = configuracion.SealevelIP;
 
                         if (configuracion.BasculaMarca == "Pennsylvania")
                             cboxMarca.SelectedIndex = 1;
@@ -298,6 +303,8 @@ namespace Scale_Program
                 var weight = e.Value;
                 var isStable = e.IsStable;
                 listLogEntries_1.Items.Add($"Peso: {weight} kg - Estable: {isStable}");
+                if (listLogEntries_1.Items.Count > 16)
+                    listLogEntries_1.Items.Clear();
             });
         }
 
@@ -503,6 +510,24 @@ namespace Scale_Program
         {
             lblShutOff.Visibility = Visibility.Hidden;
             cboxOutputShutOff.Visibility = Visibility.Hidden;
+        }
+
+        private void chkBox_SeaEthernet_Checked(object sender, RoutedEventArgs e)
+        {
+            lblPuertoES.Content = "IP Sealevel:";
+            txbIPSealevel.Visibility = Visibility.Visible;
+            lblBaudSea.Visibility = Visibility.Hidden;
+            cboxBaudSea.Visibility = Visibility.Hidden;
+            cboxPortSeaLevel.Visibility = Visibility.Hidden;
+        }
+
+        private void chkBox_SeaEthernet_Unchecked(object sender, RoutedEventArgs e)
+        {
+            lblPuertoES.Content = "Puerto Sealevel:";
+            txbIPSealevel.Visibility = Visibility.Hidden;
+            lblBaudSea.Visibility = Visibility.Visible;
+            cboxBaudSea.Visibility = Visibility.Visible;
+            cboxPortSeaLevel.Visibility = Visibility.Visible;
         }
     }
 }

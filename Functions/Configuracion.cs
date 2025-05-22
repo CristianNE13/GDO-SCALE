@@ -25,6 +25,8 @@ namespace Scale_Program.Functions
         public string IpCamara { get; set; }
         public int PuertoCamara { get; set; }
         public string BasculaMarca { get; set; }
+        public bool CheckSealevelEthernet { get; set; }
+        public string SealevelIP { get; set; }
 
         public static string RutaArchivoConf { get; } =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");

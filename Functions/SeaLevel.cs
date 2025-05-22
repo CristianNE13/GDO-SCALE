@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Scale_Program.Functions
 {
-    public class SeaLevel : IDisposable
+    public class SeaLevel : ISeaLevelDevice
     {
         public void Dispose()
         {

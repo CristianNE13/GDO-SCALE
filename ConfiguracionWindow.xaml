@@ -91,9 +91,9 @@
                         <ColumnDefinition Width="117*"/>
                     </Grid.ColumnDefinitions>
                     <Label x:Name="lblPuertoES" Content="Puerto Sealevel:" HorizontalAlignment="Left"
-                           Margin="30,24,0,0"
+                           Margin="30,30,0,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="151" />
-                    <ComboBox x:Name="cboxPortSeaLevel" HorizontalAlignment="Left" Margin="181,24,0,0"
+                    <ComboBox x:Name="cboxPortSeaLevel" HorizontalAlignment="Left" Margin="181,30,0,0"
                               VerticalAlignment="Top" Width="113" Height="32" Background="White" SelectedIndex="1"
                               FontSize="18" FontFamily="Arial" />
                     <Label x:Name="lblInputs" Content="Asignación de Entradas" Margin="26,279,0,0"
@@ -119,9 +119,9 @@
                              Text="" VerticalAlignment="Top" Width="256" Height="34" VerticalContentAlignment="Center"
                              HorizontalContentAlignment="Center" Visibility="Hidden" Grid.ColumnSpan="2" />
                     <Label x:Name="lblBaudSea" Content="Baudrate Sealevel:" HorizontalAlignment="Left"
-                           Margin="315,24,0,0"
+                           Margin="315,30,0,0"
                            VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="170" Grid.ColumnSpan="2" />
-                    <ComboBox x:Name="cboxBaudSea" HorizontalAlignment="Left" Margin="88,24,0,0"
+                    <ComboBox x:Name="cboxBaudSea" HorizontalAlignment="Left" Margin="88,30,0,0"
                               VerticalAlignment="Top" Width="126" Height="32" Background="White" SelectedIndex="4"
                               FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                               FontFamily="Arial" Grid.Column="1">
@@ -157,6 +157,10 @@
                     <CheckBox x:Name="chkBox_Shutoff" Content="Tiene Shutoff" HorizontalAlignment="Left" Margin="30,252,0,0" VerticalAlignment="Top" FontSize="20" VerticalContentAlignment="Center" Width="151" Checked="chkBox_Shutoff_Checked" Unchecked="chkBox_Shutoff_Unchecked"/>
                     <Label x:Name="lblShutOff" Content="ShutOff:" HorizontalAlignment="Left" Margin="191,246,0,0"
                         VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="86" Visibility="Hidden" />
+                    <CheckBox x:Name="chkBox_SeaEthernet" Content="Sealevel Ethernet" HorizontalAlignment="Left" Margin="30,7,0,0" VerticalAlignment="Top" Checked="chkBox_SeaEthernet_Checked" Unchecked="chkBox_SeaEthernet_Unchecked" IsChecked="False"/>
+                    <TextBox x:Name="txbIPSealevel"
+                             VerticalAlignment="Top" HorizontalAlignment="Left" Width="173" Margin="181,31,0,0"
+                             FontSize="24" TabIndex="1" TextAlignment="Center" Visibility="Hidden" />
                 </Grid>
             </TabItem>
             <TabItem Header="Ajustes - Contraseña">

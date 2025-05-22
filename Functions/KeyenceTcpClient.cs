@@ -55,11 +55,11 @@ namespace Scale_Program.Functions
 
         public async Task<string> SendCommandAsync(string command)
         {
-            if (_stream == null || !_client.Connected)
-                throw new InvalidOperationException("No hay conexión activa con la cámara.");
-
             try
             {
+                if (_stream == null || !_client.Connected)
+                    throw new InvalidOperationException("No hay conexión activa con la cámara.");
+
                 byte[] commandBytes = Encoding.ASCII.GetBytes(command + "\r");
                 await _stream.WriteAsync(commandBytes, 0, commandBytes.Length);
 
@@ -213,6 +213,7 @@ namespace Scale_Program.Functions
                     {
                         Console.WriteLine("Conexión perdida. Intentando reconectar...");
                         UpdateCameraStatus(1);
+                        Dispose();
 
                         await Task.Delay(_reconnectDelay, token);
 

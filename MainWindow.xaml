@@ -109,13 +109,49 @@
                 <Label Content="Proceso" Visibility="Visible" Grid.Column="1" HorizontalAlignment="Left"
                        Margin="7,1,0,0"
                        VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderCamaraStatus" Grid.Column="2" Margin="87,25,0,0" HorizontalAlignment="Left"
+                <Border x:Name="borderCamaraStatus" Grid.Column="2" Margin="75,25,0,0" HorizontalAlignment="Left"
                     Visibility="Visible"
                     VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
                     BorderThickness="1" Background="Red" />
                 <Label x:Name="LabelLedPart1_Copy" Content="Camara" Grid.Column="2" HorizontalAlignment="Left"
                     Visibility="Visible"
-                    Margin="84,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                    Margin="72,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border x:Name="borderPick1" Grid.Column="2" Margin="147,25,0,0" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                    BorderThickness="1" Background="Red" />
+                <Label x:Name="lblPick_1" Content="Pick-1" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="147,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border x:Name="borderPick2" Grid.Column="2" Margin="202,25,0,0" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                    BorderThickness="1" Background="Red" />
+                <Label x:Name="lblPick_2" Content="Pick-2" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="202,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border x:Name="borderPick3" Grid.Column="2" Margin="257,25,0,0" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                    BorderThickness="1" Background="Red" />
+                <Label x:Name="lblPick_3" Content="Pick-3" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="259,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border x:Name="borderPick4" Grid.Column="2" Margin="312,25,0,0" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                    BorderThickness="1" Background="Red" />
+                <Label x:Name="lblPick_4" Content="Pick-4" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="314,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Border Margin="367,25,0,0" Width="50" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick5" Height="37" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1" BorderBrush="#FF707070" Background="Red" />
+                <Border Margin="422,25,0,0" Width="50" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick6" Height="37" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1" BorderBrush="#FF707070" Background="Red" />
+                <Label x:Name="lblPick_5" Content="Pick-5" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="369,1,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                <Label x:Name="lblPick_6" Content="Pick-6" Grid.Column="2" HorizontalAlignment="Left"
+                    Visibility="Hidden"
+                    Margin="423,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
 
             </Grid>
 

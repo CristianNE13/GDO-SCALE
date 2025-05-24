@@ -186,7 +186,7 @@
             <Button x:Name="btnValidaciones" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="263,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnValidaciones_Click">
+                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnValidaciones_Click" Visibility="Hidden">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -222,10 +222,10 @@
             </TextBox>
             <Label x:Name="lblValidacion" Content="Mostrar" Margin="237,44,0,0" VerticalAlignment="Top"
                    Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="3" Height="26"
-                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Visibility="Hidden" />
             <Label x:Name="lblValidacion2" Content="Validaciones" Margin="237,57,0,0" VerticalAlignment="Top"
                    Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="3" Height="26"
-                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Visibility="Hidden" />
             <Button x:Name="btnEtiqueta" Grid.Column="2" Content="" HorizontalAlignment="Left"
                     Margin="231,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
@@ -280,7 +280,7 @@
                     <ImageBrush />
                 </TextBox.Background>
             </TextBox>
-            <Button x:Name="btnReset" Content="Reset" HorizontalAlignment="Left" Margin="196,13,0,0"
+            <Button x:Name="btnReset" Content="Reset" HorizontalAlignment="Left" Margin="266,12,0,0"
                     VerticalAlignment="Top" Width="36" Height="36" FontSize="24"
                     RenderTransformOrigin="0.378,4.807" Click="BtnReset_Click" Grid.Column="3"
                     Template="{StaticResource ButtonControlTemplate1}" BorderBrush="{x:Null}">
@@ -291,7 +291,7 @@
                     <ImageBrush ImageSource="/Content/img/Restart.png" Stretch="Uniform" />
                 </Button.Background>
             </Button>
-            <TextBlock Text="Reset de secuencia" Margin="182,47,0,0" VerticalAlignment="Top"
+            <TextBlock Text="Reset de secuencia" Margin="252,46,0,0" VerticalAlignment="Top"
                        Foreground="White" HorizontalAlignment="Left" Width="64" Grid.Column="3" Height="33"
                        TextWrapping="Wrap" TextAlignment="Center" />
 

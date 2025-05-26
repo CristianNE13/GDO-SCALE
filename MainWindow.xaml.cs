@@ -116,6 +116,12 @@ namespace Scale_Program
                 grdValidacion.Visibility = Visibility.Hidden;
                 lbx_Codes.Visibility = Visibility.Hidden;
 
+                foreach (var border in borders)
+                {
+                    border.Visibility = Visibility.Hidden;
+                    labels[borders.IndexOf(border)].Visibility = Visibility.Hidden;
+                }
+
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
                 IniciarSealevel();
                 OutputsOff();
@@ -174,12 +180,12 @@ namespace Scale_Program
 
                 SecuenciaASeguir(ModeloData);
 
+                ResetVariables();
                 _inicioZero = true;
                 ShowIniciar();
 
                 if (defaultSettings.CheckShutOff)
                     ActivarSalida(defaultSettings.ShutOff);
-
 
                 if (ModeloData.UsaCamaraVision)
                 {
@@ -458,6 +464,16 @@ namespace Scale_Program
                 _stopBascula1 = false;
                 _manual = false;
                 _zeroConfirmed = false;
+                _inicioZero = true;
+                _activarBoton = true;
+                _etapa1 = true;
+                _etapa2 = false;
+                _pickCompletado = false;
+                _esperandoPickToLight = false;
+                _verificacionIndividual = false;
+                _consecutiveCount = 0;
+                _accumulatedWeight = 0;
+                _currentStepIndex = 0;
                 pick0Estado = true;
                 pick1Estado = true;
                 pick2Estado = true;
@@ -465,16 +481,9 @@ namespace Scale_Program
                 pick4Estado = true;
                 pick5Estado = true;
 
-                _consecutiveCount = 0;
-                _accumulatedWeight = 0;
-                _currentStepIndex = 0;
                 lblProgreso.Content = 0;
                 valoresBolsas.Clear();
-                _etapa1 = true;
-                _etapa2 = false;
-                _pickCompletado = false;
-                _esperandoPickToLight = false;
-                _verificacionIndividual = false;
+
 
                 if (ioScannerActivado)
                 {
@@ -487,9 +496,6 @@ namespace Scale_Program
                 txbPesoActual.Text = "0.0Kg";
                 PesoGeneral.Text = "0.0Kg";
                 codigo = "";
-
-                _inicioZero = true;
-                _activarBoton = true;
 
                 SetImagesBox();
 
@@ -508,7 +514,7 @@ namespace Scale_Program
                 }
 
                 CargarSecuenciasPorModelo(modeloSeleccionado);
-                CargarProcesos();
+
                 HideAll();
 
                 if (Cbox_Proceso.SelectedValue == null)
@@ -517,7 +523,7 @@ namespace Scale_Program
                     return;
                 }
 
-                Cbox_Proceso.SelectedIndex = 0;
+
                 var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
                 sequence = ObtenerValoresProceso(modeloSeleccionado, procesoSeleccionado);
                 ProcesarModeloValido(ModeloData.NoModelo);
@@ -525,12 +531,38 @@ namespace Scale_Program
                 SetValuesEtapas(sequence, 1);
                 SetImagesBox();
                 SecuenciaASeguir(ModeloData);
-                Cbox_Proceso.SelectedIndex = 0;
+                Cbox_Proceso.SelectedIndex = procesoSeleccionado-1;;
             }
             catch (Exception ex)
             {
                 ShowAlertError($"Error al procesar el reset del modelo: {ex.Message}");
             }
+        }
+
+        private void ResetVariables()
+        {
+            _stopBascula1 = false;
+            _manual = false;
+            _zeroConfirmed = false;
+            _inicioZero = true;
+            _activarBoton = true;
+            _etapa1 = true;
+            _etapa2 = false;
+            _pickCompletado = false;
+            _esperandoPickToLight = false;
+            _verificacionIndividual = false;
+            _consecutiveCount = 0;
+            _accumulatedWeight = 0;
+            _currentStepIndex = 0;
+            pick0Estado = true;
+            pick1Estado = true;
+            pick2Estado = true;
+            pick3Estado = true;
+            pick4Estado = true;
+            pick5Estado = true;
+
+            lblProgreso.Content = 0;
+            valoresBolsas.Clear();
         }
 
         private void RegistrarPasoRechazado(SequenceStep step)
@@ -1546,6 +1578,12 @@ namespace Scale_Program
                 borderPick4.Visibility = Visibility.Hidden;
                 borderPick5.Visibility = Visibility.Hidden;
                 borderPick6.Visibility = Visibility.Hidden;
+                lblPick_1.Visibility = Visibility.Hidden;
+                lblPick_2.Visibility = Visibility.Hidden;
+                lblPick_3.Visibility = Visibility.Hidden;
+                lblPick_4.Visibility = Visibility.Hidden;
+                lblPick_5.Visibility = Visibility.Hidden;
+                lblPick_6.Visibility = Visibility.Hidden;
 
                 var pickNumbers = listaSinCCAM
                     .Select(x => int.TryParse(x.PartOrden, out var orden) ? orden : -1)
@@ -1644,6 +1682,7 @@ namespace Scale_Program
                     DesactivarSalida(defaultSettings.Piston);
 
                     lbx_Codes.Visibility = Visibility.Hidden;
+                    ProcesarResetModelo();
                     _currentStepIndex = 0;
                     _accumulatedWeight = 0;
                     pieceWeight = 0;
@@ -1799,6 +1838,7 @@ namespace Scale_Program
                 DesactivarSalida(defaultSettings.Piston);
 
                 lbx_Codes.Visibility = Visibility.Hidden;
+                ProcesarResetModelo();
                 _currentStepIndex = 0;
                 _accumulatedWeight = 0;
                 pieceWeight = 0;
@@ -1822,6 +1862,7 @@ namespace Scale_Program
                 _activarBoton = true;
                 _manual = true;
                 ActivarCamaraValidacion();
+                return;
             }
 
 
@@ -1959,6 +2000,12 @@ namespace Scale_Program
                 borderPick4.Visibility = Visibility.Hidden;
                 borderPick5.Visibility = Visibility.Hidden;
                 borderPick6.Visibility = Visibility.Hidden;
+                lblPick_1.Visibility = Visibility.Hidden;
+                lblPick_2.Visibility = Visibility.Hidden;
+                lblPick_3.Visibility = Visibility.Hidden;
+                lblPick_4.Visibility = Visibility.Hidden;
+                lblPick_5.Visibility = Visibility.Hidden;
+                lblPick_6.Visibility = Visibility.Hidden;
 
                 var pickNumbers = listaSinCCAM
                     .Select(x => int.TryParse(x.PartOrden, out var orden) ? orden : -1)
@@ -2008,7 +2055,6 @@ namespace Scale_Program
                     }
             }
 
-
             if (!_esperandoPickToLight)
             {
                 var minTotal = pasosAMostrar.Sum(p => p.MinWeight);
@@ -2050,6 +2096,7 @@ namespace Scale_Program
                     DesactivarSalida(defaultSettings.Piston);
 
                     lbx_Codes.Visibility = Visibility.Hidden;
+                    ProcesarResetModelo();
                     _currentStepIndex = 0;
                     _accumulatedWeight = 0;
                     pieceWeight = 0;
@@ -2057,7 +2104,6 @@ namespace Scale_Program
                     contador++;
                     lblCompletados.Content = contador;
                     codigo = "";
-                    _inicioZero = true;
                     ShowIniciar();
                     Dispatcher.Invoke(ShowPruebaCorrecta);
                     return;
@@ -2129,10 +2175,10 @@ namespace Scale_Program
                 DesactivarSalida(defaultSettings.Piston);
 
                 lbx_Codes.Visibility = Visibility.Hidden;
+                ProcesarResetModelo();
                 _currentStepIndex = 0;
                 _accumulatedWeight = 0;
                 pieceWeight = 0;
-                SetImagesBox();
                 contador++;
                 lblCompletados.Content = contador;
                 codigo = "";
@@ -2575,6 +2621,7 @@ namespace Scale_Program
             _zeroConfirmed = false;
             _pickCompletado = false;
             _esperandoPickToLight = false;
+            _verificacionIndividual = false;
             pick0Estado = true;
             pick1Estado = true;
             pick2Estado = true;

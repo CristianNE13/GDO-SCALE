@@ -17,6 +17,8 @@ namespace Scale_Program.Functions
         private bool _isConnected;
         public bool IsConnected => _isConnected;
 
+        private readonly object _modbusLock = new object();
+
         public SeaLevelEthernet(string ipAddress, int slaveId, int port)
         {
             _ip = ipAddress;
@@ -35,14 +37,11 @@ namespace Scale_Program.Functions
         {
             _ip = ipAddress;
             _port = 502; //Modbus default port
-            _slaveId = 247;
+            _slaveId = 247; //default id
         }
 
         public void Connect()
         {
-            if (_isConnected)
-                throw new InvalidOperationException("La conexión ya está abierta.");
-
             _tcpClient = new TcpClient(_ip, _port);
             _modbusMaster = ModbusIpMaster.CreateIp(_tcpClient);
             _isConnected = true;
@@ -50,71 +49,75 @@ namespace Scale_Program.Functions
 
         public void Dispose()
         {
-            if (_tcpClient != null && _tcpClient.Connected)
+            _tcpClient?.Close();
+            _tcpClient?.Dispose();
+            _tcpClient = null;
+            _modbusMaster = null;
+            _isConnected = false;
+        }
+
+
+        private T EjecutarConReconexion<T>(Func<T> operacion, string contexto)
+        {
+            lock (_modbusLock)
             {
-                _tcpClient.Close();
-                _isConnected = false;
+                try
+                {
+                    return operacion();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[{contexto}] Error: {ex.Message}. Intentando reconexión...");
+
+                    Dispose();
+
+                    try
+                    {
+                        Connect();
+                        return operacion(); // Reintenta
+                    }
+                    catch (Exception reconEx)
+                    {
+                        Console.WriteLine($"[{contexto}] Falla en reconexión: {reconEx.Message}");
+                        throw; // Ya no podemos hacer más
+                    }
+                }
             }
-        }
-
-
-        public void SetSingleCoilState(int outputNumber, bool state)
-        {
-            if (outputNumber < 0 || outputNumber >= MaxOutputs)
-                throw new ArgumentOutOfRangeException(nameof(outputNumber));
-
-            _modbusMaster.WriteSingleCoil(_slaveId, (ushort)outputNumber, state);
-        }
-
-        public void WriteMultipleCoils(int startIndex, int value, int count)
-        {
-            if (count <= 0 || count > MaxOutputs)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            if (startIndex < 0 || startIndex + count > MaxOutputs)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-            var bits = new bool[count];
-            for (int i = 0; i < count; i++)
-                bits[i] = (value & (1 << i)) != 0;
-
-            _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
         }
 
         public uint ReadDiscreteInputs(int startIndex, int count)
         {
-            if (startIndex < 0 || startIndex >= MaxInputs)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-            if (startIndex + count > MaxInputs)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
-            ushort result = 0;
-            for (int i = 0; i < inputs.Length; i++)
+            return EjecutarConReconexion(() =>
             {
-                if (inputs[i])
-                    result |= (ushort)(1 << i);
-            }
-            return result;
+                var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
+                uint result = 0;
+                for (int i = 0; i < inputs.Length; i++)
+                    if (inputs[i])
+                        result |= (uint)(1 << i);
+                return result;
+            }, "ReadDiscreteInputs");
         }
 
-        public ushort ReadCoils(int startIndex, int count)
+        public void SetSingleCoilState(int coilIndex, bool state)
         {
-            if (startIndex < 0 || startIndex >= MaxOutputs)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-            if (startIndex + count > MaxOutputs)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            var coils = _modbusMaster.ReadCoils(_slaveId, (ushort)startIndex, (ushort)count);
-            ushort result = 0;
-            for (int i = 0; i < coils.Length; i++)
+            EjecutarConReconexion(() =>
             {
-                if (coils[i])
-                    result |= (ushort)(1 << i);
-            }
-            return result;
+                _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
+                return true;
+            }, "SetSingleCoilState");
+        }
+
+        public void WriteMultipleCoils(int startIndex, int value, int count)
+        {
+            EjecutarConReconexion(() =>
+            {
+                var bits = new bool[count];
+                for (int i = 0; i < count; i++)
+                    bits[i] = (value & (1 << i)) != 0;
+
+                _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
+                return true;
+            }, "WriteMultipleCoils");
         }
     }
 }

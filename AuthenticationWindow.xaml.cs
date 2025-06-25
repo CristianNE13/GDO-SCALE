@@ -1,7 +1,7 @@
-﻿using Scale_Program.Functions;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
+using Scale_Program.Functions;
 
 namespace Scale_Program
 {
@@ -14,7 +14,7 @@ namespace Scale_Program
         {
             InitializeComponent();
             db = new dc_missingpartsEntities();
-            this.Loaded += OnAuthenticationWindowLoaded;
+            Loaded += OnAuthenticationWindowLoaded;
         }
 
         private void OnAuthenticationWindowLoaded(object sender, RoutedEventArgs e)
@@ -25,10 +25,7 @@ namespace Scale_Program
 
         private void OnLoginButtonClick(object sender, RoutedEventArgs e)
         {
-            if( AuthenticateUser() )
-            {
-                this.DialogResult = true;
-            }
+            if (AuthenticateUser()) DialogResult = true;
         }
 
         private bool AuthenticateUser()
@@ -46,14 +43,10 @@ namespace Scale_Program
                     }
 
                     if (ConfiguracionWindow.PasswordHash.VerifyPassword(txtPassword.Password, usuario.password))
-                    {
                         return true;
-                    }
-                    else
-                    {
-                        ShowErroMessage("Contraseña incorrecta.");
-                        return false;
-                    }
+
+                    ShowErroMessage("Contraseña incorrecta.");
+                    return false;
                 }
             }
             catch (Exception)
@@ -64,27 +57,27 @@ namespace Scale_Program
         }
 
 
-        private void ShowErroMessage(string message )
+        private void ShowErroMessage(string message)
         {
-            ErrorMessageWindow err = new ErrorMessageWindow();
+            var err = new ErrorMessageWindow();
 
             err.TitleText = "Falla en Autenticación";
             err.Message = message;
 
             err.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            double w = ((err.Width - this.Width) / 2);
-            double h = ((err.Height - this.Height) / 2);
+            var w = (err.Width - Width) / 2;
+            var h = (err.Height - Height) / 2;
 
-            err.Left = this.Left - w;
-            err.Top = this.Top - h;
+            err.Left = Left - w;
+            err.Top = Top - h;
 
             err.ShowDialog();
         }
 
         private void OnCancelButtonClick(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
+            DialogResult = false;
         }
     }
 }

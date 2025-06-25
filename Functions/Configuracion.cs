@@ -27,6 +27,8 @@ namespace Scale_Program.Functions
         public string BasculaMarca { get; set; }
         public bool CheckSealevelEthernet { get; set; }
         public string SealevelIP { get; set; }
+        public int InputSensor0 { get; set; }
+        public int InputSensor1 { get; set; }
 
         public static string RutaArchivoConf { get; } =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");

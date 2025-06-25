@@ -1,96 +1,98 @@
-﻿using log4net;
-using Scale_Program.Functions;
-using System;
+﻿using System;
+using log4net;
 
-public sealed class IOInterface : IDisposable
+namespace Scale_Program.Functions
 {
-    public const int MaxInputs = 16; // Número máximo de entradas
-    public const int MaxOutputs = 16; // Número máximo de salidas
-    private readonly ISeaLevelDevice seaLevel;
-    private readonly ILog Logger = LogManager.GetLogger("IOInterface");
-
-    public IOInterface(ISeaLevelDevice device)
+    public sealed class IOInterface : IDisposable
     {
-        seaLevel = device ?? throw new ArgumentNullException(nameof(device));
-    }
+        public const int MaxInputs = 16; // Número máximo de entradas
+        public const int MaxOutputs = 16; // Número máximo de salidas
+        private readonly ILog Logger = LogManager.GetLogger("IOInterface");
+        private readonly ISeaLevelDevice seaLevel;
 
-    public void Dispose()
-    {
-        seaLevel.Dispose();
-    }
-
-    public uint ReadAllInputs()
-    {
-        try
+        public IOInterface(ISeaLevelDevice device)
         {
-            return seaLevel.ReadDiscreteInputs(0, MaxInputs);
+            seaLevel = device ?? throw new ArgumentNullException(nameof(device));
         }
-        catch (Exception ex)
-        {
-            Logger.Error("ReadAllInputs", ex);
-            return 0;
-        }
-    }
 
-    public bool ReadSingleInput(int inputNumber)
-    {
-        if (inputNumber < 0 || inputNumber >= MaxInputs)
-            throw new ArgumentOutOfRangeException(nameof(inputNumber));
-
-        try
+        public void Dispose()
         {
-            return seaLevel.ReadDiscreteInputs(inputNumber, 1) != 0;
+            seaLevel.Dispose();
         }
-        catch (Exception ex)
-        {
-            Logger.Error("ReadSingleInput", ex);
-            return false;
-        }
-    }
 
-    public void WriteSingleOutput(int outputNumber, bool active)
-    {
-        if (outputNumber < 0 || outputNumber >= MaxOutputs)
-            throw new ArgumentOutOfRangeException(nameof(outputNumber));
-
-        try
+        public uint ReadAllInputs()
         {
-            seaLevel.SetSingleCoilState(outputNumber, active);
+            try
+            {
+                return seaLevel.ReadDiscreteInputs(0, MaxInputs);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("ReadAllInputs", ex);
+                return 0;
+            }
         }
-        catch (Exception ex)
-        {
-            Logger.Error("WriteSingleOutput", ex);
-        }
-    }
 
-    public void WriteMultipleOutputs(int startOutput, ushort value, int count)
-    {
-        if (startOutput < 0 || startOutput >= MaxOutputs)
-            throw new ArgumentOutOfRangeException(nameof(startOutput));
+        public bool ReadSingleInput(int inputNumber)
+        {
+            if (inputNumber < 0 || inputNumber >= MaxInputs)
+                throw new ArgumentOutOfRangeException(nameof(inputNumber));
 
-        if (startOutput + count > MaxOutputs)
-            throw new ArgumentOutOfRangeException(nameof(count));
+            try
+            {
+                return seaLevel.ReadDiscreteInputs(inputNumber, 1) != 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("ReadSingleInput", ex);
+                return false;
+            }
+        }
 
-        try
+        public void WriteSingleOutput(int outputNumber, bool active)
         {
-            seaLevel.WriteMultipleCoils(startOutput, value, count);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error("WriteMultipleOutputs", ex);
-        }
-    }
+            if (outputNumber < 0 || outputNumber >= MaxOutputs)
+                throw new ArgumentOutOfRangeException(nameof(outputNumber));
 
-    public bool Verify()
-    {
-        try
-        {
-            ReadAllInputs();
-            return true;
+            try
+            {
+                seaLevel.SetSingleCoilState(outputNumber, active);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("WriteSingleOutput", ex);
+            }
         }
-        catch
+
+        public void WriteMultipleOutputs(int startOutput, ushort value, int count)
         {
-            return false;
+            if (startOutput < 0 || startOutput >= MaxOutputs)
+                throw new ArgumentOutOfRangeException(nameof(startOutput));
+
+            if (startOutput + count > MaxOutputs)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            try
+            {
+                seaLevel.WriteMultipleCoils(startOutput, value, count);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("WriteMultipleOutputs", ex);
+            }
+        }
+
+        public bool Verify()
+        {
+            try
+            {
+                ReadAllInputs();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
-using Modbus.Device; // NSModbus4
+using Modbus.Device;
 
 namespace Scale_Program.Functions
 {
@@ -10,14 +10,12 @@ namespace Scale_Program.Functions
         private const int MaxOutputs = 16;
 
         private readonly string _ip;
-        private readonly int _port;
-        private readonly byte _slaveId;
-        private TcpClient _tcpClient;
-        private IModbusMaster _modbusMaster;
-        private bool _isConnected;
-        public bool IsConnected => _isConnected;
 
         private readonly object _modbusLock = new object();
+        private readonly int _port;
+        private readonly byte _slaveId;
+        private IModbusMaster _modbusMaster;
+        private TcpClient _tcpClient;
 
         public SeaLevelEthernet(string ipAddress, int slaveId, int port)
         {
@@ -40,12 +38,7 @@ namespace Scale_Program.Functions
             _slaveId = 247; //default id
         }
 
-        public void Connect()
-        {
-            _tcpClient = new TcpClient(_ip, _port);
-            _modbusMaster = ModbusIpMaster.CreateIp(_tcpClient);
-            _isConnected = true;
-        }
+        public bool IsConnected { get; private set; }
 
         public void Dispose()
         {
@@ -53,7 +46,49 @@ namespace Scale_Program.Functions
             _tcpClient?.Dispose();
             _tcpClient = null;
             _modbusMaster = null;
-            _isConnected = false;
+            IsConnected = false;
+        }
+
+        public uint ReadDiscreteInputs(int startIndex, int count)
+        {
+            return EjecutarConReconexion(() =>
+            {
+                var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
+                uint result = 0;
+                for (var i = 0; i < inputs.Length; i++)
+                    if (inputs[i])
+                        result |= (uint)(1 << i);
+                return result;
+            }, "ReadDiscreteInputs");
+        }
+
+        public void SetSingleCoilState(int coilIndex, bool state)
+        {
+            EjecutarConReconexion(() =>
+            {
+                _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
+                return true;
+            }, "SetSingleCoilState");
+        }
+
+        public void WriteMultipleCoils(int startIndex, int value, int count)
+        {
+            EjecutarConReconexion(() =>
+            {
+                var bits = new bool[count];
+                for (var i = 0; i < count; i++)
+                    bits[i] = (value & (1 << i)) != 0;
+
+                _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
+                return true;
+            }, "WriteMultipleCoils");
+        }
+
+        public void Connect()
+        {
+            _tcpClient = new TcpClient(_ip, _port);
+            _modbusMaster = ModbusIpMaster.CreateIp(_tcpClient);
+            IsConnected = true;
         }
 
 
@@ -83,41 +118,6 @@ namespace Scale_Program.Functions
                     }
                 }
             }
-        }
-
-        public uint ReadDiscreteInputs(int startIndex, int count)
-        {
-            return EjecutarConReconexion(() =>
-            {
-                var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
-                uint result = 0;
-                for (int i = 0; i < inputs.Length; i++)
-                    if (inputs[i])
-                        result |= (uint)(1 << i);
-                return result;
-            }, "ReadDiscreteInputs");
-        }
-
-        public void SetSingleCoilState(int coilIndex, bool state)
-        {
-            EjecutarConReconexion(() =>
-            {
-                _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
-                return true;
-            }, "SetSingleCoilState");
-        }
-
-        public void WriteMultipleCoils(int startIndex, int value, int count)
-        {
-            EjecutarConReconexion(() =>
-            {
-                var bits = new bool[count];
-                for (int i = 0; i < count; i++)
-                    bits[i] = (value & (1 << i)) != 0;
-
-                _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
-                return true;
-            }, "WriteMultipleCoils");
         }
     }
 }

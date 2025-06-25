@@ -45,7 +45,7 @@
             <Grid Height="77" Margin="0,88,0,0" VerticalAlignment="Top" Background="#FFE2E2E2" Grid.ColumnSpan="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="370" />
-                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="100" />
                     <ColumnDefinition Width="250*" />
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="2">
@@ -69,6 +69,12 @@
                            HorizontalContentAlignment="Center" Margin="0,8,215,0" VerticalAlignment="Top"
                            RenderTransformOrigin="1.026,0.423" FontFamily="Arial" FontSize="14" Foreground="#FF7F7F7F"
                            Height="30" Width="228" FontWeight="Normal" Visibility="Hidden" />
+                    <Label x:Name="LabelLedPart1_Copy" Content="Camara" HorizontalAlignment="Left"
+                           Visibility="Visible"
+                           Margin="43,5,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                    <Label x:Name="LabelLedPart1" Content="Bascula" HorizontalAlignment="Left"
+                           Visibility="Visible" VerticalAlignment="Top" Foreground="#FF595656" Margin="-2,5,0,0"
+                           FontWeight="Bold" />
                 </Grid>
                 <ComboBox x:Name="Cbox_Modelo" Text="Modelo" IsEditable="False" IsReadOnly="True" Margin="10,25,16,0"
                           VerticalAlignment="Top" Height="37" Background="White" FontFamily="Open Sans"
@@ -79,12 +85,9 @@
                 <Label Content="Bolsas" Grid.Column="1" HorizontalAlignment="Left" Margin="7,1,0,0"
                        VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" Visibility="Hidden" />
 
-                <Label Name="LabelLedPart1" Content="Bascula 1" Grid.Column="2" HorizontalAlignment="Left"
-                       Visibility="Visible"
-                       Margin="9,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderBascula1" Grid.Column="2" Margin="17,25,0,0" HorizontalAlignment="Left"
+                <Border x:Name="borderBascula1" Grid.Column="2" Margin="5,25,0,0" HorizontalAlignment="Left"
                         Visibility="Visible"
-                        VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
                         BorderThickness="1" Background="Red" />
                 <Label Name="LabelLedPart2" Content="Bascula 2" Grid.Column="2" HorizontalAlignment="Left"
                        Visibility="Hidden"
@@ -101,57 +104,73 @@
                         Visibility="Hidden"
                         VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
                         BorderThickness="1" Background="Red" />
-                <ComboBox x:Name="Cbox_Proceso" Text="Proceso" IsEditable="False" Visibility="Hidden"
-                          IsReadOnly="True" Margin="10,25,10,0"
+                <ComboBox x:Name="Cbox_Proceso" Text="Proceso" IsEditable="False" Visibility="Visible"
+                          IsReadOnly="True" Margin="10,25,5,0"
                           VerticalAlignment="Top" Height="37" Background="White" Grid.Column="1" FontFamily="Open Sans"
                           FontSize="21.333" Foreground="#FF343333" SelectionChanged="Cbox_Proceso_SelectionChanged"
                           SelectedIndex="-1" />
                 <Label Content="Proceso" Visibility="Visible" Grid.Column="1" HorizontalAlignment="Left"
                        Margin="7,1,0,0"
                        VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderCamaraStatus" Grid.Column="2" Margin="75,25,0,0" HorizontalAlignment="Left"
-                    Visibility="Visible"
-                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                    BorderThickness="1" Background="Red" />
-                <Label x:Name="LabelLedPart1_Copy" Content="Camara" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Visible"
-                    Margin="72,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderPick1" Grid.Column="2" Margin="147,25,0,0" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                    BorderThickness="1" Background="Red" />
+                <Border x:Name="borderCamaraStatus" Grid.Column="2" Margin="50,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Visible"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <Border x:Name="borderPick1" Grid.Column="2" Margin="95,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
                 <Label x:Name="lblPick_1" Content="Pick-1" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="147,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderPick2" Grid.Column="2" Margin="202,25,0,0" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                    BorderThickness="1" Background="Red" />
+                       Visibility="Hidden"
+                       Margin="93,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                <Border x:Name="borderPick2" Grid.Column="2" Margin="140,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
                 <Label x:Name="lblPick_2" Content="Pick-2" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="202,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderPick3" Grid.Column="2" Margin="257,25,0,0" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                    BorderThickness="1" Background="Red" />
+                       Visibility="Hidden"
+                       Margin="137,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                <Border x:Name="borderPick3" Grid.Column="2" Margin="185,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
                 <Label x:Name="lblPick_3" Content="Pick-3" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="259,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border x:Name="borderPick4" Grid.Column="2" Margin="312,25,0,0" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    VerticalAlignment="Top" CornerRadius="1" Height="37" Width="50" BorderBrush="#FF707070"
-                    BorderThickness="1" Background="Red" />
+                       Visibility="Hidden"
+                       Margin="182,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                <Border x:Name="borderPick4" Grid.Column="2" Margin="230,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
                 <Label x:Name="lblPick_4" Content="Pick-4" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="314,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
-                <Border Margin="367,25,0,0" Width="50" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick5" Height="37" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1" BorderBrush="#FF707070" Background="Red" />
-                <Border Margin="422,25,0,0" Width="50" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick6" Height="37" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1" BorderBrush="#FF707070" Background="Red" />
+                       Visibility="Hidden"
+                       Margin="225,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" Width="48" />
+                <Border Margin="275,25,0,0" Width="40" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick5"
+                        Height="40" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1"
+                        BorderBrush="#FF707070" Background="Red" />
+                <Border Margin="320,25,0,0" Width="40" Visibility="Hidden" VerticalAlignment="Top" x:Name="borderPick6"
+                        Height="40" HorizontalAlignment="Left" Grid.Column="2" CornerRadius="1" BorderThickness="1"
+                        BorderBrush="#FF707070" Background="Red" />
                 <Label x:Name="lblPick_5" Content="Pick-5" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="369,1,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                       Visibility="Hidden"
+                       Margin="272,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
                 <Label x:Name="lblPick_6" Content="Pick-6" Grid.Column="2" HorizontalAlignment="Left"
-                    Visibility="Hidden"
-                    Margin="423,0,0,0" VerticalAlignment="Top" FontSize="14" Foreground="#FF595656" />
+                       Visibility="Hidden"
+                       Margin="317,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+
+                <Label x:Name="lblVerificar" Content="Sensor1" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Hidden"
+                       Margin="359,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                <Border x:Name="borderSensor0" Grid.Column="2" Margin="365,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <Border x:Name="borderSensor1" Grid.Column="2" Margin="410,25,0,0" HorizontalAlignment="Left"
+                        Visibility="Hidden"
+                        VerticalAlignment="Top" CornerRadius="1" Height="40" Width="40" BorderBrush="#FF707070"
+                        BorderThickness="1" Background="Red" />
+                <Label x:Name="lblVerificar1" Content="Sensor2" Grid.Column="2" HorizontalAlignment="Left"
+                       Visibility="Hidden"
+                       Margin="405,0,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
 
             </Grid>
 
@@ -186,7 +205,8 @@
             <Button x:Name="btnValidaciones" Grid.Column="3" Content="" HorizontalAlignment="Left"
                     Margin="263,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36"
                     Width="36" BorderBrush="{x:Null}"
-                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnValidaciones_Click" Visibility="Hidden">
+                    Template="{StaticResource ButtonControlTemplate1}" Click="BtnValidaciones_Click"
+                    Visibility="Hidden">
                 <Button.Foreground>
                     <ImageBrush />
                 </Button.Foreground>
@@ -695,10 +715,10 @@
                 </TextBlock>
                 <Button x:Name="AsignarQS_Btn" Content="QUICK SETUP" HorizontalAlignment="Left" Margin="52,56,0,-29"
                         Grid.Row="4" VerticalAlignment="Top" Width="151" Height="49" Background="#FF53AB3B"
-                        Foreground="White" FontWeight="Bold" FontSize="16" Click ="AsignarQS_Btn_Click"/>
+                        Foreground="White" FontWeight="Bold" FontSize="16" Click="AsignarQS_Btn_Click" />
                 <Button x:Name="CancelarQS_Btn" Content="CANCELAR" HorizontalAlignment="Left" Margin="232,56,0,-29"
                         Grid.Row="4" VerticalAlignment="Top" Width="151" Height="49" Foreground="White"
-                        Background="#FF888888" FontWeight="Bold" FontSize="16" Click="CancelarQS_Btn_Click"/>
+                        Background="#FF888888" FontWeight="Bold" FontSize="16" Click="CancelarQS_Btn_Click" />
                 <TextBlock x:Name="PopupMsg_Copy" TextWrapping="Wrap" Margin="124,9,129,0" FontSize="21.333"
                            TextAlignment="Center" Grid.Row="2" Height="37" VerticalAlignment="Top">
                     <Run Text="Variación +/-" />
@@ -732,7 +752,8 @@
                 </Button>
                 <Button x:Name="BajarPeso_Btn" Content="" Margin="0,66,318,0" VerticalAlignment="Top" Height="28"
                         HorizontalAlignment="Right" Width="26" BorderBrush="{x:Null}" Foreground="White"
-                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="2" Grid.RowSpan="2" Click="BajarVariacion_Btn_Click">
+                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="2" Grid.RowSpan="2"
+                        Click="BajarVariacion_Btn_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Content/img/Arrowhead-Down.png" />
                     </Button.Background>
@@ -753,7 +774,8 @@
                          Grid.RowSpan="2" TextAlignment="Center" FontSize="26.667" />
                 <Button x:Name="SubirPeso_min_Btn" Content="" Margin="0,36,393,74" HorizontalAlignment="Right"
                         Width="26" BorderBrush="{x:Null}" Foreground="White"
-                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="3" Grid.RowSpan="2" Click="SubirPeso_min_Btn_Click">
+                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="3" Grid.RowSpan="2"
+                        Click="SubirPeso_min_Btn_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Content/img/Up Arrow - 01.png" />
                     </Button.Background>
@@ -761,7 +783,8 @@
                 </Button>
                 <Button x:Name="BajarPeso_min_Btn" Content="" Margin="0,2,393,0" VerticalAlignment="Top" Height="28"
                         HorizontalAlignment="Right" Width="26" BorderBrush="{x:Null}" Foreground="White"
-                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="4" Click="BajarPeso_min_Btn_Click">
+                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="4"
+                        Click="BajarPeso_min_Btn_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Content/img/Arrowhead-Down.png" />
                     </Button.Background>
@@ -769,7 +792,8 @@
                 </Button>
                 <Button x:Name="SubirPeso_max_Btn" Content="" Margin="0,36,21,74" HorizontalAlignment="Right"
                         Width="26" BorderBrush="{x:Null}" Foreground="White"
-                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="3" Grid.RowSpan="2" Click="SubirPeso_max_Btn_Click">
+                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="3" Grid.RowSpan="2"
+                        Click="SubirPeso_max_Btn_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Content/img/Up Arrow - 01.png" />
                     </Button.Background>
@@ -777,7 +801,8 @@
                 </Button>
                 <Button x:Name="BajarPeso_max_Btn" Content="" Margin="0,2,21,0" VerticalAlignment="Top" Height="28"
                         HorizontalAlignment="Right" Width="26" BorderBrush="{x:Null}" Foreground="White"
-                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="4" Click="BajarPeso_max_Btn_Click">
+                        Template="{DynamicResource ButtonControlTemplate1}" Grid.Row="4"
+                        Click="BajarPeso_max_Btn_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Content/img/Arrowhead-Down.png" />
                     </Button.Background>

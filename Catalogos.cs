@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using Scale_Program.Functions;
 
 namespace Scale_Program
 {
     public partial class Catalogos : Window
     {
-        public event Action CambiosGuardados;
-        public ObservableCollection<Modelo> Modelos { get; set; }
-        public ObservableCollection<Articulo> Articulos { get; set; }
-
         public Catalogos()
         {
             InitializeComponent();
@@ -25,6 +18,10 @@ namespace Scale_Program
             NoModeloTBox.Focus();
         }
 
+        public ObservableCollection<Modelo> Modelos { get; set; }
+        public ObservableCollection<Articulo> Articulos { get; set; }
+        public event Action CambiosGuardados;
+
         private void CargarDatosModelos()
         {
             using (var db = new dc_missingpartsEntities())
@@ -32,16 +29,15 @@ namespace Scale_Program
                 var modelosDb = db.Modelos
                     .OrderBy(m => m.ModProceso)
                     .ToList();
-                
+
                 Modelos = new ObservableCollection<Modelo>(modelosDb);
-                
+
                 ModeloDataGrid.ItemsSource = Modelos;
             }
         }
 
         public void CargarDatosArticulos()
         {
-
             using (var db = new dc_missingpartsEntities())
             {
                 var modelosDb = db.Modelos
@@ -96,7 +92,8 @@ namespace Scale_Program
                     return;
                 }
 
-                if (ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value && string.IsNullOrWhiteSpace(txbProgramaVision.Text))
+                if (ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value &&
+                    string.IsNullOrWhiteSpace(txbProgramaVision.Text))
                 {
                     MessageBox.Show("Error en el campo de numero de programa.", "AGREGAR PROGRAMA");
                     return;
@@ -104,14 +101,13 @@ namespace Scale_Program
 
                 var programasVision = txbProgramaVision.Text.Split(',').Select(p => p.Trim()).ToList();
                 foreach (var programa in programasVision)
-                {
-                    if (!int.TryParse(programa, out int numero))
+                    if (!int.TryParse(programa, out var numero))
                     {
-                        MessageBox.Show($"El programa de visión '{programa}' no es válido.", "Error", MessageBoxButton.OK,
+                        MessageBox.Show($"El programa de visión '{programa}' no es válido.", "Error",
+                            MessageBoxButton.OK,
                             MessageBoxImage.Error);
                         return;
                     }
-                }
 
                 var modelo = new Modelo
                 {
@@ -243,7 +239,9 @@ namespace Scale_Program
                             articuloBD.Cantidad = articuloLocal.Cantidad;
                         }
                         else
+                        {
                             db.Articulos.Add(articuloLocal);
+                        }
                     }
 
                     db.SaveChanges();
@@ -302,7 +300,8 @@ namespace Scale_Program
 
                 if (pesoMin > pesoMax)
                 {
-                    MessageBox.Show("El Peso Mínimo no puede ser mayor que el Peso Máximo.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("El Peso Mínimo no puede ser mayor que el Peso Máximo.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -364,11 +363,11 @@ namespace Scale_Program
                         db.Articulos.Remove(articuloDb);
                         db.SaveChanges();
                     }
-                
                 }
+
                 CargarDatosArticulos();
                 MessageBox.Show("Artículo eliminado correctamente.", "Éxito", MessageBoxButton.OK,
-                                       MessageBoxImage.Information);
+                    MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -405,7 +404,9 @@ namespace Scale_Program
                             modeloBD.Activo = modeloLocal.Activo;
                         }
                         else
+                        {
                             db.Modelos.Add(modeloLocal);
+                        }
                     }
 
                     db.SaveChanges();

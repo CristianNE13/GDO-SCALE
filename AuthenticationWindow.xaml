@@ -1,30 +1,35 @@
 ﻿<Window x:Class="Scale_Program.AuthenticationWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Ingresar Contraseña" Height="183.001" Width="289.333" Foreground="Black" WindowStyle="ToolWindow" ResizeMode="NoResize" Icon="Content/img/lock.png" WindowStartupLocation="CenterScreen">
+        Title="Ingresar Contraseña" Height="183.001" Width="289.333" Foreground="Black" WindowStyle="ToolWindow"
+        ResizeMode="NoResize" Icon="Content/img/lock.png" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="194*"/>
+            <ColumnDefinition Width="194*" />
         </Grid.ColumnDefinitions>
-        <PasswordBox Name="txtPassword" HorizontalAlignment="Left" Margin="22,45,0,0" VerticalAlignment="Top" Width="237" Height="26"  TabIndex="2"/>
-        <Button Content="Ingresar" HorizontalAlignment="Left" IsDefault="True" Margin="22,99,0,0" VerticalAlignment="Top" Width="109" Height="34" TabIndex="3" Click="OnLoginButtonClick">
+        <PasswordBox Name="txtPassword" HorizontalAlignment="Left" Margin="22,45,0,0" VerticalAlignment="Top"
+                     Width="237" Height="26" TabIndex="2" />
+        <Button Content="Ingresar" HorizontalAlignment="Left" IsDefault="True" Margin="22,99,0,0"
+                VerticalAlignment="Top" Width="109" Height="34" TabIndex="3" Click="OnLoginButtonClick">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-                    <GradientStop Color="#FFF3F3F3" Offset="0.01"/>
-                    <GradientStop Color="#FFEBEBEB" Offset="0.5"/>
-                    <GradientStop Color="#FFDDDDDD" Offset="0.5"/>
-                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                    <GradientStop Color="#FFF3F3F3" Offset="0.01" />
+                    <GradientStop Color="#FFEBEBEB" Offset="0.5" />
+                    <GradientStop Color="#FFDDDDDD" Offset="0.5" />
+                    <GradientStop Color="#FFCDCDCD" Offset="1" />
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Label Content="Contraseña" HorizontalAlignment="Left" Margin="18,22,0,0" VerticalAlignment="Top"  Width="81" Height="26"/>
-        <Button Content="Cancelar" HorizontalAlignment="Left" IsCancel="True" Margin="150,99,0,0" VerticalAlignment="Top" Width="109" Height="34" TabIndex="4" Click="OnCancelButtonClick">
+        <Label Content="Contraseña" HorizontalAlignment="Left" Margin="18,22,0,0" VerticalAlignment="Top" Width="81"
+               Height="26" />
+        <Button Content="Cancelar" HorizontalAlignment="Left" IsCancel="True" Margin="150,99,0,0"
+                VerticalAlignment="Top" Width="109" Height="34" TabIndex="4" Click="OnCancelButtonClick">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
-                    <GradientStop Color="#FFF3F3F3" Offset="0.01"/>
-                    <GradientStop Color="#FFEBEBEB" Offset="0.5"/>
-                    <GradientStop Color="#FFDDDDDD" Offset="0.5"/>
-                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                    <GradientStop Color="#FFF3F3F3" Offset="0.01" />
+                    <GradientStop Color="#FFEBEBEB" Offset="0.5" />
+                    <GradientStop Color="#FFDDDDDD" Offset="0.5" />
+                    <GradientStop Color="#FFCDCDCD" Offset="1" />
                 </LinearGradientBrush>
             </Button.Background>
         </Button>

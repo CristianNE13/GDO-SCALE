@@ -11,8 +11,6 @@ namespace Scale_Program.Functions
 {
     public sealed class BasculaFuncPennsylvania : IBasculaFunc
     {
-        public event EventHandler<BasculaEventArgs> OnDataReady;
-
         private const int MaxLogEntries = 100;
         private const int EntriesToKeep = 10;
         private static readonly ILog Logger = LogManager.GetLogger("BasculaFunc");
@@ -42,6 +40,7 @@ namespace Scale_Program.Functions
         public string Puerto => sPort == null ? string.Empty : sPort.PortName;
 
         public static IList<LogEntry> LogEntries => log.AsReadOnly();
+        public event EventHandler<BasculaEventArgs> OnDataReady;
 
         public void AsignarControles(Dispatcher dispatcher)
         {
@@ -88,6 +87,33 @@ namespace Scale_Program.Functions
                     sPort.Dispose();
                     sPort = null;
                 }
+        }
+
+
+        public void AsignarPuertoBascula(SerialPort newSerialPort)
+        {
+            sPort = newSerialPort;
+            sPort.DataReceived += OnDataReceived;
+        }
+
+        public void EnviarComandoABascula(string comando)
+        {
+            if (sPort.IsOpen)
+            {
+                sPort.Write(comando + "\r\n");
+
+                LogMessage(comando);
+            }
+        }
+
+        public void EnviarZero()
+        {
+            if (sPort.IsOpen)
+            {
+                sPort.Write("ZRO" + "\r\n");
+
+                LogMessage("ZRO");
+            }
         }
 
         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -166,10 +192,14 @@ namespace Scale_Program.Functions
                 var status = match.Groups["status"].Value;
 
                 if (string.Compare(units, pounds, true) == 0)
+                {
                     weight *= 0.453592;
+                }
 
                 else if (string.Compare(units, grams, true) == 0)
+                {
                     weight *= 0.001;
+                }
 
                 else if (string.Compare(units, kilograms, true) == 0)
                 {
@@ -202,33 +232,6 @@ namespace Scale_Program.Functions
         private void RaiseEvent(BasculaEventArgs e)
         {
             OnDataReady?.Invoke(this, e);
-        }
-
-
-        public void AsignarPuertoBascula(SerialPort newSerialPort)
-        {
-            sPort = newSerialPort;
-            sPort.DataReceived += OnDataReceived;
-        }
-
-        public void EnviarComandoABascula(string comando)
-        {
-            if (sPort.IsOpen)
-            {
-                sPort.Write(comando + "\r\n");
-
-                LogMessage(comando);
-            }
-        }
-
-        public void EnviarZero()
-        {
-            if (sPort.IsOpen)
-            {
-                sPort.Write("ZRO" + "\r\n");
-
-                LogMessage("ZRO");
-            }
         }
 
         private static void LogMessage(string message)

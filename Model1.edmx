@@ -26,7 +26,7 @@
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Fecha" Type="datetime" Nullable="false" />
           <Property Name="NoParte" Type="nvarchar" MaxLength="100" Nullable="false" />
-          <Property Name="ModProceso" Type="int" Nullable="false" />
+          <Property Name="ModProceso" Type="int" />
           <Property Name="Proceso" Type="int" Nullable="false" />
           <Property Name="PesoDetectado" Type="float" Nullable="false" />
           <Property Name="Estado" Type="nvarchar" MaxLength="50" Nullable="false" />
@@ -102,20 +102,6 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="dc_missingpartsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="Articulo">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="NoParte" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="ModProceso" Type="Int32" Nullable="false" />
-          <Property Name="Proceso" Type="Int32" Nullable="false" />
-          <Property Name="Paso" Type="Int32" Nullable="false" />
-          <Property Name="Descripcion" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PesoMin" Type="Double" Nullable="false" />
-          <Property Name="PesoMax" Type="Double" Nullable="false" />
-          <Property Name="Cantidad" Type="Int32" Nullable="false" />
-        </EntityType>
         <EntityType Name="Completado">
           <Key>
             <PropertyRef Name="Id" />
@@ -123,14 +109,13 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Fecha" Type="DateTime" Precision="3" Nullable="false" />
           <Property Name="NoParte" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="ModProceso" Type="Int32" Nullable="false" />
+          <Property Name="ModProceso" Type="Int32" />
           <Property Name="Proceso" Type="Int32" Nullable="false" />
           <Property Name="PesoDetectado" Type="Double" Nullable="false" />
           <Property Name="Estado" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Tag" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityContainer Name="dc_missingpartsEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Articulos" EntityType="Self.Articulo" />
           <EntitySet Name="Completados" EntityType="Self.Completado" />
           <FunctionImport Name="sp_alterdiagram">
             <Parameter Name="diagramname" Mode="In" Type="String" />
@@ -164,6 +149,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <FunctionImport Name="sp_upgraddiagrams" />
           <EntitySet Name="users" EntityType="dc_missingpartsModel.user" />
           <EntitySet Name="Modelos" EntityType="dc_missingpartsModel.Modelo" />
+          <EntitySet Name="Articulos" EntityType="dc_missingpartsModel.Articulo" />
         </EntityContainer>
         <ComplexType Name="sp_helpdiagramdefinition_Result">
           <Property Type="Int32" Name="version" Nullable="true" />
@@ -199,27 +185,26 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activo" Type="Boolean" Nullable="false" />
         </EntityType>
+        <EntityType Name="Articulo">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="NoParte" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ModProceso" Type="Int32" Nullable="false" />
+          <Property Name="Proceso" Type="Int32" Nullable="false" />
+          <Property Name="Paso" Type="Int32" Nullable="false" />
+          <Property Name="Descripcion" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PesoMin" Type="Double" Nullable="false" />
+          <Property Name="PesoMax" Type="Double" Nullable="false" />
+          <Property Name="Cantidad" Type="Int32" Nullable="false" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="dc_missingpartsModelStoreContainer" CdmEntityContainer="dc_missingpartsEntities">
-          <EntitySetMapping Name="Articulos">
-            <EntityTypeMapping TypeName="dc_missingpartsModel.Articulo">
-              <MappingFragment StoreEntitySet="Articulos">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="NoParte" ColumnName="NoParte" />
-                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
-                <ScalarProperty Name="Proceso" ColumnName="Proceso" />
-                <ScalarProperty Name="Paso" ColumnName="Paso" />
-                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
-                <ScalarProperty Name="PesoMin" ColumnName="PesoMin" />
-                <ScalarProperty Name="PesoMax" ColumnName="PesoMax" />
-                <ScalarProperty Name="Cantidad" ColumnName="Cantidad" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Completados">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Completado">
               <MappingFragment StoreEntitySet="Completados">
@@ -279,6 +264,21 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
                 <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
                 <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
                 <ScalarProperty Name="NoModelo" ColumnName="NoModelo" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Articulos">
+            <EntityTypeMapping TypeName="dc_missingpartsModel.Articulo">
+              <MappingFragment StoreEntitySet="Articulos">
+                <ScalarProperty Name="Cantidad" ColumnName="Cantidad" />
+                <ScalarProperty Name="PesoMax" ColumnName="PesoMax" />
+                <ScalarProperty Name="PesoMin" ColumnName="PesoMin" />
+                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
+                <ScalarProperty Name="Paso" ColumnName="Paso" />
+                <ScalarProperty Name="Proceso" ColumnName="Proceso" />
+                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
+                <ScalarProperty Name="NoParte" ColumnName="NoParte" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>

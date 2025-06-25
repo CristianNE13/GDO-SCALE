@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Scale_Program.Functions
+﻿namespace Scale_Program.Functions
 {
     public class SequenceStep
     {

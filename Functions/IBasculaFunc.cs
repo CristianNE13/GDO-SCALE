@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Threading;
 
 namespace Scale_Program.Functions
@@ -19,5 +15,4 @@ namespace Scale_Program.Functions
         void EnviarComandoABascula(string comando);
         event EventHandler<BasculaEventArgs> OnDataReady;
     }
-
 }

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -21,25 +19,41 @@ namespace Scale_Program
 {
     public partial class MainWindow : Window
     {
-        private IBasculaFunc bascula;
-        private ISeaLevelDevice sealevel;
+        private readonly IBasculaFunc bascula;
+        private readonly List<Border> borders = new List<Border>();
+        private readonly KeyenceTcpClient keyence;
+        private readonly List<Label> labels = new List<Label>();
+        private readonly string rutaImagenes = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes");
         private readonly List<SequenceStep> valoresBolsas = new List<SequenceStep>();
-        private List<Border> borders = new List<Border>();
-        private List<Label> labels = new List<Label>();
-        private KeyenceTcpClient keyence;
-        private Modelo ModeloData;
         private double _accumulatedWeight;
+        private bool _activarBoton;
         private AlertWindow _alertWindow;
         private Catalogos _catalogos = new Catalogos();
         private int _consecutiveCount;
+        private bool _contieneCCAM;
         private int _currentStepIndex;
         private ErrorMessageWindow _errorWindow;
+        private bool _esperandoPickToLight;
+        private DispatcherTimer _estadoBasculasTimer;
         private bool _etapa1;
         private bool _etapa2;
+        private bool _ignorarInput;
+        private bool _inicioPicks;
+        private bool _inicioZero = true;
         private bool _isInitializing;
         private double _lastWeight;
+        private bool _manual;
+        private bool _pickCompletado;
+        private bool _siguienteManual;
+        private bool _siguienteManualCompletado;
+        private SequenceStep _stepEsperandoPick;
         private bool _stopBascula1 = true;
         private bool _validacion = true;
+        private bool _verificacionCompletado;
+        private bool _verificacionIndividual;
+        private bool _verificarArticulo = false;
+        private bool _zeroConfirmed;
+        private bool botonActivo;
         private string codigo;
         private int contador;
         private Configuracion defaultSettings;
@@ -48,42 +62,28 @@ namespace Scale_Program
         public IOInterface ioInterface;
         public IOScanner ioScanner;
         private bool ioScannerActivado;
+        private Modelo ModeloData;
         private List<SequenceStep> pasosFiltrados;
+        private bool pick0Activo;
+        private bool pick0Estado;
+        private bool pick1Activo;
+        private bool pick1Estado;
+        private bool pick2Activo;
+        private bool pick2Estado;
+        private bool pick3Activo;
+        private bool pick3Estado;
+        private bool pick4Activo;
+        private bool pick4Estado;
+        private bool pick5Activo;
+        private bool pick5Estado;
         private double pieceWeight;
-        private string zpl;
+        private ISeaLevelDevice sealevel;
+        private bool sensor0Activo;
+        private bool sensor0Completado;
+        private bool sensor1Activo;
+        private bool sensor1Completado;
         private List<SequenceStep> sequence;
-        private DispatcherTimer _estadoBasculasTimer;
-        private bool _inicioZero = true;
-        private bool _esperandoPickToLight = false;
-        private SequenceStep _stepEsperandoPick;
-        private bool _manual;
-        private bool _activarBoton = false;
-        private bool sensorActivo = false;
-        private bool _verificarArticulo = false;
-        private bool _verificacionCompletado = false;
-        private bool botonActivo;
-        private bool _ignorarInput = false;
-        private bool _siguienteManualCompletado = false;
-        private bool _siguienteManual = false;
-        private bool _zeroConfirmed = false;
-        private bool _verificacionIndividual = false;
-        private bool pick0Activo = false;
-        private bool pick1Activo = false;
-        private bool pick2Activo = false;
-        private bool pick3Activo = false;
-        private bool pick4Activo = false;
-        private bool pick5Activo = false;
-        private bool pick0Estado = false;
-        private bool pick1Estado = false;
-        private bool pick2Estado = false;
-        private bool pick3Estado = false;
-        private bool pick4Estado = false;
-        private bool pick5Estado = false;
-        private bool _contieneCCAM = false;
-        private bool _pickCompletado = false;
-        private bool _inicioPicks = false;
-
-        private readonly string rutaImagenes = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes");
+        private string zpl;
 
         public MainWindow()
         {
@@ -103,8 +103,13 @@ namespace Scale_Program
 
             keyence.OnCameraStatusChanged += UpdateCameraStatus;
 
-            borders = new List<Border> { borderPick1, borderPick2, borderPick3, borderPick4, borderPick5, borderPick6 };
-            labels = new List<Label> { lblPick_1, lblPick_2, lblPick_3, lblPick_4, lblPick_5, lblPick_6 };
+            borders = new List<Border>
+            {
+                borderPick1, borderPick2, borderPick3, borderPick4, borderPick5, borderPick6, borderSensor0,
+                borderSensor1
+            };
+            labels = new List<Label>
+                { lblPick_1, lblPick_2, lblPick_3, lblPick_4, lblPick_5, lblPick_6, lblVerificar, lblVerificar1 };
         }
 
 
@@ -115,12 +120,6 @@ namespace Scale_Program
                 recValidacion.Visibility = Visibility.Hidden;
                 grdValidacion.Visibility = Visibility.Hidden;
                 lbx_Codes.Visibility = Visibility.Hidden;
-
-                foreach (var border in borders)
-                {
-                    border.Visibility = Visibility.Hidden;
-                    labels[borders.IndexOf(border)].Visibility = Visibility.Hidden;
-                }
 
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
                 IniciarSealevel();
@@ -168,7 +167,13 @@ namespace Scale_Program
 
             try
             {
-                if (!int.TryParse(Cbox_Proceso.SelectedValue.ToString(), out int procesoSeleccionado))
+                foreach (var border in borders)
+                {
+                    border.Visibility = Visibility.Hidden;
+                    labels[borders.IndexOf(border)].Visibility = Visibility.Hidden;
+                }
+
+                if (!int.TryParse(Cbox_Proceso.SelectedValue.ToString(), out var procesoSeleccionado))
                     throw new Exception("El valor del proceso seleccionado no es válido.");
 
                 pasosFiltrados = ObtenerValoresProceso(ModeloData.NoModelo, procesoSeleccionado);
@@ -183,7 +188,6 @@ namespace Scale_Program
                 ResetVariables();
                 _inicioZero = true;
                 ShowIniciar();
-
                 if (defaultSettings.CheckShutOff)
                     ActivarSalida(defaultSettings.ShutOff);
 
@@ -200,7 +204,8 @@ namespace Scale_Program
                     foreach (var programa in programasVision)
                     {
                         if (int.TryParse(programa, out var numero)) continue;
-                        MessageBox.Show($"El programa de visión '{programa}' no es válido.", "Error", MessageBoxButton.OK,
+                        MessageBox.Show($"El programa de visión '{programa}' no es válido.", "Error",
+                            MessageBoxButton.OK,
                             MessageBoxImage.Error);
                         return;
                     }
@@ -235,14 +240,13 @@ namespace Scale_Program
         {
             try
             {
-                int modProceso = ObtenerModeloModProceso(modeloSeleccionado);
+                var modProceso = ObtenerModeloModProceso(modeloSeleccionado);
                 if (modProceso == -1) return null;
 
                 return sequence
                     .Where(s => s.PartProceso == procesoSeleccionado && s.ModProceso == modProceso)
                     .OrderBy(s => int.Parse(s.PartOrden))
                     .ToList();
-
             }
             catch (Exception ex)
             {
@@ -265,7 +269,7 @@ namespace Scale_Program
             {
                 var modeloModProceso = ObtenerModeloModProceso(modeloSeleccionado);
 
-                List<SequenceStep> pasosFiltrados = new List<SequenceStep>();
+                var pasosFiltrados = new List<SequenceStep>();
 
                 using (var db = new dc_missingpartsEntities())
                 {
@@ -294,10 +298,7 @@ namespace Scale_Program
                 using (var db = new dc_missingpartsEntities())
                 {
                     var modelo = db.Modelos.FirstOrDefault(m => m.NoModelo.ToUpper() == modeloSeleccionado);
-                    if (modelo != null)
-                    {
-                        return modelo.ModProceso;
-                    }
+                    if (modelo != null) return modelo.ModProceso;
                 }
 
                 throw new ArgumentException($"Modelo '{modeloSeleccionado}' no encontrado en la hoja 'Modelos'.");
@@ -363,13 +364,9 @@ namespace Scale_Program
             var modeloSeleccionado = ModeloData.NoModelo;
 
             if (ModeloExiste(modeloSeleccionado))
-            {
                 ReiniciarPasos(steps, modeloSeleccionado);
-            }
             else
-            {
                 ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
-            }
         }
 
         private void ReiniciarPasos(List<SequenceStep> steps, string modeloSeleccionado)
@@ -420,7 +417,7 @@ namespace Scale_Program
 
                     Cbox_Modelo.ItemsSource = modelos;
                     Cbox_Modelo.DisplayMemberPath = "NoModelo";
-                    Cbox_Modelo.SelectedValuePath = ".";   
+                    Cbox_Modelo.SelectedValuePath = ".";
                 }
             }
             catch (Exception ex)
@@ -442,6 +439,7 @@ namespace Scale_Program
                         ShowAlertError($"Modelo '{modelo}' no encontrado en la base de datos.");
                         return false;
                     }
+
                     return true;
                 }
             }
@@ -461,13 +459,16 @@ namespace Scale_Program
 
                 CerrarAlertas();
 
+                sensor0Completado = false;
+                sensor1Completado = false;
+                _verificacionCompletado = false;
                 _stopBascula1 = false;
+                _siguienteManual = false;
+                _siguienteManualCompletado = false;
                 _manual = false;
                 _zeroConfirmed = false;
                 _inicioZero = true;
                 _activarBoton = true;
-                _etapa1 = true;
-                _etapa2 = false;
                 _pickCompletado = false;
                 _esperandoPickToLight = false;
                 _verificacionIndividual = false;
@@ -531,7 +532,8 @@ namespace Scale_Program
                 SetValuesEtapas(sequence, 1);
                 SetImagesBox();
                 SecuenciaASeguir(ModeloData);
-                Cbox_Proceso.SelectedIndex = procesoSeleccionado-1;;
+                Cbox_Proceso.SelectedIndex = procesoSeleccionado - 1;
+                ;
             }
             catch (Exception ex)
             {
@@ -541,6 +543,9 @@ namespace Scale_Program
 
         private void ResetVariables()
         {
+            sensor0Completado = false;
+            sensor1Completado = false;
+            _verificacionCompletado = false;
             _stopBascula1 = false;
             _manual = false;
             _zeroConfirmed = false;
@@ -597,6 +602,423 @@ namespace Scale_Program
             }
         }
 
+        private async void btnIniciarZero_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lista = ModeloData.ProgramaVision.Split(',');
+
+                var connected = await keyence.ConnectAsync();
+                if (!connected)
+                {
+                    MessageBox.Show("No se pudo conectar a la cámara.", "Error");
+                    return;
+                }
+
+                await keyence.ChangeProgram(int.Parse(lista.First()));
+
+                _inicioZero = false;
+
+                bascula.EnviarZero();
+
+                var valoresNG = "";
+                lbx_Codes.Items.Clear();
+                lbx_Codes.Visibility = Visibility.Visible;
+
+                var response = await keyence.SendTrigger();
+                var resultado = keyence.Formato(response);
+
+                foreach (var item in resultado)
+                    lbx_Codes.Items.Add(item);
+
+                var ngValores = lbx_Codes.Items.Cast<string>()
+                    .Where(x => x.Contains("NG"))
+                    .ToList();
+
+                if (ngValores.Any())
+                {
+                    valoresNG = string.Join(",", ngValores);
+                    _stopBascula1 = true;
+
+                    await ShowMensaje($"Errores: {valoresNG}", Brushes.Beige, 3000);
+                    return;
+                }
+
+                recValidacion.Visibility = Visibility.Hidden;
+                grdValidacion.Visibility = Visibility.Hidden;
+                lbx_Codes.Visibility = Visibility.Hidden;
+                ioInterface.WriteSingleOutput(6, true);
+
+                var currentStep = pasosFiltrados[_currentStepIndex];
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al inicializar báscula: {ex.Message}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void ActivarCamaraValidacion()
+        {
+            ShowAlertCamara();
+            _stopBascula1 = true;
+            _activarBoton = true;
+        }
+
+        private void btnInspeccionCamara_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                InspeccionarValidacionFunc();
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Error: {error.Message}", "ERROR");
+                throw;
+            }
+        }
+
+        private async void InspeccionarValidacionFunc()
+        {
+            try
+            {
+                var lista = ModeloData.ProgramaVision.Split(',');
+                bool error;
+
+                if (_inicioZero)
+                {
+                    if (ModeloData.UsaCamaraVision)
+                    {
+                        await keyence.ChangeProgram(int.Parse(lista.First()));
+
+                        error = await VerificacionCamara();
+
+                        if (error)
+                        {
+                            await ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                            return;
+                        }
+
+                        recValidacion.Visibility = Visibility.Hidden;
+                        grdValidacion.Visibility = Visibility.Hidden;
+                        lbx_Codes.Visibility = Visibility.Hidden;
+                    }
+
+                    ActivarSalida(defaultSettings.Piston);
+
+                    var currentStep = pasosFiltrados[_currentStepIndex];
+
+                    _stopBascula1 = false;
+                    _activarBoton = false;
+                    _inicioZero = false;
+                    _zeroConfirmed = false;
+                    _pickCompletado = false;
+                    _inicioPicks = false;
+
+                    if (ModeloData.UsaCamaraVision)
+                    {
+                        await ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
+                    }
+
+                    else if (!ModeloData.UsaCamaraVision)
+                    {
+                        recValidacion.Visibility = Visibility.Hidden;
+                        grdValidacion.Visibility = Visibility.Hidden;
+                        lbx_Codes.Visibility = Visibility.Hidden;
+                        await ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
+                    }
+                }
+
+                else
+                {
+                    if ((_siguienteManual && !_siguienteManualCompletado) ||
+                        (!_siguienteManual && !_siguienteManualCompletado))
+                        await keyence.ChangeProgram(int.Parse(lista[1]));
+
+                    else if (_manual)
+                        await keyence.ChangeProgram(int.Parse(lista.Last()));
+
+                    error = await VerificacionCamara();
+
+                    if (error)
+                    {
+                        await ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                        return;
+                    }
+
+                    if (_manual)
+                    {
+                        var currentStep = pasosFiltrados[_currentStepIndex];
+
+                        LogFerreteriaStep(currentStep, "OK", codigo);
+
+                        CamaraCompletada();
+                        return;
+                    }
+
+                    if (_siguienteManual)
+                    {
+                        await ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
+
+                        lbx_Codes.Visibility = Visibility.Hidden;
+
+                        var currentStep = pasosFiltrados[_currentStepIndex];
+                        if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock
+                                cantidadTextBlock)) return;
+                        if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) ||
+                            !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
+
+                        _stopBascula1 = false;
+                        _siguienteManualCompletado = true;
+
+                        if (ModeloData.UsaPick2Light)
+                        {
+                            ActivarSalida(_currentStepIndex + defaultSettings.OutputPick2L0);
+
+                            borders[_currentStepIndex + defaultSettings.OutputPick2L0].Visibility = Visibility.Visible;
+                            labels[_currentStepIndex + defaultSettings.OutputPick2L0].Visibility = Visibility.Visible;
+
+                            _esperandoPickToLight = true;
+                        }
+
+                        _verificacionIndividual = true;
+                        _activarBoton = false;
+
+                        switch (_currentStepIndex)
+                        {
+                            case 0:
+                                pick0Estado = true;
+                                break;
+                            case 1:
+                                pick1Estado = true;
+                                break;
+                            case 2:
+                                pick2Estado = true;
+                                break;
+                            case 3:
+                                pick3Estado = true;
+                                break;
+                            case 4:
+                                pick4Estado = true;
+                                break;
+                            case 5:
+                                pick5Estado = true;
+                                break;
+                        }
+
+                        recValidacion.Visibility = Visibility.Hidden;
+                        grdValidacion.Visibility = Visibility.Hidden;
+                        lbx_Codes.Visibility = Visibility.Hidden;
+                    }
+
+                    else
+                    {
+                        CamaraCompletada();
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show($"Error: {error.Message}", "Error");
+            }
+        }
+
+        private async Task<bool> VerificacionCamara()
+        {
+            var valoresNG = "";
+            lbx_Codes.Items.Clear();
+            lbx_Codes.Visibility = Visibility.Visible;
+
+            var response = await keyence.SendTrigger();
+            var resultado = keyence.Formato(response);
+
+            //if (resultado == null ||
+            //    (resultado.Count == 1 && resultado.Contains("No hay conexión activa con la cámara.")))
+            //{
+            //    lbx_Codes.Items.Add("SIN RESPUESTA");
+            //    _stopBascula1 = true;
+            //    await ShowMensaje("NO SE CONECTO CON LA CAMARA, REINICIAR SISTEMA", Brushes.Red, 5000);
+            //    await Task.Delay(5000);
+            //    return true;
+            //}
+
+            foreach (var item in resultado)
+                lbx_Codes.Items.Add(item);
+
+            var ngValores = lbx_Codes.Items.Cast<string>()
+                .Where(x => x.Contains("NG"))
+                .ToList();
+
+            if (ngValores.Any())
+            {
+                valoresNG = string.Join(",", ngValores);
+                _stopBascula1 = true;
+                return true;
+            }
+
+            return false;
+        }
+
+
+        private void CamaraCompletada()
+        {
+            sensor0Completado = false;
+            sensor1Completado = false;
+            _verificacionCompletado = false;
+            _siguienteManual = false;
+            _manual = false;
+            _stopBascula1 = false;
+            _activarBoton = true;
+            _siguienteManualCompletado = false;
+            _zeroConfirmed = false;
+            _pickCompletado = false;
+            _esperandoPickToLight = false;
+            _verificacionIndividual = false;
+            pick0Estado = true;
+            pick1Estado = true;
+            pick2Estado = true;
+            pick3Estado = true;
+            pick4Estado = true;
+            pick5Estado = true;
+
+            DesactivarSalida(defaultSettings.Piston);
+
+            lbx_Codes.Visibility = Visibility.Hidden;
+            _currentStepIndex = 0;
+            _accumulatedWeight = 0;
+            pieceWeight = 0;
+            SetImagesBox();
+            contador++;
+            lblCompletados.Content = contador;
+            codigo = "";
+            _inicioZero = true;
+            ShowIniciar();
+            Dispatcher.Invoke(ShowPruebaCorrecta);
+        }
+
+        private void QuickSetup_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            var auth = new AuthenticationWindow();
+
+            if (auth.ShowDialog() == true)
+            {
+                var modArtQS = (SequenceStep)((Button)sender).DataContext;
+
+                PopupQS.Visibility = Visibility.Visible;
+
+                NoArticuloQS_TBox.Text = modArtQS.PartNoParte;
+
+                if (FindName(modArtQS.PartPeso) is TextBlock secuencia)
+                    PesoBasculaQS_TBox.Text = secuencia.Text;
+
+                ArticuloIDQS_TBox.Text = modArtQS.Id.ToString();
+                PesoMinQS_TBox.Text = modArtQS.MinWeight.ToString();
+                PesoMaxQS_TBox.Text = modArtQS.MaxWeight.ToString();
+                peso_max_qs_text.Text = modArtQS.MaxWeight.ToString();
+                peso_min_qs_text.Text = modArtQS.MinWeight.ToString();
+            }
+        }
+
+        private void SubirVariacion_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            var peso = Convert.ToDecimal(PesoQS_TBox.Text);
+            PesoQS_TBox.Text = (peso + Convert.ToDecimal(0.0025)).ToString();
+            ActualizarPesosQS();
+        }
+
+        private void BajarVariacion_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            var peso = Convert.ToDecimal(PesoQS_TBox.Text);
+            PesoQS_TBox.Text = (peso - Convert.ToDecimal(0.0025)).ToString();
+            ActualizarPesosQS();
+        }
+
+        private void SubirPeso_min_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            BajarSubirPesoQS(true, false);
+        }
+
+        private void BajarPeso_min_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            BajarSubirPesoQS(false, false);
+        }
+
+        private void SubirPeso_max_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            BajarSubirPesoQS(true, true);
+        }
+
+        private void BajarPeso_max_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            BajarSubirPesoQS(false, true);
+        }
+
+        private void BajarSubirPesoQS(bool subir, bool max)
+        {
+            decimal peso_actual = 0;
+            var peso_aumentar_disminuir = Convert.ToDecimal(PesoQS_TBox.Text);
+
+            if (max)
+                peso_actual = Convert.ToDecimal(PesoMaxQS_TBox.Text);
+            else
+                peso_actual = Convert.ToDecimal(PesoMinQS_TBox.Text);
+
+            if (subir && max)
+            {
+                peso_actual += peso_aumentar_disminuir;
+                PesoMaxQS_TBox.Text = peso_actual.ToString();
+            }
+            else if (!subir && max)
+            {
+                peso_actual -= peso_aumentar_disminuir;
+                PesoMaxQS_TBox.Text = peso_actual.ToString();
+            }
+            else if (subir && !max)
+            {
+                peso_actual += peso_aumentar_disminuir;
+                PesoMinQS_TBox.Text = peso_actual.ToString();
+            }
+            else
+            {
+                peso_actual -= peso_aumentar_disminuir;
+                PesoMinQS_TBox.Text = peso_actual.ToString();
+            }
+        }
+
+        private void CancelarQS_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            PopupQS.Visibility = Visibility.Hidden;
+        }
+
+        private void AsignarQS_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            var db = new dc_missingpartsEntities();
+
+            AsignarQS_Btn.Content = "GUARDANDO...";
+
+            int articuloID = Convert.ToInt16(ArticuloIDQS_TBox.Text);
+
+            var articulo = db.Articulos.Find(articuloID);
+            articulo.PesoMin = Convert.ToDouble(PesoMinQS_TBox.Text);
+            articulo.PesoMax = Convert.ToDouble(PesoMaxQS_TBox.Text);
+
+            db.Entry(articulo).State = EntityState.Modified;
+            db.SaveChanges();
+            PopupQS.Visibility = Visibility.Hidden;
+        }
+
+        private void ActualizarPesosQS()
+        {
+            var pesoVariacion = Convert.ToDecimal(PesoQS_TBox.Text);
+            var pesoBasculaQS =
+                Convert.ToDecimal(PesoBasculaQS_TBox.Text.Substring(0, PesoBasculaQS_TBox.Text.Length - 4));
+            var pesoMax = pesoBasculaQS + pesoVariacion;
+            var pesoMin = pesoBasculaQS - pesoVariacion;
+
+            PesoMinQS_TBox.Text = Math.Round(pesoMin, 5).ToString();
+            PesoMaxQS_TBox.Text = Math.Round(pesoMax, 5).ToString();
+        }
+
         #region VISUALES
 
         private void UpdateCameraStatus(int status)
@@ -647,7 +1069,9 @@ namespace Scale_Program
                     if (FindName($"Part_Cantidad{int.Parse(step.PartOrden) - 1}") is TextBlock partCantidad)
                         partCantidad.Text = step.PartCantidad;
 
-                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
+                    imageControl.Source = File.Exists(imagePath)
+                        ? new BitmapImage(new Uri(imagePath, UriKind.Absolute))
+                        : null;
                 }
 
 
@@ -669,21 +1093,21 @@ namespace Scale_Program
 
         private void SetValuesEtapas(List<SequenceStep> steps, int etapa)
         {
-                switch (etapa)
-                {
-                    case 1:
-                        var etapa1 = steps.FirstOrDefault(step => step.PartNoParte.Contains(ModeloData.Etapa1));
+            switch (etapa)
+            {
+                case 1:
+                    var etapa1 = steps.FirstOrDefault(step => step.PartNoParte.Contains(ModeloData.Etapa1));
 
-                        _etapa1 = true;
-                        if (etapa1 != null)
-                            pasosFiltrados = steps
-                                .Where(s => int.Parse(s.PartOrden) <= int.Parse(etapa1.PartOrden))
-                                .ToList();
-                        break;
+                    _etapa1 = true;
+                    if (etapa1 != null)
+                        pasosFiltrados = steps
+                            .Where(s => int.Parse(s.PartOrden) <= int.Parse(etapa1.PartOrden))
+                            .ToList();
+                    break;
 
-                    default:
-                        throw new ArgumentException($"Etapa '{etapa}' no es válida.");
-                }
+                default:
+                    throw new ArgumentException($"Etapa '{etapa}' no es válida.");
+            }
 
             foreach (var step in pasosFiltrados)
             {
@@ -696,7 +1120,9 @@ namespace Scale_Program
                     if (FindName($"Part_Cantidad{int.Parse(step.PartOrden) - 1}") is TextBlock partCantidad)
                         partCantidad.Text = step.PartCantidad;
 
-                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
+                    imageControl.Source = File.Exists(imagePath)
+                        ? new BitmapImage(new Uri(imagePath, UriKind.Absolute))
+                        : null;
                 }
 
 
@@ -725,7 +1151,7 @@ namespace Scale_Program
                 step.PartPeso = $"Part_Peso{i}";
                 step.PartSecuencia = $"Part_Secuencia{i}";
                 step.GrdPart = $"Part{i}";
-                step.PartOrden = $"{i+1}";
+                step.PartOrden = $"{i + 1}";
 
 
                 if (FindName(step.PartImagen) is Image imageControl)
@@ -765,7 +1191,8 @@ namespace Scale_Program
 
                 var imageControlName = $"Part_Imagen{counter}";
 
-                if (FindName($"Part_Indicator{counter}") is Rectangle indicador && FindName($"Part_Peso{counter}") is TextBlock peso)
+                if (FindName($"Part_Indicator{counter}") is Rectangle indicador &&
+                    FindName($"Part_Peso{counter}") is TextBlock peso)
                 {
                     indicador.Fill = Brushes.Red;
                     peso.Text = "0.0 kg";
@@ -779,7 +1206,8 @@ namespace Scale_Program
 
                 if (FindName(imageControlName) is Image imageControl)
                 {
-                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes", $"{step.PartNoParte}.PNG");
+                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Imagenes",
+                        $"{step.PartNoParte}.PNG");
 
                     if (FindName($"Part_Cantidad{counter}") is TextBlock partCantidad)
                         partCantidad.Text = step.PartCantidad;
@@ -787,7 +1215,9 @@ namespace Scale_Program
                     if (FindName($"Part{counter}") is Grid part)
                         part.Visibility = Visibility.Visible;
 
-                    imageControl.Source = File.Exists(imagePath) ? new BitmapImage(new Uri(imagePath, UriKind.Absolute)) : null;
+                    imageControl.Source = File.Exists(imagePath)
+                        ? new BitmapImage(new Uri(imagePath, UriKind.Absolute))
+                        : null;
                 }
             }
         }
@@ -812,7 +1242,7 @@ namespace Scale_Program
 
             lblPesoArt.Text = "TOMAR EL ARTICULO";
 
-            txbArticulo.Text = $"PICK2LIGHT-{int.Parse(current.PartOrden)-1}";
+            txbArticulo.Text = $"PICK2LIGHT-{int.Parse(current.PartOrden) - 1}";
 
             txbPesoMax.Visibility = Visibility.Visible;
             txbPesoMin.Visibility = Visibility.Visible;
@@ -825,7 +1255,8 @@ namespace Scale_Program
 
             txbPesoMax.Text = "";
             txbPesoMin.Text = "";
-            txbPesoActual.Text = current.PartNoParte.ToUpper();;
+            txbPesoActual.Text = current.PartNoParte.ToUpper();
+            ;
 
             grdValidacion.Visibility = Visibility.Visible;
             recValidacion.Visibility = Visibility.Visible;
@@ -841,7 +1272,7 @@ namespace Scale_Program
             grdValidacion.Visibility = Visibility.Hidden;
             recValidacion.Visibility = Visibility.Hidden;
             await Task.Delay(1500);
-            SalidaPick2Orden(current.PartOrden,false);
+            SalidaPick2Orden(current.PartOrden, false);
         }
 
         private void ShowSensor(string articulo)
@@ -1064,6 +1495,8 @@ namespace Scale_Program
             borderPick4.Background = pick3Estado ? Brushes.Red : Brushes.Green;
             borderPick5.Background = pick4Estado ? Brushes.Red : Brushes.Green;
             borderPick6.Background = pick5Estado ? Brushes.Red : Brushes.Green;
+            borderSensor0.Background = sensor0Completado ? Brushes.Green : Brushes.Red;
+            borderSensor1.Background = sensor1Completado ? Brushes.Green : Brushes.Red;
         }
 
         #endregion
@@ -1072,11 +1505,11 @@ namespace Scale_Program
 
         private void SalidaPick2Orden(string partOrden, bool activo)
         {
-            int start = defaultSettings.InputPick2L0;
+            var start = defaultSettings.InputPick2L0;
 
-            if (int.TryParse(partOrden, out int offset) && offset > 0)
+            if (int.TryParse(partOrden, out var offset) && offset > 0)
             {
-                int index = start + (offset - 1);
+                var index = start + (offset - 1);
 
                 if (activo)
                     ActivarSalida(index);
@@ -1092,12 +1525,12 @@ namespace Scale_Program
 
         private void ActivarSalida(int tipo)
         {
-            //ioInterface.WriteSingleOutput(tipo, true);
+            ioInterface.WriteSingleOutput(tipo, true);
         }
 
         private void DesactivarSalida(int tipo)
         {
-            //ioInterface.WriteSingleOutput(tipo, false);
+            ioInterface.WriteSingleOutput(tipo, false);
         }
 
         private void IniciarSealevel()
@@ -1121,7 +1554,8 @@ namespace Scale_Program
                 }
                 else
                 {
-                    MessageBox.Show("Modo de conexión SeaLevel inválido.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Modo de conexión SeaLevel inválido.", "Error", MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
                     return;
                 }
 
@@ -1133,7 +1567,8 @@ namespace Scale_Program
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al iniciar SeaLevel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error al iniciar SeaLevel: {ex.Message}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 ioScannerActivado = false;
             }
         }
@@ -1165,7 +1600,6 @@ namespace Scale_Program
         {
             Application.Current.Dispatcher.Invoke(async () =>
             {
-
                 //if (_esperandoPickToLight && _stepEsperandoPick != null)
                 //{
                 //    if (!int.TryParse(_stepEsperandoPick.PartOrden, out int ordenPaso)) return;
@@ -1180,22 +1614,22 @@ namespace Scale_Program
                 //    }
                 //}
 
-                //var sensorHeader = (inputsState & (1 << defaultSettings.Fixture)) != 0;
-
-                //if (sensorHeader && !sensorActivo && _verificarArticulo)
-                //{
-                //    _verificarArticulo = false;
-                //    _verificacionCompletado = true;
-                //    HideSensor();
-                //}
-
+                var sensor0 = (inputsState & (1 << defaultSettings.InputSensor0)) != 0;
+                var sensor1 = (inputsState & (1 << defaultSettings.InputSensor1)) != 0;
                 var botonInspeccion = (inputsState & (1 << defaultSettings.InputBoton)) != 0;
                 var pick0 = (inputsState & (1 << defaultSettings.InputPick2L0)) != 0;
-                var pick1 = (inputsState & (1 << defaultSettings.InputPick2L0+1)) != 0;
-                var pick2 = (inputsState & (1 << defaultSettings.InputPick2L0+2)) != 0;
-                var pick3 = (inputsState & (1 << defaultSettings.InputPick2L0+3)) != 0;
-                var pick4 = (inputsState & (1 << defaultSettings.InputPick2L0+4)) != 0;
-                var pick5 = (inputsState & (1 << defaultSettings.InputPick2L0+5)) != 0;
+                var pick1 = (inputsState & (1 << (defaultSettings.InputPick2L0 + 1))) != 0;
+                var pick2 = (inputsState & (1 << (defaultSettings.InputPick2L0 + 2))) != 0;
+                var pick3 = (inputsState & (1 << (defaultSettings.InputPick2L0 + 3))) != 0;
+                var pick4 = (inputsState & (1 << (defaultSettings.InputPick2L0 + 4))) != 0;
+                var pick5 = (inputsState & (1 << (defaultSettings.InputPick2L0 + 5))) != 0;
+
+
+                if (sensor0 && !sensor0Activo) sensor0Completado = true;
+
+                if (sensor1 && !sensor1Activo) sensor1Completado = true;
+
+                if (sensor0Completado && sensor1Completado) _verificacionCompletado = true;
 
                 if (botonInspeccion && !botonActivo && _activarBoton)
                 {
@@ -1212,40 +1646,47 @@ namespace Scale_Program
                 if (_esperandoPickToLight && !pick0Activo && pick0 && pick0Estado)
                 {
                     pick0Estado = false;
+                    await Task.Delay(2000);
                     DesactivarSalida(defaultSettings.InputPick2L0);
                 }
 
                 if (_esperandoPickToLight && !pick1Activo && pick1 && pick1Estado)
                 {
                     pick1Estado = false;
-                    DesactivarSalida(defaultSettings.InputPick2L0+1);
+                    await Task.Delay(2000);
+                    DesactivarSalida(defaultSettings.InputPick2L0 + 1);
                 }
 
                 if (_esperandoPickToLight && !pick2Activo && pick2 && pick2Estado)
                 {
                     pick2Estado = false;
-                    DesactivarSalida(defaultSettings.InputPick2L0+2);
+                    await Task.Delay(2000);
+                    DesactivarSalida(defaultSettings.InputPick2L0 + 2);
                 }
 
                 if (_esperandoPickToLight && !pick3Activo && pick3 && pick3Estado)
                 {
                     pick3Estado = false;
-                    DesactivarSalida(defaultSettings.InputPick2L0+3);
+                    await Task.Delay(2000);
+                    DesactivarSalida(defaultSettings.InputPick2L0 + 3);
                 }
 
                 if (_esperandoPickToLight && !pick4Activo && pick4 && pick4Estado)
                 {
                     pick4Estado = false;
-                    DesactivarSalida(defaultSettings.InputPick2L0+4);
+                    await Task.Delay(2000);
+                    DesactivarSalida(defaultSettings.InputPick2L0 + 4);
                 }
 
                 if (_esperandoPickToLight && !pick5Activo && pick5 && pick5Estado)
                 {
                     pick5Estado = false;
-                    DesactivarSalida(defaultSettings.InputPick2L0+5);
+                    await Task.Delay(2000);
+                    DesactivarSalida(defaultSettings.InputPick2L0 + 5);
                 }
 
-                if (!pick0Estado && !pick1Estado && !pick2Estado && !pick3Estado && !pick4Estado && !pick5Estado && !_contieneCCAM && _inicioPicks)
+                if (!pick0Estado && !pick1Estado && !pick2Estado && !pick3Estado && !pick4Estado && !pick5Estado &&
+                    !_contieneCCAM && _inicioPicks)
                 {
                     _esperandoPickToLight = false;
                     _pickCompletado = true;
@@ -1253,8 +1694,8 @@ namespace Scale_Program
 
                 if (_contieneCCAM && _esperandoPickToLight)
                 {
-                    int ccamIndex = _currentStepIndex + defaultSettings.InputPick2L0;
-                    bool ccamSensor = (inputsState & (1 << ccamIndex)) != 0;
+                    var ccamIndex = _currentStepIndex + defaultSettings.InputPick2L0;
+                    var ccamSensor = (inputsState & (1 << ccamIndex)) != 0;
 
                     if (ccamSensor)
                     {
@@ -1288,7 +1729,8 @@ namespace Scale_Program
                 }
 
 
-                //sensorActivo = sensorHeader;
+                sensor0Activo = sensor0;
+                sensor1Activo = sensor1;
                 botonActivo = botonInspeccion;
                 pick0Activo = pick0;
                 pick1Activo = pick1;
@@ -1398,7 +1840,7 @@ namespace Scale_Program
         {
             await Task.Run(() =>
             {
-                bool error = false;
+                var error = false;
 
                 try
                 {
@@ -1440,10 +1882,7 @@ namespace Scale_Program
                 }
                 finally
                 {
-                    if (error)
-                    {
-                        _stopBascula1 = true;
-                    }
+                    if (error) _stopBascula1 = true;
                 }
             });
         }
@@ -1452,7 +1891,7 @@ namespace Scale_Program
         {
             if (_stopBascula1) return;
 
-            if (_inicioZero || _verificarArticulo)
+            if (_inicioZero)
                 return;
 
             Dispatcher.Invoke(() =>
@@ -1468,14 +1907,14 @@ namespace Scale_Program
                         _consecutiveCount = 1;
 
                     _lastWeight = weight;
-                    
 
-                    if (_currentStepIndex == 0 && !_inicioZero && defaultSettings.BasculaMarca != "GFC" && !_zeroConfirmed)
+
+                    if (_currentStepIndex == 0 && !_inicioZero && defaultSettings.BasculaMarca != "GFC" &&
+                        !_zeroConfirmed)
                     {
-
                         if (Math.Abs(weight) <= 0.0025)
                         {
-                            if (_consecutiveCount >= 2) 
+                            if (_consecutiveCount >= 2)
                             {
                                 _zeroConfirmed = true;
                                 _consecutiveCount = 0;
@@ -1489,15 +1928,15 @@ namespace Scale_Program
                                 _consecutiveCount = 0;
                             }
                         }
+
                         return;
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision) 
+                    if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision)
                         ProcessStableWeight(weight);
                     if (_zeroConfirmed && _consecutiveCount == 1 && !ModeloData.UsaCamaraVision)
                         ProcessStableWeightNoCam(weight);
                 }
-
             });
         }
 
@@ -1507,21 +1946,21 @@ namespace Scale_Program
             {
                 if (modeloseleccionado.UsaBascula1)
                 {
-
                     if (bascula?.GetPuerto() == null || !bascula.GetPuerto().IsOpen)
                         ReadInputBascula1();
 
                     _stopBascula1 = false;
                 }
                 else
-                    ShowAlertError($"Error al cargar la secuencia, secuencia inexistente.");
+                {
+                    ShowAlertError("Error al cargar la secuencia, secuencia inexistente.");
+                }
             }
             catch (Exception e)
             {
                 ShowAlertError(e.ToString());
                 throw;
             }
-
         }
 
         private async void ProcessStableWeight(double currentWeight)
@@ -1555,6 +1994,38 @@ namespace Scale_Program
 
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
+
+            var verificarArticulo = pasosAMostrar.Where(v => v.PartNoParte.Contains("VERIFY"));
+            var verificarArticulo2 = pasosAMostrar.Where(v => v.PartNoParte.Contains("VSEN2"));
+
+            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
+            {
+                _verificacionCompletado = false;
+                borderSensor0.Visibility = Visibility.Visible;
+                lblVerificar.Visibility = Visibility.Visible;
+            }
+
+            if (!verificarArticulo.Any())
+            {
+                sensor0Completado = true;
+                borderSensor0.Visibility = Visibility.Hidden;
+                lblVerificar.Visibility = Visibility.Hidden;
+            }
+
+            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)
+            {
+                sensor1Completado = false;
+                _verificacionCompletado = false;
+                borderSensor1.Visibility = Visibility.Visible;
+                lblVerificar1.Visibility = Visibility.Visible;
+            }
+
+            if (!verificarArticulo2.Any())
+            {
+                sensor1Completado = true;
+                borderSensor1.Visibility = Visibility.Hidden;
+                lblVerificar1.Visibility = Visibility.Hidden;
+            }
 
             if (ModeloData.UsaPick2Light && !_esperandoPickToLight && !_contieneCCAM && !_pickCompletado)
             {
@@ -1633,9 +2104,16 @@ namespace Scale_Program
                     }
             }
 
+            if (!ModeloData.UsaPick2Light)
+            {
+                _pickCompletado = true;
+                _esperandoPickToLight = false;
+                _inicioPicks = false;
+            }
+
             var ccam = pasosAMostrar.Find(x => x.PartNoParte.Contains("CCAM"));
 
-            if (ccam == null && !_verificacionIndividual && !_esperandoPickToLight)
+            if (ccam == null && !_verificacionIndividual && !_esperandoPickToLight && _verificacionCompletado)
             {
                 var minTotal = pasosAMostrar.Sum(p => p.MinWeight);
                 var maxTotal = pasosAMostrar.Sum(p => p.MaxWeight);
@@ -1657,7 +2135,7 @@ namespace Scale_Program
 
                         if (step == pasosAMostrar.Last())
                         {
-                            step.PartNoParte = ModeloData.NoModelo;
+                            //step.PartNoParte = ModeloData.NoModelo;
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
@@ -1697,7 +2175,7 @@ namespace Scale_Program
                 }
             }
 
-            else if (ccam != null && !_verificacionIndividual && !_esperandoPickToLight)
+            else if (ccam != null && !_verificacionIndividual && !_esperandoPickToLight && _verificacionCompletado)
             {
                 var minTotalCCAM = pasosAMostrar
                     .Where(p => !p.PartNoParte.Contains("CCAM"))
@@ -1749,12 +2227,6 @@ namespace Scale_Program
                 }
             }
 
-            if (currentStep.PartNoParte.Contains("VERIFY") && !_verificarArticulo)
-            {
-                ShowSensor(currentStep.PartNoParte);
-                _verificarArticulo = true;
-            }
-
             if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock))
                 return;
 
@@ -1768,7 +2240,15 @@ namespace Scale_Program
             if (!currentStep.PartNoParte.Contains("CCAM") && pieceWeight >= currentStep.MinWeight &&
                 pieceWeight <= currentStep.MaxWeight)
             {
-                if (_currentStepIndex + 1 >= pasosFiltrados.Count && _esperandoPickToLight && ModeloData.UsaPick2Light)
+                var listaSinCCAM = pasosAMostrar
+                    .Where(p => !p.PartNoParte.Contains("CCAM"))
+                    .ToList();
+
+                if (_currentStepIndex + 1 >= listaSinCCAM.Count && _esperandoPickToLight)
+                    return;
+
+                if ((_currentStepIndex + 1 >= pasosFiltrados.Count && _esperandoPickToLight) ||
+                    (_currentStepIndex + 1 >= pasosFiltrados.Count && !_verificacionCompletado))
                     return;
 
                 CompleteCurrentStep(currentStep, indicator, pesoTextBlock, cantidadTextBlock, currentWeight);
@@ -1826,6 +2306,9 @@ namespace Scale_Program
                     return;
                 }
 
+                sensor0Completado = false;
+                sensor1Completado = false;
+                _verificacionCompletado = false;
                 _siguienteManual = false;
                 _manual = false;
                 _stopBascula1 = false;
@@ -1856,6 +2339,7 @@ namespace Scale_Program
                 pieceWeight <= currentStep.MaxWeight && !_esperandoPickToLight && ModeloData.UsaCamaraVision)
             {
                 indicator.Fill = Brushes.Green;
+                pesoTextBlock.Text = $"{pieceWeight:F5} kg";
                 currentStep.DetectedWeight = currentWeight.ToString();
                 (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                 codigo = $"{integrer}.{fraction}";
@@ -1917,6 +2401,11 @@ namespace Scale_Program
                     return;
                 }
 
+                sensor0Completado = false;
+                sensor1Completado = false;
+                _verificacionCompletado = false;
+                sensor0Completado = false;
+                sensor1Completado = false;
                 _siguienteManual = false;
                 _manual = false;
                 _stopBascula1 = false;
@@ -1978,6 +2467,38 @@ namespace Scale_Program
 
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
+
+            var verificarArticulo = pasosAMostrar.Where(v => v.PartNoParte.Contains("VERIFY"));
+            var verificarArticulo2 = pasosAMostrar.Where(v => v.PartNoParte.Contains("VSEN2"));
+
+            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
+            {
+                _verificacionCompletado = false;
+                borderSensor0.Visibility = Visibility.Visible;
+                lblVerificar.Visibility = Visibility.Visible;
+            }
+
+            if (!verificarArticulo.Any())
+            {
+                sensor0Completado = true;
+                borderSensor0.Visibility = Visibility.Hidden;
+                lblVerificar.Visibility = Visibility.Hidden;
+            }
+
+            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)
+            {
+                sensor1Completado = false;
+                _verificacionCompletado = false;
+                borderSensor1.Visibility = Visibility.Visible;
+                lblVerificar1.Visibility = Visibility.Visible;
+            }
+
+            if (!verificarArticulo2.Any())
+            {
+                sensor1Completado = true;
+                borderSensor1.Visibility = Visibility.Hidden;
+                lblVerificar1.Visibility = Visibility.Hidden;
+            }
 
             if (ModeloData.UsaPick2Light && !_esperandoPickToLight && !_pickCompletado)
             {
@@ -2055,12 +2576,19 @@ namespace Scale_Program
                     }
             }
 
+            if (!ModeloData.UsaPick2Light)
+            {
+                _pickCompletado = true;
+                _esperandoPickToLight = false;
+                _inicioPicks = false;
+            }
+
             if (!_esperandoPickToLight)
             {
                 var minTotal = pasosAMostrar.Sum(p => p.MinWeight);
                 var maxTotal = pasosAMostrar.Sum(p => p.MaxWeight);
 
-                if (currentWeight >= minTotal && currentWeight <= maxTotal && !_esperandoPickToLight)
+                if (currentWeight >= minTotal && currentWeight <= maxTotal && _verificacionCompletado)
                 {
                     foreach (var step in pasosAMostrar)
                     {
@@ -2077,7 +2605,7 @@ namespace Scale_Program
 
                         if (step == pasosAMostrar.Last())
                         {
-                            step.PartNoParte = ModeloData.NoModelo;
+                            //step.PartNoParte = ModeloData.NoModelo;
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
@@ -2085,6 +2613,9 @@ namespace Scale_Program
                         }
                     }
 
+                    sensor0Completado = false;
+                    sensor1Completado = false;
+                    _verificacionCompletado = false;
                     _siguienteManual = false;
                     _manual = false;
                     _stopBascula1 = false;
@@ -2110,12 +2641,6 @@ namespace Scale_Program
                 }
             }
 
-            if (currentStep.PartNoParte.Contains("VERIFY") && !_verificarArticulo)
-            {
-                ShowSensor(currentStep.PartNoParte);
-                _verificarArticulo = true;
-            }
-
             if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock))
                 return;
 
@@ -2128,7 +2653,8 @@ namespace Scale_Program
 
             if (pieceWeight >= currentStep.MinWeight && pieceWeight <= currentStep.MaxWeight)
             {
-                if (_currentStepIndex + 1 >= pasosFiltrados.Count && _esperandoPickToLight && ModeloData.UsaPick2Light)
+                if ((_currentStepIndex + 1 >= pasosFiltrados.Count && !_verificacionCompletado) ||
+                    (_currentStepIndex + 1 >= pasosFiltrados.Count && _esperandoPickToLight))
                     return;
 
                 CompleteCurrentStep(currentStep, indicator, pesoTextBlock, cantidadTextBlock, currentWeight);
@@ -2163,6 +2689,9 @@ namespace Scale_Program
                     return;
                 }
 
+                sensor0Completado = false;
+                sensor1Completado = false;
+                _verificacionCompletado = false;
                 _siguienteManual = false;
                 _manual = false;
                 _stopBascula1 = false;
@@ -2233,6 +2762,7 @@ namespace Scale_Program
                 }
             }
         }
+
         #endregion
 
         #region Botones
@@ -2259,9 +2789,10 @@ namespace Scale_Program
                             ShowAlertError("No hay un modelo y proceso seleccionado.");
                             return;
                         }
-                        var currentStep = pasosFiltrados[_currentStepIndex];
-                        ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight, pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
 
+                        var currentStep = pasosFiltrados[_currentStepIndex];
+                        ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
+                            pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
                     }
                     catch (Exception exception)
                     {
@@ -2281,7 +2812,7 @@ namespace Scale_Program
 
         private void Configuracion_btn_Click(object sender, RoutedEventArgs e)
         {
-            AuthenticationWindow auth = new AuthenticationWindow();
+            var auth = new AuthenticationWindow();
 
             if (auth.ShowDialog() == true)
             {
@@ -2293,7 +2824,7 @@ namespace Scale_Program
 
         private void BtnCatalogos_Click(object sender, RoutedEventArgs e)
         {
-            AuthenticationWindow auth = new AuthenticationWindow();
+            var auth = new AuthenticationWindow();
 
             if (auth.ShowDialog() == true)
             {
@@ -2305,38 +2836,33 @@ namespace Scale_Program
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            AuthenticationWindow auth = new AuthenticationWindow();
+            //AuthenticationWindow auth = new AuthenticationWindow();
 
-            if (auth.ShowDialog() == true)
+            //if (auth.ShowDialog() == true)
+            //{
+            if (Cbox_Modelo.SelectedItem == null)
             {
-                if (Cbox_Modelo.SelectedItem == null)
-                {
-                    ShowAlertError("No hay un modelo seleccionado.");
-                    return;
-                }
-
-                var modeloSeleccionado = ModeloData.NoModelo.ToUpper();
-
-                if (ModeloExiste(modeloSeleccionado))
-                {
-                    ProcesarResetModelo();
-                }
-                else
-                {
-                    ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
-                }
+                ShowAlertError("No hay un modelo seleccionado.");
+                return;
             }
+
+            var modeloSeleccionado = ModeloData.NoModelo.ToUpper();
+
+            if (ModeloExiste(modeloSeleccionado))
+                ProcesarResetModelo();
+            else
+                ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
+            //}
         }
 
         private void BtnRechazo_Click(object sender, RoutedEventArgs e)
         {
-            AuthenticationWindow auth = new AuthenticationWindow();
+            var auth = new AuthenticationWindow();
 
             if (auth.ShowDialog() != true) return;
 
             try
             {
-
                 if (Cbox_Modelo.SelectedValue == null)
                 {
                     ShowAlertError("No hay un modelo seleccionado.");
@@ -2373,402 +2899,5 @@ namespace Scale_Program
         }
 
         #endregion
-
-        private async void btnIniciarZero_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                string[] lista = ModeloData.ProgramaVision.Split(',');
-
-                bool connected = await keyence.ConnectAsync();
-                if (!connected)
-                {
-                    MessageBox.Show("No se pudo conectar a la cámara.", "Error");
-                    return;
-                }
-                await keyence.ChangeProgram(int.Parse(lista.First()));
-
-                _inicioZero = false;
-
-                bascula.EnviarZero();
-
-                var valoresNG = "";
-                lbx_Codes.Items.Clear();
-                lbx_Codes.Visibility = Visibility.Visible;
-
-                string response = await keyence.SendTrigger();
-                List<string> resultado = keyence.Formato(response);
-
-                foreach (var item in resultado)
-                    lbx_Codes.Items.Add(item);
-
-                var ngValores = lbx_Codes.Items.Cast<string>()
-                    .Where(x => x.Contains("NG"))
-                    .ToList();
-
-                if (ngValores.Any())
-                {
-                    valoresNG = string.Join(",", ngValores);
-                    _stopBascula1 = true;
-
-                    ShowMensaje($"Errores: {valoresNG}", Brushes.Beige, 3000);
-                    return;
-                }
-
-                recValidacion.Visibility = Visibility.Hidden;
-                grdValidacion.Visibility = Visibility.Hidden;
-                lbx_Codes.Visibility = Visibility.Hidden;
-                ioInterface.WriteSingleOutput(6,true);
-
-                var currentStep = pasosFiltrados[_currentStepIndex];
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al inicializar báscula: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ActivarCamaraValidacion()
-        {
-            ShowAlertCamara();
-            _stopBascula1 = true;
-            _activarBoton = true;
-        }
-
-        private void btnInspeccionCamara_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                InspeccionarValidacionFunc();
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show($"Error: {error.Message}", "ERROR");
-                throw;
-            }
-        }
-
-        private async void InspeccionarValidacionFunc()
-        {
-            try
-            {
-                string[] lista = ModeloData.ProgramaVision.Split(',');
-                bool error;
-
-                if (_inicioZero)
-                {
-                    if (ModeloData.UsaCamaraVision)
-                    {
-                        await keyence.ChangeProgram(int.Parse(lista.First()));
-
-                        error = await VerificacionCamara();
-
-                        if (error)
-                        {
-                            await ShowMensaje($"Error, verificar imagen de camara", Brushes.Beige, 3000);
-                            return;
-                        }
-
-                        recValidacion.Visibility = Visibility.Hidden;
-                        grdValidacion.Visibility = Visibility.Hidden;
-                        lbx_Codes.Visibility = Visibility.Hidden;
-                    }
-
-                    ActivarSalida(defaultSettings.Piston);
-
-                    var currentStep = pasosFiltrados[_currentStepIndex];
-
-                    _stopBascula1 = false;
-                    _activarBoton = false;
-                    _inicioZero = false;
-                    _zeroConfirmed = false;
-                    _pickCompletado = false;
-                    _inicioPicks = false;
-
-                    if (ModeloData.UsaCamaraVision)
-                        ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
-
-                    else if (!ModeloData.UsaCamaraVision)
-                    {
-                        recValidacion.Visibility = Visibility.Hidden;
-                        grdValidacion.Visibility = Visibility.Hidden;
-                        lbx_Codes.Visibility = Visibility.Hidden;
-                        ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500); 
-                    }
-                }
-
-                else
-                {
-                    if (_siguienteManual && !_siguienteManualCompletado || !_siguienteManual && !_siguienteManualCompletado)
-                        await keyence.ChangeProgram(int.Parse(lista[1]));
-
-                    else if (_manual)
-                        await keyence.ChangeProgram(int.Parse(lista.Last()));
-
-                    error = await VerificacionCamara();
-
-                    if (error)
-                    {
-                        await ShowMensaje($"Error, verificar imagen de camara", Brushes.Beige, 3000);
-                        return;
-                    }
-
-                    if (_manual)
-                    {
-                        var currentStep = pasosFiltrados[_currentStepIndex];
-                        if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock)) return;
-                        if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) || !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
-
-                        indicator.Fill = Brushes.Green;
-                        cantidadTextBlock.Text = "0";
-                        pesoTextBlock.Text = "OK";
-                        LogFerreteriaStep(currentStep,"OK",codigo);
-
-                        CamaraCompletada();
-                        return;
-                    }
-
-                    if (_siguienteManual)
-                    {
-                        ShowMensaje($"INSPECCION CORRECTA", Brushes.Green, 1500);
-
-                        lbx_Codes.Visibility = Visibility.Hidden;
-
-                        var currentStep = pasosFiltrados[_currentStepIndex];
-                        if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock)) return;
-                        if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) || !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
-
-                        _stopBascula1 = false;
-                        _siguienteManualCompletado = true;
-                        ActivarSalida(_currentStepIndex + defaultSettings.OutputPick2L0);
-
-                        borders[_currentStepIndex + defaultSettings.OutputPick2L0].Visibility = Visibility.Visible;
-                        labels[_currentStepIndex + defaultSettings.OutputPick2L0].Visibility = Visibility.Visible;
-
-                        _esperandoPickToLight = true;
-                        _verificacionIndividual = true;
-                        _activarBoton = false;
-
-                        switch (_currentStepIndex)
-                        {
-                            case 0:
-                                pick0Estado = true;
-                                break;
-                            case 1:
-                                pick1Estado = true;
-                                break;
-                            case 2:
-                                pick2Estado = true;
-                                break;
-                            case 3:
-                                pick3Estado = true;
-                                break;
-                            case 4:
-                                pick4Estado = true;
-                                break;
-                            case 5:
-                                pick5Estado = true;
-                                break;
-                        }
-
-                        recValidacion.Visibility = Visibility.Hidden;
-                        grdValidacion.Visibility = Visibility.Hidden;
-                        lbx_Codes.Visibility = Visibility.Hidden;
-                    }
-
-                    else
-                        CamaraCompletada();
-                }
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show($"Error: {error.Message}", "Error");
-            }
-        }
-
-        private async Task<bool> VerificacionCamara()
-        {
-            var valoresNG = "";
-            lbx_Codes.Items.Clear();
-            lbx_Codes.Visibility = Visibility.Visible;
-
-            var response = await keyence.SendTrigger();
-            var resultado = keyence.Formato(response);
-
-            foreach (var item in resultado)
-                lbx_Codes.Items.Add(item);
-
-            var ngValores = lbx_Codes.Items.Cast<string>()
-                .Where(x => x.Contains("NG"))
-                .ToList();
-
-            if (ngValores.Any())
-            {
-                valoresNG = string.Join(",", ngValores);
-                _stopBascula1 = true;
-                return true;
-            }
-            return false;
-        }
-
-        private void CamaraCompletada()
-        {
-            _siguienteManual = false;
-            _manual = false;
-            _stopBascula1 = false;
-            _activarBoton = true;
-            _siguienteManualCompletado = false;
-            _zeroConfirmed = false;
-            _pickCompletado = false;
-            _esperandoPickToLight = false;
-            _verificacionIndividual = false;
-            pick0Estado = true;
-            pick1Estado = true;
-            pick2Estado = true;
-            pick3Estado = true;
-            pick4Estado = true;
-            pick5Estado = true;
-
-            DesactivarSalida(defaultSettings.Piston);
-
-            lbx_Codes.Visibility = Visibility.Hidden;
-            _currentStepIndex = 0;
-            _accumulatedWeight = 0;
-            pieceWeight = 0;
-            SetImagesBox();
-            contador++;
-            lblCompletados.Content = contador;
-            codigo = "";
-            _inicioZero = true;
-            ShowIniciar();
-            Dispatcher.Invoke(ShowPruebaCorrecta);
-        }
-
-        private void QuickSetup_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            AuthenticationWindow auth = new AuthenticationWindow();
-
-            if (auth.ShowDialog() == true)
-            {
-                SequenceStep modArtQS = (SequenceStep)((Button)sender).DataContext;
-
-                PopupQS.Visibility = Visibility.Visible;
-
-                NoArticuloQS_TBox.Text = modArtQS.PartNoParte;
-            
-                if (FindName(modArtQS.PartPeso) is TextBlock secuencia)
-                    PesoBasculaQS_TBox.Text = secuencia.Text;
-
-                ArticuloIDQS_TBox.Text = modArtQS.Id.ToString();
-                PesoMinQS_TBox.Text = modArtQS.MinWeight.ToString();
-                PesoMaxQS_TBox.Text = modArtQS.MaxWeight.ToString();
-                peso_max_qs_text.Text = modArtQS.MaxWeight.ToString();
-                peso_min_qs_text.Text = modArtQS.MinWeight.ToString();
-            }
-        }
-
-        private void SubirVariacion_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            decimal peso = Convert.ToDecimal(PesoQS_TBox.Text);
-            PesoQS_TBox.Text = (peso + Convert.ToDecimal(0.0025)).ToString();
-            ActualizarPesosQS();
-        }
-
-        private void BajarVariacion_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            
-            decimal peso = Convert.ToDecimal(PesoQS_TBox.Text);
-            PesoQS_TBox.Text = (peso - Convert.ToDecimal(0.0025)).ToString();
-            ActualizarPesosQS();
-        }
-
-        private void SubirPeso_min_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            BajarSubirPesoQS(true, false);
-        }
-        private void BajarPeso_min_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            BajarSubirPesoQS(false, false);
-        }
-
-        private void SubirPeso_max_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            BajarSubirPesoQS(true, true);
-        }
-
-        private void BajarPeso_max_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            BajarSubirPesoQS(false, true);
-        }
-
-        private void BajarSubirPesoQS(bool subir, bool max)
-        {
-            decimal peso_actual = 0;
-            decimal peso_aumentar_disminuir = Convert.ToDecimal(PesoQS_TBox.Text);
-
-            if (max)
-            {
-                peso_actual = Convert.ToDecimal(PesoMaxQS_TBox.Text);
-            }
-            else
-            {
-                peso_actual = Convert.ToDecimal(PesoMinQS_TBox.Text);
-            }
-
-            if (subir && max)
-            {
-                peso_actual += peso_aumentar_disminuir;
-                PesoMaxQS_TBox.Text = peso_actual.ToString();
-            }
-            else if (!subir && max)
-            {
-                peso_actual -= peso_aumentar_disminuir;
-                PesoMaxQS_TBox.Text = peso_actual.ToString();
-            }
-            else if (subir && !max)
-            {
-                peso_actual += peso_aumentar_disminuir;
-                PesoMinQS_TBox.Text = peso_actual.ToString();
-            }
-            else
-            {
-                peso_actual -= peso_aumentar_disminuir;
-                PesoMinQS_TBox.Text = peso_actual.ToString();
-            }
-
-        }
-
-        private void CancelarQS_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            PopupQS.Visibility = Visibility.Hidden;
-        }
-
-        private void AsignarQS_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            dc_missingpartsEntities db = new dc_missingpartsEntities();
-
-            AsignarQS_Btn.Content = "GUARDANDO...";
-
-            int articuloID = Convert.ToInt16(ArticuloIDQS_TBox.Text);
-
-            Articulo articulo = db.Articulos.Find(articuloID);
-            articulo.PesoMin = Convert.ToDouble(PesoMinQS_TBox.Text);
-            articulo.PesoMax = Convert.ToDouble(PesoMaxQS_TBox.Text);
-
-            db.Entry(articulo).State = System.Data.Entity.EntityState.Modified;
-            db.SaveChanges();
-            PopupQS.Visibility = Visibility.Hidden;
-        }
-
-        private void ActualizarPesosQS()
-        {
-            decimal pesoVariacion = Convert.ToDecimal(PesoQS_TBox.Text);
-            decimal pesoBasculaQS = Convert.ToDecimal(PesoBasculaQS_TBox.Text.Substring(0, PesoBasculaQS_TBox.Text.Length - 4));
-            decimal pesoMax = pesoBasculaQS + pesoVariacion;
-            decimal pesoMin = pesoBasculaQS - pesoVariacion;
-
-            PesoMinQS_TBox.Text = Math.Round(pesoMin, 5).ToString();
-            PesoMaxQS_TBox.Text = Math.Round(pesoMax, 5).ToString();
-        }
     }
 }

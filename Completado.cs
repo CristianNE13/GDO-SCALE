@@ -17,7 +17,7 @@ namespace Scale_Program
         public int Id { get; set; }
         public System.DateTime Fecha { get; set; }
         public string NoParte { get; set; }
-        public int ModProceso { get; set; }
+        public Nullable<int> ModProceso { get; set; }
         public int Proceso { get; set; }
         public double PesoDetectado { get; set; }
         public string Estado { get; set; }

@@ -73,12 +73,13 @@
                             VerticalAlignment="Top" Width="127" Height="48"
                             Background="#FFF9F9F9" Grid.Column="1" Click="btnConectar_Click" FontSize="18" />
                     <Label Content="Marca:" HorizontalAlignment="Left"
-                        Margin="211,49,0,0"
-                        VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="69" Grid.Column="1" />
+                           Margin="211,49,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="69"
+                           Grid.Column="1" />
                     <ComboBox x:Name="cboxMarca" HorizontalAlignment="Left" Margin="280,49,0,0"
-                        VerticalAlignment="Top" Width="162" Height="32" Background="White" SelectedIndex="4"
-                        FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                        FontFamily="Arial" Grid.Column="1">
+                              VerticalAlignment="Top" Width="162" Height="32" Background="White" SelectedIndex="4"
+                              FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                              FontFamily="Arial" Grid.Column="1">
                         <ComboBoxItem Content="GFC" />
                         <ComboBoxItem Content="Pennsylvania" />
                     </ComboBox>
@@ -87,8 +88,8 @@
             <TabItem Header="SeaLevel">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="196*"/>
-                        <ColumnDefinition Width="117*"/>
+                        <ColumnDefinition Width="196*" />
+                        <ColumnDefinition Width="117*" />
                     </Grid.ColumnDefinitions>
                     <Label x:Name="lblPuertoES" Content="Puerto Sealevel:" HorizontalAlignment="Left"
                            Margin="30,30,0,0"
@@ -120,7 +121,8 @@
                              HorizontalContentAlignment="Center" Visibility="Hidden" Grid.ColumnSpan="2" />
                     <Label x:Name="lblBaudSea" Content="Baudrate Sealevel:" HorizontalAlignment="Left"
                            Margin="315,30,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="170" Grid.ColumnSpan="2" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="170"
+                           Grid.ColumnSpan="2" />
                     <ComboBox x:Name="cboxBaudSea" HorizontalAlignment="Left" Margin="88,30,0,0"
                               VerticalAlignment="Top" Width="126" Height="32" Background="White" SelectedIndex="4"
                               FontSize="18" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
@@ -132,12 +134,14 @@
                         <ComboBoxItem Content="115200" />
                     </ComboBox>
                     <Label Content="PickToLight 0:" HorizontalAlignment="Left" Margin="48,108,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           HorizontalContentAlignment="Center" />
                     <ComboBox x:Name="cboxOutputPick2L0" HorizontalAlignment="Left" Margin="218,108,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
                     <Label Content="Piston:" HorizontalAlignment="Left" Margin="333,108,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           Grid.ColumnSpan="2" HorizontalContentAlignment="Center" />
                     <ComboBox x:Name="cboxOutputPiston" HorizontalAlignment="Left" Margin="111,108,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" Grid.Column="1" />
@@ -145,22 +149,42 @@
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" Visibility="Hidden" />
                     <Label Content="PickToLight 0:" HorizontalAlignment="Left" Margin="25,336,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           HorizontalContentAlignment="Center" />
                     <ComboBox x:Name="cboxInputPick2L0" HorizontalAlignment="Left" Margin="195,336,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" />
                     <Label Content="Boton:" HorizontalAlignment="Left" Margin="310,336,0,0"
-                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167" Grid.ColumnSpan="2" HorizontalContentAlignment="Center" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           Grid.ColumnSpan="2" HorizontalContentAlignment="Center" />
                     <ComboBox x:Name="cboxInputBoton" HorizontalAlignment="Left" Margin="88,336,0,0"
                               VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
                               FontFamily="Arial" Grid.Column="1" />
-                    <CheckBox x:Name="chkBox_Shutoff" Content="Tiene Shutoff" HorizontalAlignment="Left" Margin="30,252,0,0" VerticalAlignment="Top" FontSize="20" VerticalContentAlignment="Center" Width="151" Checked="chkBox_Shutoff_Checked" Unchecked="chkBox_Shutoff_Unchecked"/>
+                    <CheckBox x:Name="chkBox_Shutoff" Content="Tiene Shutoff" HorizontalAlignment="Left"
+                              Margin="30,252,0,0" VerticalAlignment="Top" FontSize="20"
+                              VerticalContentAlignment="Center" Width="151" Checked="chkBox_Shutoff_Checked"
+                              Unchecked="chkBox_Shutoff_Unchecked" />
                     <Label x:Name="lblShutOff" Content="ShutOff:" HorizontalAlignment="Left" Margin="191,246,0,0"
-                        VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="86" Visibility="Hidden" />
-                    <CheckBox x:Name="chkBox_SeaEthernet" Content="Sealevel Ethernet" HorizontalAlignment="Left" Margin="30,7,0,0" VerticalAlignment="Top" Checked="chkBox_SeaEthernet_Checked" Unchecked="chkBox_SeaEthernet_Unchecked" IsChecked="False"/>
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="86"
+                           Visibility="Hidden" />
+                    <CheckBox x:Name="chkBox_SeaEthernet" Content="Sealevel Ethernet" HorizontalAlignment="Left"
+                              Margin="30,7,0,0" VerticalAlignment="Top" Checked="chkBox_SeaEthernet_Checked"
+                              Unchecked="chkBox_SeaEthernet_Unchecked" IsChecked="False" />
                     <TextBox x:Name="txbIPSealevel"
                              VerticalAlignment="Top" HorizontalAlignment="Left" Width="173" Margin="181,31,0,0"
                              FontSize="24" TabIndex="1" TextAlignment="Center" Visibility="Hidden" />
+                    <Label Content="Sensor 0:" HorizontalAlignment="Left" Margin="25,373,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           HorizontalContentAlignment="Center" />
+                    <ComboBox x:Name="cboxInputSensor0" HorizontalAlignment="Left" Margin="195,373,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" />
+                    <Label Content="Sensor 1:" HorizontalAlignment="Left" Margin="310,373,0,0"
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="32" Width="167"
+                           Grid.ColumnSpan="2" HorizontalContentAlignment="Center" />
+                    <ComboBox x:Name="cboxInputSensor1" HorizontalAlignment="Left" Margin="88,373,0,0"
+                              VerticalAlignment="Top" Width="99" Height="32" Background="White" FontSize="18"
+                              FontFamily="Arial" Grid.Column="1" />
                 </Grid>
             </TabItem>
             <TabItem Header="Ajustes - Contraseña">
@@ -253,8 +277,8 @@
                                      VerticalAlignment="Top" HorizontalAlignment="Left" Width="259"
                                      FontSize="24" Margin="150,8,0,0" TextWrapping="Wrap" TextAlignment="Center" />
                             <Label Content="User:" Grid.Column="2" VerticalAlignment="Center"
-                                HorizontalAlignment="Left" Margin="98,0,0,0" FontFamily="Arial" FontSize="18.667"
-                                Height="32" />
+                                   HorizontalAlignment="Left" Margin="98,0,0,0" FontFamily="Arial" FontSize="18.667"
+                                   Height="32" />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -275,26 +299,26 @@
                             HorizontalAlignment="Left" VerticalAlignment="Top" Width="206" Height="48"
                             Margin="212,243,0,0" TabIndex="5" Click="btnProbarCamara_Click" />
                     <Label Content="Resultado:" HorizontalAlignment="Center" Margin="0,294,0,0"
-                        VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="33" Width="102"
-                        RenderTransformOrigin="0.514,2.328" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="33" Width="102"
+                           RenderTransformOrigin="0.514,2.328" />
                     <Label x:Name="lblResultadoVision" Content="" HorizontalAlignment="Left" Margin="24,331,0,0"
-                        VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="216" Width="582"
-                        RenderTransformOrigin="0.514,2.328" Background="White" />
+                           VerticalAlignment="Top" FontFamily="Arial" FontSize="18.667" Height="216" Width="582"
+                           RenderTransformOrigin="0.514,2.328" Background="White" />
                     <TextBox x:Name="txbPrograma"
-                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" Margin="26,158,0,0"
-                        FontSize="24" TabIndex="3" />
+                             VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" Margin="26,158,0,0"
+                             FontSize="24" TabIndex="3" />
                     <Button x:Name="btnCambiarPrograma" Content="Cambiar programa"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" Width="169" Height="61"
-                        Margin="400,127,0,0" TabIndex="4" Click="btnCambiarPrograma_Click" />
+                            HorizontalAlignment="Left" VerticalAlignment="Top" Width="169" Height="61"
+                            Margin="400,127,0,0" TabIndex="4" Click="btnCambiarPrograma_Click" />
                     <Label Content="Número del programa(000): " VerticalAlignment="Top"
-                        HorizontalAlignment="Left" Margin="24,121,0,0" FontFamily="Arial" FontSize="18.667"
-                        Height="32" Width="255" />
+                           HorizontalAlignment="Left" Margin="24,121,0,0" FontFamily="Arial" FontSize="18.667"
+                           Height="32" Width="255" />
                     <Label Content="Puerto:" Grid.Column="0" VerticalAlignment="Top"
-                        HorizontalAlignment="Right" Margin="0,52,155,0" FontFamily="Arial" FontSize="18.667"
-                        Height="32" />
+                           HorizontalAlignment="Right" Margin="0,52,155,0" FontFamily="Arial" FontSize="18.667"
+                           Height="32" />
                     <TextBox x:Name="txbPuerto"
-                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="143" Margin="463,53,0,0"
-                        FontSize="24" TabIndex="2" TextAlignment="Center" />
+                             VerticalAlignment="Top" HorizontalAlignment="Left" Width="143" Margin="463,53,0,0"
+                             FontSize="24" TabIndex="2" TextAlignment="Center" />
                 </Grid>
             </TabItem>
         </TabControl>

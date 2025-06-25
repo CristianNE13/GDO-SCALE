@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.IO;
 using System.IO.Ports;
@@ -8,7 +7,6 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using System.Xml.Serialization;
 using Scale_Program.Functions;
 
@@ -16,9 +14,9 @@ namespace Scale_Program
 {
     public partial class ConfiguracionWindow : Window
     {
-        private IBasculaFunc bascula1;
-        private readonly PuertosFunc ports = new PuertosFunc();
         private readonly int MinLenght = 5;
+        private readonly PuertosFunc ports = new PuertosFunc();
+        private IBasculaFunc bascula1;
 
 
         public ConfiguracionWindow()
@@ -58,21 +56,26 @@ namespace Scale_Program
 
         private void InicializarComboBox(int maxInputs, int maxOutputs)
         {
-
             if (FindName("cboxInputPick2L0") is ComboBox pick1)
-                LlenarComboBox(pick1,maxInputs);
+                LlenarComboBox(pick1, maxInputs);
 
             if (FindName("cboxOutputPick2L0") is ComboBox pick2)
-                LlenarComboBox(pick2,maxOutputs);
+                LlenarComboBox(pick2, maxOutputs);
 
             if (FindName("cboxOutputPiston") is ComboBox piston)
-                LlenarComboBox(piston,maxOutputs);
+                LlenarComboBox(piston, maxOutputs);
 
             if (FindName("cboxOutputShutOff") is ComboBox shutoff)
-                LlenarComboBox(shutoff,maxOutputs);
+                LlenarComboBox(shutoff, maxOutputs);
 
-            if(FindName("cboxInputBoton") is ComboBox boton)
+            if (FindName("cboxInputBoton") is ComboBox boton)
                 LlenarComboBox(boton, maxInputs);
+
+            if (FindName("cboxInputSensor0") is ComboBox sensor0)
+                LlenarComboBox(sensor0, maxInputs);
+
+            if (FindName("cboxInputSensor1") is ComboBox sensor1)
+                LlenarComboBox(sensor1, maxInputs);
         }
 
         private void LlenarComboBox(ComboBox comboBox, int maxItems)
@@ -173,7 +176,9 @@ namespace Scale_Program
                     PuertoCamara = int.TryParse(txbPuerto.Text, out var puertoCamara) ? puertoCamara : 0,
                     BasculaMarca = cboxMarca.Text,
                     CheckSealevelEthernet = chkBox_SeaEthernet.IsChecked ?? false,
-                    SealevelIP = txbIPSealevel.Text
+                    SealevelIP = txbIPSealevel.Text,
+                    InputSensor0 = cboxInputSensor0.SelectedIndex,
+                    InputSensor1 = cboxInputSensor1.SelectedIndex
                 };
 
                 var serializer = new XmlSerializer(typeof(Configuracion));
@@ -212,6 +217,8 @@ namespace Scale_Program
 
                         cboxInputPick2L0.Text = configuracion.InputPick2L0.ToString();
                         cboxInputBoton.Text = configuracion.InputBoton.ToString();
+                        cboxInputSensor0.Text = configuracion.InputSensor0.ToString();
+                        cboxInputSensor1.Text = configuracion.InputSensor1.ToString();
                         cboxOutputShutOff.Text = configuracion.ShutOff.ToString();
                         chkBox_Shutoff.IsChecked = configuracion.CheckShutOff;
                         cboxOutputPiston.Text = configuracion.Piston.ToString();
@@ -267,7 +274,7 @@ namespace Scale_Program
                     else
                         bascula1 = new BasculaFuncGFC();
 
-                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text,9600,Parity.None,8));
+                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text, 9600, Parity.None, 8));
                     bascula1.OpenPort();
                     bascula1.AsignarControles(Dispatcher);
                     bascula1.OnDataReady += Bascula1_OnDataReady;
@@ -311,7 +318,6 @@ namespace Scale_Program
         private void cboxUnidades_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
-            {
                 if (e.AddedItems[0] is ComboBoxItem nuevoItem)
                 {
                     var nuevaSeleccion = nuevoItem.Content.ToString();
@@ -324,12 +330,11 @@ namespace Scale_Program
                             bascula1.EnviarComandoABascula("UNS");
                     }
                 }
-            }
         }
 
 
         private void btnChangePassword_Click(object sender, RoutedEventArgs e)
-        { 
+        {
             ChangePassword();
         }
 
@@ -339,8 +344,7 @@ namespace Scale_Program
             {
                 using (var db = new dc_missingpartsEntities())
                 {
-
-                    user usuario = db.users.FirstOrDefault(s => s.username == txbUser.Text);
+                    var usuario = db.users.FirstOrDefault(s => s.username == txbUser.Text);
 
                     if (PasswordHash.VerifyPassword(txtPassword.Password, usuario.password))
                     {
@@ -377,7 +381,6 @@ namespace Scale_Program
                         MessageBox.Show("Contraseña actual incorrecta.", "Error");
                         txtPassword.Focus();
                     }
-
                 }
             }
             catch (Exception ex)
@@ -395,15 +398,15 @@ namespace Scale_Program
                 lblResultadoVision.Content = "";
                 keyence = new KeyenceTcpClient(txbIPCamara.Text, int.Parse(txbPuerto.Text));
 
-                bool connected = await keyence.ConnectAsync();
+                var connected = await keyence.ConnectAsync();
                 if (!connected)
                 {
                     MessageBox.Show("No se pudo conectar a la cámara.", "Error");
                     return;
                 }
 
-                string response = await keyence.SendTrigger(); 
-                List<string> resultado= keyence.Formato(response);
+                var response = await keyence.SendTrigger();
+                var resultado = keyence.Formato(response);
                 foreach (var text in resultado)
                     lblResultadoVision.Content += text + "\n";
             }
@@ -428,16 +431,16 @@ namespace Scale_Program
                 lblResultadoVision.Content = "";
                 keyence = new KeyenceTcpClient(txbIPCamara.Text, int.Parse(txbPuerto.Text));
 
-                bool connected = await keyence.ConnectAsync();
+                var connected = await keyence.ConnectAsync();
                 if (!connected)
                 {
                     MessageBox.Show("No se pudo conectar a la cámara.", "Error");
                     return;
                 }
 
-                int programa = int.Parse(txbPrograma.Text);
-                string response = await keyence.ChangeProgram(programa);
-                List<string> resultado= keyence.Formato(response);
+                var programa = int.Parse(txbPrograma.Text);
+                var response = await keyence.ChangeProgram(programa);
+                var resultado = keyence.Formato(response);
                 foreach (var text in resultado)
                     lblResultadoVision.Content += text + "\n";
             }
@@ -449,54 +452,6 @@ namespace Scale_Program
             {
                 if (keyence != null)
                     keyence.Dispose();
-            }
-        }
-
-
-
-        public static class PasswordHash
-        {
-            private const int SaltSize = 16;
-            private const int KeySize = 32;
-            private const int Iterations = 10000;
-
-            public static string CreateHash(string password)
-            {
-                using (var rng = new RNGCryptoServiceProvider())
-                {
-                    byte[] salt = new byte[SaltSize];
-                    rng.GetBytes(salt);
-
-                    using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
-                    {
-                        byte[] key = pbkdf2.GetBytes(KeySize);
-                        var hashBytes = new byte[SaltSize + KeySize];
-                        Array.Copy(salt, 0, hashBytes, 0, SaltSize);
-                        Array.Copy(key, 0, hashBytes, SaltSize, KeySize);
-                        return Convert.ToBase64String(hashBytes);
-                    }
-                }
-            }
-
-            public static bool VerifyPassword(string password, string hashedPassword)
-            {
-                var hashBytes = Convert.FromBase64String(hashedPassword);
-
-                byte[] salt = new byte[SaltSize];
-                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
-
-                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
-                {
-                    byte[] key = pbkdf2.GetBytes(KeySize);
-
-                    for (int i = 0; i < KeySize; i++)
-                    {
-                        if (hashBytes[i + SaltSize] != key[i])
-                            return false;
-                    }
-
-                    return true;
-                }
             }
         }
 
@@ -528,6 +483,51 @@ namespace Scale_Program
             lblBaudSea.Visibility = Visibility.Visible;
             cboxBaudSea.Visibility = Visibility.Visible;
             cboxPortSeaLevel.Visibility = Visibility.Visible;
+        }
+
+
+        public static class PasswordHash
+        {
+            private const int SaltSize = 16;
+            private const int KeySize = 32;
+            private const int Iterations = 10000;
+
+            public static string CreateHash(string password)
+            {
+                using (var rng = new RNGCryptoServiceProvider())
+                {
+                    var salt = new byte[SaltSize];
+                    rng.GetBytes(salt);
+
+                    using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
+                    {
+                        var key = pbkdf2.GetBytes(KeySize);
+                        var hashBytes = new byte[SaltSize + KeySize];
+                        Array.Copy(salt, 0, hashBytes, 0, SaltSize);
+                        Array.Copy(key, 0, hashBytes, SaltSize, KeySize);
+                        return Convert.ToBase64String(hashBytes);
+                    }
+                }
+            }
+
+            public static bool VerifyPassword(string password, string hashedPassword)
+            {
+                var hashBytes = Convert.FromBase64String(hashedPassword);
+
+                var salt = new byte[SaltSize];
+                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations))
+                {
+                    var key = pbkdf2.GetBytes(KeySize);
+
+                    for (var i = 0; i < KeySize; i++)
+                        if (hashBytes[i + SaltSize] != key[i])
+                            return false;
+
+                    return true;
+                }
+            }
         }
     }
 }

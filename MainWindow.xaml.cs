@@ -84,6 +84,9 @@ namespace Scale_Program
         private bool sensor1Completado;
         private List<SequenceStep> sequence;
         private string zpl;
+        Bitacora bitacora;
+        RegistroBitacora registroBitacora;
+        private string directorioBit;
 
         public MainWindow()
         {
@@ -110,6 +113,8 @@ namespace Scale_Program
             };
             labels = new List<Label>
                 { lblPick_1, lblPick_2, lblPick_3, lblPick_4, lblPick_5, lblPick_6, lblVerificar, lblVerificar1 };
+
+                        directorioBit = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
         }
 
 
@@ -138,6 +143,24 @@ namespace Scale_Program
                 {
                     LabelLedPart1_Copy.Visibility = Visibility.Visible;
                     borderCamaraStatus.Visibility = Visibility.Visible;
+                }
+
+                if( ModeloData.Id > 0)
+                {
+                    registroBitacora = bitacora.ObtenerRegistro(ModeloData.Id);
+
+                    if (bitacora.PreviousModeloID != ModeloData.Id)
+                    {
+                        registroBitacora.Completadas = 0;
+                        registroBitacora.Rechazos = 0;
+                        registroBitacora.UltimaActualizacion = DateTime.Now;
+
+                        bitacora.PreviousModeloID = ModeloData.Id;
+
+                        bitacora.Guardar(directorioBit);
+                    }
+
+                    RefreshStatistics();
                 }
             }
             catch (Exception exception)
@@ -1742,6 +1765,20 @@ namespace Scale_Program
         #endregion
 
         #region LOGS
+        
+        private void RefreshStatistics()
+        {
+            if (registroBitacora == null)
+            {
+                lblCompletados.Content = "0";
+                lblCompletados.IsEnabled = false;
+            }
+            else
+            {
+                lblCompletados.Content = registroBitacora.Completadas.ToString("N0", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"));
+                lblCompletados.IsEnabled = true;
+            }
+        }
 
         private void LogFerreteriaStep(SequenceStep step, string resultado, string matchedTag)
         {
@@ -1789,6 +1826,11 @@ namespace Scale_Program
 
                     db.Completados.Add(registro);
                     db.SaveChanges();
+
+                    if (registro.Tag == "" && registroBitacora != null) return; 
+                    registroBitacora.Completadas++;
+
+                    bitacora.Guardar(directorioBit);
                 }
             }
             catch (Exception ex)
@@ -1817,6 +1859,9 @@ namespace Scale_Program
 
                     db.Completados.Add(registro);
                     db.SaveChanges();
+
+                    registroBitacora.Rechazos++;
+                    bitacora.Guardar(directorioBit);
                 }
             }
             catch (Exception ex)

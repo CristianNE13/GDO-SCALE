@@ -82,8 +82,28 @@ namespace Scale_Program.Functions
         {
             try
             {
-                if (_stream == null || !_client.Connected)
+                try
+                {
+                    if ((_stream == null || !_client.Connected))
+                    {
+                        Dispose();
+                        var estado = await ConnectAsync();
+
+                        if (estado)
+                            UpdateCameraStatus(2);
+                        else
+                        {
+                            UpdateCameraStatus(1);
+                            throw new InvalidOperationException("No hay conexión activa con la cámara.");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
                     throw new InvalidOperationException("No hay conexión activa con la cámara.");
+                } 
+
+
 
                 var commandBytes = Encoding.ASCII.GetBytes(command + "\r");
                 await _stream.WriteAsync(commandBytes, 0, commandBytes.Length);

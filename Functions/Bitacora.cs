@@ -33,7 +33,6 @@ namespace Scale_Program.Functions
                 {
                     ModeloID = modeloID,
                     Completadas = 0,
-                    Cajas = 0,
                     Rechazos = 0,
                     UltimaActualizacion = DateTime.Now
                 };
@@ -93,8 +92,6 @@ namespace Scale_Program.Functions
     public class RegistroBitacora
     {
         public int ModeloID { get; set; }
-
-        public int Cajas { get; set; }
 
         public int Completadas { get; set; }
 

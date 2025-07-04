@@ -663,6 +663,7 @@ namespace Scale_Program
             ShowAlertCamara();
             _stopBascula1 = true;
             _activarBoton = true;
+            InspeccionarValidacionFunc();
         }
 
         private void btnInspeccionCamara_Click(object sender, RoutedEventArgs e)
@@ -1367,10 +1368,7 @@ namespace Scale_Program
 
         private void ShowAlertCamara()
         {
-            if (_manual)
-                lblPesoArt.Text = "INSPECCION DE MANUAL O CARTON";
-            else
-                lblPesoArt.Text = "INSPECCION CON CAMARA";
+            lblPesoArt.Text = "INSPECCION CON CAMARA";
 
             lblPesoMin.Visibility = Visibility.Hidden;
             lblPesoMax.Visibility = Visibility.Hidden;

@@ -24,16 +24,25 @@ namespace Scale_Program
         
         private void CargarDatosModelos()
         {
-            using (var db = new dc_missingpartsEntities())
+            try
             {
-                var modelosDb = db.Modelos
-                    .OrderBy(m => m.ModProceso)
-                    .ToList();
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var modelosDb = db.Modelos
+                        .OrderBy(m => m.ModProceso)
+                        .ToList();
 
-                Modelos = new ObservableCollection<Modelo>(modelosDb);
+                    Modelos = new ObservableCollection<Modelo>(modelosDb);
 
-                ModeloDataGrid.ItemsSource = Modelos;
+                    ModeloDataGrid.ItemsSource = Modelos;
+                }
             }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message,"ERROR");
+                throw;
+            }
+
         }
 
         public void CargarDatosArticulos()

@@ -1921,7 +1921,7 @@ namespace Scale_Program
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed)
                     {
-                        if (Math.Abs(weight) <= 0.0025)
+                        if (Math.Abs(weight - paso0) <= 0.0025)
                         {
                             if (_consecutiveCount >= 1)
                             {
@@ -2028,13 +2028,6 @@ namespace Scale_Program
                 lblVerificar.Visibility = Visibility.Hidden;
             }
 
-            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
-            {
-                _verificacionCompletado = false;
-                borderSensor0.Visibility = Visibility.Visible;
-                lblVerificar.Visibility = Visibility.Visible;
-            }
-
             if (!verificarArticulo2.Any() && !_verificacionCompletado)
             {
                 sensor1Completado = true;
@@ -2043,6 +2036,13 @@ namespace Scale_Program
 
                 if (sensor0Completado && sensor1Completado)
                     _verificacionCompletado = true;
+            }
+
+            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
+            {
+                _verificacionCompletado = false;
+                borderSensor0.Visibility = Visibility.Visible;
+                lblVerificar.Visibility = Visibility.Visible;
             }
 
             if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)

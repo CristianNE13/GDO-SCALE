@@ -18,14 +18,11 @@ namespace Scale_Program
         private readonly PuertosFunc ports = new PuertosFunc();
         private IBasculaFunc bascula1;
 
-
         public ConfiguracionWindow()
         {
             InitializeComponent();
 
             InicializarComboBox(15, 15);
-
-            InicializarPuertos();
         }
 
         public static string RutaArchivo => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");
@@ -33,6 +30,8 @@ namespace Scale_Program
         private void ConfiguracionWindow1_Loaded(object sender, RoutedEventArgs e)
         {
             CargarConfiguracion();
+
+            InicializarPuertos();
         }
 
         private async void OnSaveButtonClick(object sender, RoutedEventArgs e)
@@ -108,15 +107,11 @@ namespace Scale_Program
 
         private void MostrarVentanaDeError(string titulo, string mensaje)
         {
-            var ventanaDeError = new ErrorMessageWindow
-            {
-                Owner = this
-            };
-
-            ventanaDeError.lblTitle.Content = titulo;
-            ventanaDeError.txtMessage.Text = mensaje;
-
+            ErrorMessageWindow ventanaDeError = new ErrorMessageWindow();
+            ventanaDeError.TitleText = titulo;
+            ventanaDeError.Message = mensaje;
             ventanaDeError.ShowDialog();
+            ventanaDeError.Focus();
         }
 
         private void AgregarPuertosAComboBox(ComboBox comboBox)

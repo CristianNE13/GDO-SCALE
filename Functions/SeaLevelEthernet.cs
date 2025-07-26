@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Windows;
 using Modbus.Device;
 
 namespace Scale_Program.Functions
@@ -42,53 +44,98 @@ namespace Scale_Program.Functions
 
         public void Dispose()
         {
-            _tcpClient?.Close();
-            _tcpClient?.Dispose();
-            _tcpClient = null;
-            _modbusMaster = null;
-            IsConnected = false;
+            try
+            {
+                _tcpClient?.Close();
+                _tcpClient?.Dispose();
+                _tcpClient = null;
+                _modbusMaster = null;
+                IsConnected = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al liberar recursos: {ex.Message}", "ERROR");
+            }
         }
 
         public uint ReadDiscreteInputs(int startIndex, int count)
         {
-            return EjecutarConReconexion(() =>
+            try
             {
-                var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
-                uint result = 0;
-                for (var i = 0; i < inputs.Length; i++)
-                    if (inputs[i])
-                        result |= (uint)(1 << i);
-                return result;
-            }, "ReadDiscreteInputs");
+                return EjecutarConReconexion(() =>
+                {
+                    var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
+                    uint result = 0;
+                    for (var i = 0; i < inputs.Length; i++)
+                        if (inputs[i])
+                            result |= (uint)(1 << i);
+                    return result;
+                }, "ReadDiscreteInputs");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error en ReadDiscreteInputs: {ex.Message}", "ERROR");
+                return 0;
+            }
         }
 
         public void SetSingleCoilState(int coilIndex, bool state)
         {
-            EjecutarConReconexion(() =>
+            try
             {
-                _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
-                return true;
-            }, "SetSingleCoilState");
+                EjecutarConReconexion(() =>
+                {
+                    _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
+                    return true;
+                }, "SetSingleCoilState");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error en SetSingleCoilState: {ex.Message}", "ERROR");
+            }
         }
 
         public void WriteMultipleCoils(int startIndex, int value, int count)
         {
-            EjecutarConReconexion(() =>
+            try
             {
-                var bits = new bool[count];
-                for (var i = 0; i < count; i++)
-                    bits[i] = (value & (1 << i)) != 0;
+                EjecutarConReconexion(() =>
+                {
+                    var bits = new bool[count];
+                    for (var i = 0; i < count; i++)
+                        bits[i] = (value & (1 << i)) != 0;
 
-                _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
-                return true;
-            }, "WriteMultipleCoils");
+                    _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
+                    return true;
+                }, "WriteMultipleCoils");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error en WriteMultipleCoils: {ex.Message}", "ERROR");
+            }
         }
 
-        public void Connect()
+        public bool Connect()
         {
-            _tcpClient = new TcpClient(_ip, _port);
-            _modbusMaster = ModbusIpMaster.CreateIp(_tcpClient);
-            IsConnected = true;
+            try
+            {
+                _tcpClient = new TcpClient(_ip, _port);
+
+                if (_tcpClient.Connected)
+                {
+                    _modbusMaster = ModbusIpMaster.CreateIp(_tcpClient);
+                    IsConnected = true;
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al conectar SeaLevel: {ex.Message}");
+                IsConnected = false;
+                return false;
+            }
         }
 
 
@@ -109,12 +156,12 @@ namespace Scale_Program.Functions
                     try
                     {
                         Connect();
-                        return operacion(); // Reintenta
+                        return operacion();
                     }
                     catch (Exception reconEx)
                     {
                         Console.WriteLine($"[{contexto}] Falla en reconexión: {reconEx.Message}");
-                        throw; // Ya no podemos hacer más
+                        throw;
                     }
                 }
             }

@@ -85,7 +85,9 @@ namespace Scale_Program
         private RegistroBitacora registroBitacora;
         private string directorioBit;
         private double paso0 = 0;
-
+        private double pesoBascula = 0;
+        private bool individual = false;
+        private bool nosum = false;
 
         public MainWindow()
         {
@@ -122,13 +124,15 @@ namespace Scale_Program
         {
             try
             {
+                Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
                 recValidacion.Visibility = Visibility.Hidden;
                 grdValidacion.Visibility = Visibility.Hidden;
                 lbx_Codes.Visibility = Visibility.Hidden;
 
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
                 IniciarSealevel();
-                OutputsOff();
+                if (ioScannerActivado) 
+                    OutputsOff();
 
                 ModeloData = Cbox_Modelo.SelectedValue as Modelo ?? throw new Exception("Modelo no reconocido.");
 
@@ -164,6 +168,8 @@ namespace Scale_Program
 
                     RefreshStatistics();
                 }
+                
+                Cbox_Proceso.SelectedIndex = 0;
             }
             catch (Exception exception)
             {
@@ -177,8 +183,8 @@ namespace Scale_Program
             CargarProcesos();
 
             HideAll();
-            Cbox_Proceso.IsEnabled = true;
-            Cbox_Proceso.Visibility = Visibility.Visible;
+            //Cbox_Proceso.IsEnabled = true;
+            //Cbox_Proceso.Visibility = Visibility.Visible;
             CerrarAlertas();
             Cbox_Proceso.Text = "";
         }
@@ -211,7 +217,6 @@ namespace Scale_Program
                 SecuenciaASeguir(ModeloData);
 
                 ResetVariables();
-                _inicioZero = true;
                 ShowIniciar();
                 if (defaultSettings.CheckShutOff)
                     ActivarSalida(defaultSettings.ShutOff);
@@ -363,7 +368,9 @@ namespace Scale_Program
         {
             try
             {
-                OutputsOff();
+                if (ioScannerActivado)
+                    OutputsOff();
+
 
                 if (bascula.GetPuerto() != null && bascula.GetPuerto().IsOpen)
                     bascula.ClosePort();
@@ -481,35 +488,13 @@ namespace Scale_Program
             {
                 if (_currentStepIndex < pasosFiltrados.Count)
                     RegistrarPasoRechazado(pasosFiltrados[_currentStepIndex]);
+                
+                Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
+                txbPesoActual.Text = "0.0Kg";
+                PesoGeneral.Text = "0.0Kg";
 
                 CerrarAlertas();
-
-                sensor0Completado = false;
-                sensor1Completado = false;
-                _verificacionCompletado = false;
-                _stopBascula1 = false;
-                _siguienteManual = false;
-                _siguienteManualCompletado = false;
-                _manual = false;
-                _zeroConfirmed = false;
-                _inicioZero = true;
-                _activarBoton = true;
-                _pickCompletado = false;
-                _esperandoPickToLight = false;
-                _verificacionIndividual = false;
-                _consecutiveCount = 0;
-                _accumulatedWeight = 0;
-                _currentStepIndex = 0;
-                pick0Estado = true;
-                pick1Estado = true;
-                pick2Estado = true;
-                pick3Estado = true;
-                pick4Estado = true;
-                pick5Estado = true;
-
-                lblProgreso.Content = 0;
-                valoresBolsas.Clear();
-
+                ResetVariables();
 
                 if (ioScannerActivado)
                 {
@@ -518,10 +503,6 @@ namespace Scale_Program
                     if (defaultSettings.CheckShutOff)
                         ActivarSalida(defaultSettings.ShutOff);
                 }
-
-                txbPesoActual.Text = "0.0Kg";
-                PesoGeneral.Text = "0.0Kg";
-                codigo = "";
 
                 SetImagesBox();
 
@@ -549,7 +530,6 @@ namespace Scale_Program
                     return;
                 }
 
-
                 var procesoSeleccionado = int.Parse(Cbox_Proceso.SelectedValue.ToString());
                 sequence = ObtenerValoresProceso(modeloSeleccionado, procesoSeleccionado);
                 ProcesarModeloValido(ModeloData.NoModelo);
@@ -558,7 +538,6 @@ namespace Scale_Program
                 SetImagesBox();
                 SecuenciaASeguir(ModeloData);
                 Cbox_Proceso.SelectedIndex = procesoSeleccionado - 1;
-                ;
             }
             catch (Exception ex)
             {
@@ -566,31 +545,36 @@ namespace Scale_Program
             }
         }
 
-        private void ResetVariables()
+        void ResetVariables()
         {
+            nosum = false;
+            _siguienteManual = false;
+            _siguienteManualCompletado =false;
             sensor0Completado = false;
             sensor1Completado = false;
-            _verificacionCompletado = false;
-            _stopBascula1 = false;
+            _verificacionCompletado = false;          
+            individual = false;          
+            _stopBascula1 = false;          
             _manual = false;
             _zeroConfirmed = false;
             _inicioZero = true;
             _activarBoton = true;
-            _etapa1 = true;
-            _pickCompletado = false;
-            _esperandoPickToLight = false;
-            _verificacionIndividual = false;
-            _consecutiveCount = 0;
-            _accumulatedWeight = 0;
-            _currentStepIndex = 0;
             pick0Estado = true;
             pick1Estado = true;
             pick2Estado = true;
             pick3Estado = true;
             pick4Estado = true;
             pick5Estado = true;
-
+            _pickCompletado = false;
+            _esperandoPickToLight = false;    
+            _verificacionIndividual = false;
+            _etapa1 = true;
+            _consecutiveCount = 0;
+            _accumulatedWeight = 0;
+            _currentStepIndex = 0;
             lblProgreso.Content = 0;
+            pieceWeight = 0;
+            codigo = "";
             valoresBolsas.Clear();
         }
 
@@ -731,8 +715,6 @@ namespace Scale_Program
 
                     ActivarSalida(defaultSettings.Piston);
 
-                    var currentStep = pasosFiltrados[_currentStepIndex];
-
                     _stopBascula1 = false;
                     _activarBoton = false;
                     _inicioZero = false;
@@ -767,7 +749,7 @@ namespace Scale_Program
 
                     if (error)
                     {
-                        await ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                        _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
                         return;
                     }
 
@@ -775,7 +757,7 @@ namespace Scale_Program
                     {
                         var currentStep = pasosFiltrados[_currentStepIndex];
 
-                        LogFerreteriaStep(currentStep, "OK", codigo);
+                        LogCompleteStep(currentStep, "OK", codigo);
 
                         CamaraCompletada();
                         return;
@@ -783,11 +765,22 @@ namespace Scale_Program
 
                     if (_siguienteManual)
                     {
-                        await ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
+                        _ = ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
 
                         lbx_Codes.Visibility = Visibility.Hidden;
 
                         var currentStep = pasosFiltrados[_currentStepIndex];
+
+                        if (individual && !nosum)
+                        {
+                            _currentStepIndex += 1;
+                            currentStep = pasosFiltrados[_currentStepIndex];
+                            nosum = true;
+                        }
+
+                        else if (!individual)
+                            currentStep = pasosFiltrados[_currentStepIndex];
+
                         if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock
                                 cantidadTextBlock)) return;
                         if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) ||
@@ -804,32 +797,32 @@ namespace Scale_Program
                             labels[_currentStepIndex + defaultSettings.OutputPick2L0].Visibility = Visibility.Visible;
 
                             _esperandoPickToLight = true;
+
+                            switch (_currentStepIndex)
+                            {
+                                case 0:
+                                    pick0Estado = true;
+                                    break;
+                                case 1:
+                                    pick1Estado = true;
+                                    break;
+                                case 2:
+                                    pick2Estado = true;
+                                    break;
+                                case 3:
+                                    pick3Estado = true;
+                                    break;
+                                case 4:
+                                    pick4Estado = true;
+                                    break;
+                                case 5:
+                                    pick5Estado = true;
+                                    break;
+                            }
                         }
 
                         _verificacionIndividual = true;
                         _activarBoton = false;
-
-                        switch (_currentStepIndex)
-                        {
-                            case 0:
-                                pick0Estado = true;
-                                break;
-                            case 1:
-                                pick1Estado = true;
-                                break;
-                            case 2:
-                                pick2Estado = true;
-                                break;
-                            case 3:
-                                pick3Estado = true;
-                                break;
-                            case 4:
-                                pick4Estado = true;
-                                break;
-                            case 5:
-                                pick5Estado = true;
-                                break;
-                        }
 
                         recValidacion.Visibility = Visibility.Hidden;
                         grdValidacion.Visibility = Visibility.Hidden;
@@ -887,36 +880,13 @@ namespace Scale_Program
 
         private void CamaraCompletada()
         {
-            sensor0Completado = false;
-            sensor1Completado = false;
-            _verificacionCompletado = false;
-            _siguienteManual = false;
-            _manual = false;
-            _stopBascula1 = false;
-            _activarBoton = true;
-            _siguienteManualCompletado = false;
-            _zeroConfirmed = false;
-            _pickCompletado = false;
-            _esperandoPickToLight = false;
-            _verificacionIndividual = false;
-            pick0Estado = true;
-            pick1Estado = true;
-            pick2Estado = true;
-            pick3Estado = true;
-            pick4Estado = true;
-            pick5Estado = true;
-
-            DesactivarSalida(defaultSettings.Piston);
-
+            Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
-            _currentStepIndex = 0;
-            _accumulatedWeight = 0;
-            pieceWeight = 0;
-            SetImagesBox();
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
-            codigo = "";
-            _inicioZero = true;
+            ResetVariables();
+            DesactivarSalida(defaultSettings.Piston);
+            SetImagesBox();
             ShowIniciar();
             Dispatcher.Invoke(ShowPruebaCorrecta);
         }
@@ -1555,7 +1525,7 @@ namespace Scale_Program
             ioInterface.WriteSingleOutput(tipo, false);
         }
 
-        private void IniciarSealevel()
+        private async void IniciarSealevel()
         {
             if (ioScannerActivado)
                 return;
@@ -1565,20 +1535,28 @@ namespace Scale_Program
                 if (defaultSettings.CheckSealevelEthernet)
                 {
                     var eth = new SeaLevelEthernet(defaultSettings.SealevelIP);
-                    eth.Connect();
+                    bool conectado = await Task.Run(() => eth.Connect()); // no bloquea la UI
+
+                    if (!conectado)
+                    {
+                        ShowAlertError("NO SE LOGRO CONECTAR CON SEALEVEL ETHERNET");
+                        return;
+                    }
+
                     sealevel = eth;
-                }
-                else if (!defaultSettings.CheckSealevelEthernet)
-                {
-                    var serial = new SeaLevel(247, defaultSettings.PuertoSealevel, defaultSettings.BaudRateSea);
-                    serial.Open();
-                    sealevel = serial;
                 }
                 else
                 {
-                    MessageBox.Show("Modo de conexión SeaLevel inválido.", "Error", MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
+                    var serial = new SeaLevel(247, defaultSettings.PuertoSealevel, defaultSettings.BaudRateSea);
+                    serial.Open();
+
+                    if (!serial.IsOpen)
+                    {
+                        ShowAlertError("NO SE LOGRO CONECTAR CON SEALEVEL SERIAL");
+                        return;
+                    }
+
+                    sealevel = serial;
                 }
 
                 ioInterface = new IOInterface(sealevel);
@@ -1594,6 +1572,7 @@ namespace Scale_Program
                 ioScannerActivado = false;
             }
         }
+
 
 
         private void OutputsOff()
@@ -1814,7 +1793,7 @@ namespace Scale_Program
                     db.Completados.Add(registro);
                     db.SaveChanges();
 
-                    if (registro.Tag == "" && registroBitacora != null) return; 
+                    if (registro.Tag != "" && registroBitacora != null) 
                         registroBitacora.Completadas++;
 
                     bitacora.Guardar(directorioBit);
@@ -1927,6 +1906,7 @@ namespace Scale_Program
             Dispatcher.Invoke(() =>
             {
                 var weight = e.Value;
+                pesoBascula = weight;
                 var isStable = e.IsStable;
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
                 if (isStable)
@@ -1943,23 +1923,26 @@ namespace Scale_Program
                     {
                         if (Math.Abs(weight) <= 0.0025)
                         {
-                            if (_consecutiveCount >= 2)
+                            if (_consecutiveCount >= 1)
                             {
                                 _zeroConfirmed = true;
                                 _consecutiveCount = 0;
+
+                                Grd_Color.Background = Brushes.ForestGreen;
+                                //if (!ModeloData.UsaPick2Light)
+                                //    _ = ShowMensaje("PUEDE INICIAR", Brushes.Beige, 1000);
                             }
                         }
                         else
                         {
-                            if (_consecutiveCount >= 2)
+                            if (_consecutiveCount >= 1)
                             {
                                 paso0 = weight;
                                 _consecutiveCount = 0;
                             }
                         }
 
-                        if (!ModeloData.UsaPick2Light)
-                            _ = ShowMensaje("PUEDE INICIAR", Brushes.Beige, 1000);
+
                     }
 
                     if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision)
@@ -2038,6 +2021,13 @@ namespace Scale_Program
             var verificarArticulo = pasosAMostrar.Where(v => v.PartNoParte.Contains("VERIFY"));
             var verificarArticulo2 = pasosAMostrar.Where(v => v.PartNoParte.Contains("VSEN2"));
 
+            if (!verificarArticulo.Any() && !_verificacionCompletado)
+            {
+                sensor0Completado = true;
+                borderSensor0.Visibility = Visibility.Hidden;
+                lblVerificar.Visibility = Visibility.Hidden;
+            }
+
             if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
             {
                 _verificacionCompletado = false;
@@ -2045,11 +2035,14 @@ namespace Scale_Program
                 lblVerificar.Visibility = Visibility.Visible;
             }
 
-            if (!verificarArticulo.Any())
+            if (!verificarArticulo2.Any() && !_verificacionCompletado)
             {
-                sensor0Completado = true;
-                borderSensor0.Visibility = Visibility.Hidden;
-                lblVerificar.Visibility = Visibility.Hidden;
+                sensor1Completado = true;
+                borderSensor1.Visibility = Visibility.Hidden;
+                lblVerificar1.Visibility = Visibility.Hidden;
+
+                if (sensor0Completado && sensor1Completado)
+                    _verificacionCompletado = true;
             }
 
             if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)
@@ -2058,13 +2051,6 @@ namespace Scale_Program
                 _verificacionCompletado = false;
                 borderSensor1.Visibility = Visibility.Visible;
                 lblVerificar1.Visibility = Visibility.Visible;
-            }
-
-            if (!verificarArticulo2.Any())
-            {
-                sensor1Completado = true;
-                borderSensor1.Visibility = Visibility.Hidden;
-                lblVerificar1.Visibility = Visibility.Hidden;
             }
 
             if (ModeloData.UsaPick2Light && !_esperandoPickToLight && !_contieneCCAM && !_pickCompletado)
@@ -2189,25 +2175,11 @@ namespace Scale_Program
                         return;
                     }
 
-                    _siguienteManual = false;
-                    _manual = false;
-                    _stopBascula1 = false;
-                    _activarBoton = true;
-                    _siguienteManualCompletado = false;
-                    _zeroConfirmed = false;
-                    _pickCompletado = false;
-
                     DesactivarSalida(defaultSettings.Piston);
-
-                    lbx_Codes.Visibility = Visibility.Hidden;
                     ProcesarResetModelo();
-                    _currentStepIndex = 0;
-                    _accumulatedWeight = 0;
-                    pieceWeight = 0;
+                    lbx_Codes.Visibility = Visibility.Hidden;
                     SetImagesBox();
                     lblCompletados.Content = registroBitacora.Completadas;
-                    codigo = "";
-                    _inicioZero = true;
                     ShowIniciar();
                     Dispatcher.Invoke(ShowPruebaCorrecta);
                     return;
@@ -2299,7 +2271,7 @@ namespace Scale_Program
                     if (siguientepaso.PartNoParte.Contains("CCAM") && ModeloData.UsaCamaraVision)
                     {
                         _siguienteManual = true;
-
+                        individual = true;
                         ActivarCamaraValidacion();
                         return;
                     }
@@ -2345,29 +2317,11 @@ namespace Scale_Program
                     return;
                 }
 
-                sensor0Completado = false;
-                sensor1Completado = false;
-                _verificacionCompletado = false;
-                _siguienteManual = false;
-                _manual = false;
-                _stopBascula1 = false;
-                _activarBoton = true;
-                _siguienteManualCompletado = false;
-                _zeroConfirmed = false;
-                _inicioPicks = false;
-                _pickCompletado = false;
-
-                DesactivarSalida(defaultSettings.Piston);
-
                 lbx_Codes.Visibility = Visibility.Hidden;
+                DesactivarSalida(defaultSettings.Piston);
                 ProcesarResetModelo();
-                _currentStepIndex = 0;
-                _accumulatedWeight = 0;
-                pieceWeight = 0;
                 SetImagesBox();
                 lblCompletados.Content = registroBitacora.Completadas;
-                codigo = "";
-                _inicioZero = true;
                 ShowIniciar();
                 Dispatcher.Invoke(ShowPruebaCorrecta);
                 return;
@@ -2387,7 +2341,6 @@ namespace Scale_Program
                 return;
             }
 
-
             if (pieceWeight >= currentStep.MinWeight && pieceWeight <= currentStep.MaxWeight &&
                 !ModeloData.UsaCamaraVision)
             {
@@ -2403,7 +2356,7 @@ namespace Scale_Program
                     if (siguientepaso.PartNoParte.Contains("CCAM") && ModeloData.UsaCamaraVision)
                     {
                         _siguienteManual = true;
-
+                        individual = true;
                         ActivarCamaraValidacion();
                         return;
                     }
@@ -2650,27 +2603,11 @@ namespace Scale_Program
                         }
                     }
 
-                    sensor0Completado = false;
-                    sensor1Completado = false;
-                    _verificacionCompletado = false;
-                    _siguienteManual = false;
-                    _manual = false;
-                    _stopBascula1 = false;
-                    _activarBoton = true;
-                    _siguienteManualCompletado = false;
-                    _zeroConfirmed = false;
-                    _pickCompletado = false;
-
-                    DesactivarSalida(defaultSettings.Piston);
-
                     lbx_Codes.Visibility = Visibility.Hidden;
+                    DesactivarSalida(defaultSettings.Piston);
                     ProcesarResetModelo();
-                    _currentStepIndex = 0;
-                    _accumulatedWeight = 0;
-                    pieceWeight = 0;
                     SetImagesBox();
                     lblCompletados.Content = registroBitacora.Completadas;
-                    codigo = "";
                     ShowIniciar();
                     Dispatcher.Invoke(ShowPruebaCorrecta);
                     return;
@@ -2725,28 +2662,11 @@ namespace Scale_Program
                     return;
                 }
 
-                sensor0Completado = false;
-                sensor1Completado = false;
-                _verificacionCompletado = false;
-                _siguienteManual = false;
-                _manual = false;
-                _stopBascula1 = false;
-                _activarBoton = true;
-                _siguienteManualCompletado = false;
-                _zeroConfirmed = false;
-                _inicioPicks = false;
-                _pickCompletado = false;
-
-                DesactivarSalida(defaultSettings.Piston);
-
                 lbx_Codes.Visibility = Visibility.Hidden;
+                DesactivarSalida(defaultSettings.Piston);
                 ProcesarResetModelo();
-                _currentStepIndex = 0;
-                _accumulatedWeight = 0;
-                pieceWeight = 0;
+                SetImagesBox();
                 lblCompletados.Content = registroBitacora.Completadas;
-                codigo = "";
-                _inicioZero = true;
                 ShowIniciar();
                 Dispatcher.Invoke(ShowPruebaCorrecta);
                 return;
@@ -2854,8 +2774,17 @@ namespace Scale_Program
                 var newConfig = new ConfiguracionWindow();
                 newConfig.Show();
                 newConfig.Focus();
+
+                newConfig.Closed += ConfiguracionWindow_Closed;
+
             }
         }
+
+        private void ConfiguracionWindow_Closed(object sender, EventArgs e)
+        {
+            defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
+        }
+
 
         private void BtnCatalogos_Click(object sender, RoutedEventArgs e)
         {
@@ -2934,5 +2863,10 @@ namespace Scale_Program
         }
 
         #endregion
+
+        private void Part_Imagen0_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            paso0 = pesoBascula;
+        }
     }
 }

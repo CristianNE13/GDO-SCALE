@@ -21,7 +21,7 @@ namespace Scale_Program
         public ObservableCollection<Modelo> Modelos { get; set; }
         public ObservableCollection<Articulo> Articulos { get; set; }
         public event Action CambiosGuardados;
-
+        
         private void CargarDatosModelos()
         {
             using (var db = new dc_missingpartsEntities())
@@ -64,7 +64,6 @@ namespace Scale_Program
             try
             {
                 if (string.IsNullOrWhiteSpace(NoModeloTBox.Text) ||
-                    string.IsNullOrWhiteSpace(ModeloDescripcionTBox.Text) ||
                     string.IsNullOrWhiteSpace(tbxProcesoModelo.Text))
                 {
                     MessageBox.Show("Por favor, llena todos los campos antes de agregar.", "Campos Vacíos");
@@ -116,7 +115,7 @@ namespace Scale_Program
                     Descripcion = ModeloDescripcionTBox.Text,
                     UsaBascula1 = ckb_Bascula1.IsChecked != null && ckb_Bascula1.IsChecked.Value,
                     UsaCamaraVision = ckb_CamaraVision.IsChecked != null && ckb_CamaraVision.IsChecked.Value,
-                    UsaPick2Light = ckb_Pick2Light.IsChecked != null && ckb_Pick2Light.IsChecked.Value,
+                    UsaPick2Light = false,
                     ProgramaVision = txbProgramaVision.Text,
                     //CantidadCajas = int.TryParse(txb_CantidadCajas.Text, out var cantidad) ? cantidad : 0,
                     Etapa1 = txb_Etapa1.Text,
@@ -274,10 +273,9 @@ namespace Scale_Program
                     return;
                 }
 
-                if (!int.TryParse(txbProceso.Text, out var proceso) ||
-                    !int.TryParse(txbPaso.Text, out var paso) || paso == 0)
+                if (!int.TryParse(txbPaso.Text, out var paso) || paso == 0)
                 {
-                    MessageBox.Show("El Proceso o paso no son válidos.", "Error", MessageBoxButton.OK,
+                    MessageBox.Show("El paso no es válido.", "Error", MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     return;
                 }
@@ -309,7 +307,7 @@ namespace Scale_Program
                 {
                     NoParte = NoArticuloTbox.Text,
                     ModProceso = modproceso,
-                    Proceso = proceso,
+                    Proceso = 1,
                     Paso = paso,
                     Descripcion = ArticuloDescripcionTbox.Text,
                     PesoMin = pesoMin,
@@ -319,8 +317,18 @@ namespace Scale_Program
 
                 using (var db = new dc_missingpartsEntities())
                 {
-                    db.Articulos.Add(articulo);
-                    db.SaveChanges();
+                    var exist = db.Modelos.Any(x => x.ModProceso == modproceso);
+                    if (exist)
+                    {
+                        db.Articulos.Add(articulo);
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"No existe ningun modelo con el ModProceso: {modproceso}.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
                 }
 
                 MessageBox.Show("Artículo agregado correctamente.", "Éxito", MessageBoxButton.OK,
@@ -433,20 +441,20 @@ namespace Scale_Program
 
         private void ckb_Bascula1_Checked(object sender, RoutedEventArgs e)
         {
-            if (ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
-            {
-                lblConteoCajas.Visibility = Visibility.Visible;
-                ckb_ConteoCajas.Visibility = Visibility.Visible;
+            //if (ckb_Bascula1.IsChecked.Value && ckb_Bascula2.IsChecked.Value)
+            //{
+            //    lblConteoCajas.Visibility = Visibility.Visible;
+            //    ckb_ConteoCajas.Visibility = Visibility.Visible;
 
-                lblUltimoEtapa2.Visibility = Visibility.Hidden;
-                txb_Etapa1Bascula2.Visibility = Visibility.Hidden;
+            //    lblUltimoEtapa2.Visibility = Visibility.Hidden;
+            //    txb_Etapa1Bascula2.Visibility = Visibility.Hidden;
 
-                lblPrimerEtapa2.Visibility = Visibility.Visible;
-                txb_Etapa2.Visibility = Visibility.Visible;
-            }
+            //    lblPrimerEtapa2.Visibility = Visibility.Visible;
+            //    txb_Etapa2.Visibility = Visibility.Visible;
+            //}
 
-            lblUltimoEtapa1.Visibility = Visibility.Visible;
-            txb_Etapa1.Visibility = Visibility.Visible;
+            //lblUltimoEtapa1.Visibility = Visibility.Visible;
+            //txb_Etapa1.Visibility = Visibility.Visible;
         }
 
         private void ckb_Bascula1_Unchecked(object sender, RoutedEventArgs e)

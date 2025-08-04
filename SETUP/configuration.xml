@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuracion xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PuertoBascula1>COM20</PuertoBascula1>
+  <BaudRateBascula12>9600</BaudRateBascula12>
+  <ParityBascula12>None</ParityBascula12>
+  <StopBitsBascula12>One</StopBitsBascula12>
+  <DataBitsBascula12>8</DataBitsBascula12>
+  <PuertoSealevel>COM20</PuertoSealevel>
+  <BaudRateSea>115200</BaudRateSea>
+  <User>admin</User>
+  <InputPick2L0>0</InputPick2L0>
+  <OutputPick2L0>0</OutputPick2L0>
+  <InputBoton>6</InputBoton>
+  <CheckShutOff>false</CheckShutOff>
+  <ShutOff>5</ShutOff>
+  <Piston>6</Piston>
+  <IpCamara />
+  <PuertoCamara>8500</PuertoCamara>
+  <BasculaMarca>Pennsylvania</BasculaMarca>
+  <CheckSealevelEthernet>true</CheckSealevelEthernet>
+  <SealevelIP>169.254.189.57</SealevelIP>
+  <InputSensor0>9</InputSensor0>
+  <InputSensor1>11</InputSensor1>
+</Configuracion>

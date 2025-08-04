@@ -666,12 +666,13 @@ namespace Scale_Program
             }
         }
 
-        private void ActivarCamaraValidacion()
+        private async Task ActivarCamaraValidacion()
         {
             ShowAlertCamara();
             _stopBascula1 = true;
-            _activarBoton = true;
             InspeccionarValidacionFunc();
+            await Task.Delay(300); // Delay de 300ms para dejar que se realice la inspeccion.
+            _activarBoton = true;
         }
 
         private void btnInspeccionCamara_Click(object sender, RoutedEventArgs e)
@@ -704,7 +705,7 @@ namespace Scale_Program
 
                         if (error)
                         {
-                            await ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                            _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
                             return;
                         }
 
@@ -724,7 +725,7 @@ namespace Scale_Program
 
                     if (ModeloData.UsaCamaraVision)
                     {
-                        await ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
+                        _ = ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
                     }
 
                     else if (!ModeloData.UsaCamaraVision)
@@ -732,7 +733,7 @@ namespace Scale_Program
                         recValidacion.Visibility = Visibility.Hidden;
                         grdValidacion.Visibility = Visibility.Hidden;
                         lbx_Codes.Visibility = Visibility.Hidden;
-                        await ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
+                        _ = ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
                     }
                 }
 
@@ -904,7 +905,15 @@ namespace Scale_Program
                 NoArticuloQS_TBox.Text = modArtQS.PartNoParte;
 
                 if (FindName(modArtQS.PartPeso) is TextBlock secuencia)
+                { 
                     PesoBasculaQS_TBox.Text = secuencia.Text;
+                    if (secuencia.Text == "0.0Kgs")
+                    {
+                        var lista = PesoGeneral.Text.Split(' ');
+                        PesoBasculaQS_TBox.Text = lista[1]+" kg";
+                    }
+                }
+
 
                 ArticuloIDQS_TBox.Text = modArtQS.Id.ToString();
                 PesoMinQS_TBox.Text = modArtQS.MinWeight.ToString();
@@ -1928,9 +1937,48 @@ namespace Scale_Program
                                 _zeroConfirmed = true;
                                 _consecutiveCount = 0;
 
+                                weight = weight - paso0;
+
+                                var verificarArticulo = pasosFiltrados.Where(v => v.PartNoParte.Contains("VERIFY"));
+                                var verificarArticulo2 = pasosFiltrados.Where(v => v.PartNoParte.Contains("VSEN2"));
+
+                                if (!verificarArticulo.Any() && !_verificacionCompletado)
+                                {
+                                    sensor0Completado = true;
+                                    borderSensor0.Visibility = Visibility.Hidden;
+                                    lblVerificar.Visibility = Visibility.Hidden;
+                                }
+
+                                if (!verificarArticulo2.Any() && !_verificacionCompletado)
+                                {
+                                    sensor1Completado = true;
+                                    borderSensor1.Visibility = Visibility.Hidden;
+                                    lblVerificar1.Visibility = Visibility.Hidden;
+
+                                    if (sensor0Completado && sensor1Completado)
+                                        _verificacionCompletado = true;
+                                }
+
+                                if (Math.Abs(weight) <= 0.0025 && verificarArticulo.Any() && !_verificacionCompletado)
+                                {
+                                    _verificacionCompletado = false;
+                                    borderSensor0.Visibility = Visibility.Visible;
+                                    lblVerificar.Visibility = Visibility.Visible;
+                                }
+
+                                if (Math.Abs(weight) <= 0.0025 && verificarArticulo2.Any() && !_verificacionCompletado)
+                                {
+                                    sensor1Completado = false;
+                                    _verificacionCompletado = false;
+                                    borderSensor1.Visibility = Visibility.Visible;
+                                    lblVerificar1.Visibility = Visibility.Visible;
+                                }
                                 Grd_Color.Background = Brushes.ForestGreen;
+
                                 //if (!ModeloData.UsaPick2Light)
                                 //    _ = ShowMensaje("PUEDE INICIAR", Brushes.Beige, 1000);
+
+                                ProcessStableWeight(weight);
                             }
                         }
                         else
@@ -2017,41 +2065,6 @@ namespace Scale_Program
 
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
-
-            var verificarArticulo = pasosAMostrar.Where(v => v.PartNoParte.Contains("VERIFY"));
-            var verificarArticulo2 = pasosAMostrar.Where(v => v.PartNoParte.Contains("VSEN2"));
-
-            if (!verificarArticulo.Any() && !_verificacionCompletado)
-            {
-                sensor0Completado = true;
-                borderSensor0.Visibility = Visibility.Hidden;
-                lblVerificar.Visibility = Visibility.Hidden;
-            }
-
-            if (!verificarArticulo2.Any() && !_verificacionCompletado)
-            {
-                sensor1Completado = true;
-                borderSensor1.Visibility = Visibility.Hidden;
-                lblVerificar1.Visibility = Visibility.Hidden;
-
-                if (sensor0Completado && sensor1Completado)
-                    _verificacionCompletado = true;
-            }
-
-            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
-            {
-                _verificacionCompletado = false;
-                borderSensor0.Visibility = Visibility.Visible;
-                lblVerificar.Visibility = Visibility.Visible;
-            }
-
-            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)
-            {
-                sensor1Completado = false;
-                _verificacionCompletado = false;
-                borderSensor1.Visibility = Visibility.Visible;
-                lblVerificar1.Visibility = Visibility.Visible;
-            }
 
             if (ModeloData.UsaPick2Light && !_esperandoPickToLight && !_contieneCCAM && !_pickCompletado)
             {

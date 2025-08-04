@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Bitacora xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PreviousModeloID>1019</PreviousModeloID>
+  <Registros>
+    <RegistroBitacora>
+      <ModeloID>1019</ModeloID>
+      <Completadas>0</Completadas>
+      <Rechazos>0</Rechazos>
+      <UltimaActualizacion>2025-07-21T11:37:53.9702499-07:00</UltimaActualizacion>
+    </RegistroBitacora>
+    <RegistroBitacora>
+      <ModeloID>13</ModeloID>
+      <Completadas>0</Completadas>
+      <Rechazos>0</Rechazos>
+      <UltimaActualizacion>2025-07-21T11:37:53.101782-07:00</UltimaActualizacion>
+    </RegistroBitacora>
+    <RegistroBitacora>
+      <ModeloID>17</ModeloID>
+      <Completadas>0</Completadas>
+      <Rechazos>0</Rechazos>
+      <UltimaActualizacion>2025-07-21T11:37:51.9984081-07:00</UltimaActualizacion>
+    </RegistroBitacora>
+    <RegistroBitacora>
+      <ModeloID>1017</ModeloID>
+      <Completadas>0</Completadas>
+      <Rechazos>0</Rechazos>
+      <UltimaActualizacion>2025-07-21T11:37:20.9562619-07:00</UltimaActualizacion>
+    </RegistroBitacora>
+  </Registros>
+</Bitacora>

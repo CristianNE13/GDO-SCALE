@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:scaleProgram="clr-namespace:Scale_Program"
         mc:Ignorable="d"
-        Title="Missing Parts" Width="1512.836" Height="768" WindowStartupLocation="CenterScreen"
-        WindowState="Maximized" Icon="Content/img/Logo.png" Closing="Window_Closing" Loaded="Window_Loaded">
+        Title="Missing Parts" Width="1165" Height="1037"  MinWidth="1165"
+        MinHeight="1037" Icon="Content/img/Logo.png" Closing="Window_Closing"
+        Loaded="Window_Loaded" WindowStyle="ToolWindow" WindowStartupLocation="Manual" Left="0" Top="0">
     <Window.Resources>
         <ControlTemplate x:Key="ButtonControlTemplate1" TargetType="{x:Type Button}">
             <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
@@ -667,13 +668,7 @@
             <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs." />
         </TextBlock>
 
-        <Rectangle x:Name="recValidacion" Fill="#FFFEE141" Height="290" Stroke="Black"
-                   Width="676" RadiusY="2" RadiusX="2" Panel.ZIndex="10" Visibility="Hidden" VerticalAlignment="Top"
-                   HorizontalAlignment="Center"
-                   Margin="0,286,0,0" />
-        <Grid x:Name="grdValidacion" Height="290"
-              VerticalAlignment="Top" Width="676" Panel.ZIndex="11" Visibility="Hidden"
-              HorizontalAlignment="Center" Margin="0,286,0,0">
+        <Grid x:Name="grdValidacion" Panel.ZIndex="11" Visibility="Hidden" Margin="228,506,245,374" Background="#FFFDE546" UseLayoutRounding="False">
             <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO" HorizontalAlignment="Left"
                      VerticalAlignment="Top" FontSize="32" Width="616" Foreground="Red"
                      FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,0,0"

@@ -139,7 +139,6 @@ namespace Scale_Program
             try
             {
                 Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
-                recValidacion.Visibility = Visibility.Hidden;
                 grdValidacion.Visibility = Visibility.Hidden;
                 lbx_Codes.Visibility = Visibility.Hidden;
 
@@ -666,7 +665,7 @@ namespace Scale_Program
 
                 var valoresNG = "";
                 lbx_Codes.Items.Clear();
-                lbx_Codes.Visibility = Visibility.Visible;
+                //lbx_Codes.Visibility = Visibility.Visible;
 
                 var response = await keyence.SendTrigger();
                 var resultado = keyence.Formato(response);
@@ -687,7 +686,6 @@ namespace Scale_Program
                     return;
                 }
 
-                recValidacion.Visibility = Visibility.Hidden;
                 grdValidacion.Visibility = Visibility.Hidden;
                 lbx_Codes.Visibility = Visibility.Hidden;
                 ioInterface.WriteSingleOutput(6, true);
@@ -729,7 +727,6 @@ namespace Scale_Program
                             return;
                         }
 
-                        recValidacion.Visibility = Visibility.Hidden;
                         grdValidacion.Visibility = Visibility.Hidden;
                         lbx_Codes.Visibility = Visibility.Hidden;
                     }
@@ -750,7 +747,6 @@ namespace Scale_Program
 
                     else if (!ModeloData.UsaCamaraVision)
                     {
-                        recValidacion.Visibility = Visibility.Hidden;
                         grdValidacion.Visibility = Visibility.Hidden;
                         lbx_Codes.Visibility = Visibility.Hidden;
                         _ = ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
@@ -845,7 +841,6 @@ namespace Scale_Program
                         _verificacionIndividual = true;
                         _activarBoton = false;
 
-                        recValidacion.Visibility = Visibility.Hidden;
                         grdValidacion.Visibility = Visibility.Hidden;
                         lbx_Codes.Visibility = Visibility.Hidden;
                     }
@@ -866,7 +861,7 @@ namespace Scale_Program
         {
             var valoresNG = "";
             lbx_Codes.Items.Clear();
-            lbx_Codes.Visibility = Visibility.Visible;
+            //lbx_Codes.Visibility = Visibility.Visible;
 
             var response = await keyence.SendTrigger();
             var resultado = keyence.Formato(response);
@@ -1153,7 +1148,6 @@ namespace Scale_Program
             ;
 
             grdValidacion.Visibility = Visibility.Visible;
-            recValidacion.Visibility = Visibility.Visible;
 
             btnCerrarPeso.Visibility = Visibility.Hidden;
             btnInspeccionCamara.Visibility = Visibility.Hidden;
@@ -1164,7 +1158,6 @@ namespace Scale_Program
         private async void HidePickToLight(SequenceStep current)
         {
             grdValidacion.Visibility = Visibility.Hidden;
-            recValidacion.Visibility = Visibility.Hidden;
             await Task.Delay(1500);
             SalidaPick2Orden(current.PartOrden, false);
         }
@@ -1193,7 +1186,6 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Visible;
 
             grdValidacion.Visibility = Visibility.Visible;
-            recValidacion.Visibility = Visibility.Visible;
 
             btnIniciarZero.Visibility = Visibility.Hidden;
             btnCerrarPeso.Visibility = Visibility.Hidden;
@@ -1224,7 +1216,6 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Visible;
 
             grdValidacion.Visibility = Visibility.Hidden;
-            recValidacion.Visibility = Visibility.Hidden;
 
             btnIniciarZero.Visibility = Visibility.Hidden;
             btnCerrarPeso.Visibility = Visibility.Hidden;
@@ -1262,7 +1253,6 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Hidden;
 
             grdValidacion.Visibility = Visibility.Visible;
-            recValidacion.Visibility = Visibility.Visible;
         }
 
         private void ShowAlertCamara()
@@ -1282,7 +1272,6 @@ namespace Scale_Program
             txbPesoActual.Text = "";
 
             grdValidacion.Visibility = Visibility.Visible;
-            recValidacion.Visibility = Visibility.Visible;
 
             btnIniciarZero.Visibility = Visibility.Hidden;
             btnInspeccionCamara.Visibility = Visibility.Hidden;
@@ -1316,7 +1305,6 @@ namespace Scale_Program
                 txbPesoActual.Text = $"{pesoActual:F5} kg";
 
                 grdValidacion.Visibility = Visibility.Visible;
-                recValidacion.Visibility = Visibility.Visible;
             }
         }
 
@@ -1757,7 +1745,6 @@ namespace Scale_Program
         private void BtnCerrarPeso_Click(object sender, RoutedEventArgs e)
         {
             _validacion = true;
-            recValidacion.Visibility = Visibility.Hidden;
             grdValidacion.Visibility = Visibility.Hidden;
         }
 
@@ -1767,7 +1754,6 @@ namespace Scale_Program
             {
                 case true:
                     _validacion = false;
-                    recValidacion.Visibility = Visibility.Visible;
                     grdValidacion.Visibility = Visibility.Visible;
                     try
                     {
@@ -1791,7 +1777,6 @@ namespace Scale_Program
 
                 case false:
                     _validacion = true;
-                    recValidacion.Visibility = Visibility.Hidden;
                     grdValidacion.Visibility = Visibility.Hidden;
                     break;
             }
@@ -2158,11 +2143,13 @@ namespace Scale_Program
                 var weight = e.Value;
                 pesoBascula = weight;
                 var isStable = e.IsStable;
-                isStable = true;
+                isStable = true;// Se utiliza true, para acelerar el proceso.
+
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
+
                 if (isStable)
                 {
-                    if (Math.Abs(weight - _lastWeight) < 0.0001)
+                    if (Math.Abs(weight - _lastWeight) < 0.005)
                         _consecutiveCount++;
                     else
                         _consecutiveCount = 1;
@@ -2236,7 +2223,7 @@ namespace Scale_Program
 
                     if (_zeroConfirmed && _consecutiveCount == 2 && ModeloData.UsaCamaraVision)
                     {
-                        weight = weight - paso0;
+                        weight -= paso0;
                         ProcessStableWeight(weight);
                         return;
                     }
@@ -2244,7 +2231,7 @@ namespace Scale_Program
 
                     if (_zeroConfirmed && _consecutiveCount == 2 && !ModeloData.UsaCamaraVision)
                     {
-                        weight = weight - paso0;
+                        weight -= paso0;
                         ProcessStableWeightNoCam(weight);
                         return;
                     }

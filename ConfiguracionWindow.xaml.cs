@@ -29,9 +29,10 @@ namespace Scale_Program
 
         private void ConfiguracionWindow1_Loaded(object sender, RoutedEventArgs e)
         {
-            CargarConfiguracion();
 
             InicializarPuertos();
+
+            CargarConfiguracion();
         }
 
         private async void OnSaveButtonClick(object sender, RoutedEventArgs e)
@@ -154,7 +155,7 @@ namespace Scale_Program
                 var configuracion = new Configuracion
                 {
                     PuertoBascula1 = cboxScalePort_1.Text,
-                    BaudRateBascula12 = 9600,
+                    BaudRateBascula12 = int.TryParse(txbBaudRateBascula.Text, out var baudRateBascula) ? baudRateBascula : 9600,
                     ParityBascula12 = Parity.None.ToString(),
                     StopBitsBascula12 = StopBits.One.ToString(),
                     DataBitsBascula12 = 8,
@@ -211,6 +212,7 @@ namespace Scale_Program
                         cboxPortSeaLevel.Text = configuracion.PuertoSealevel;
 
                         cboxInputPick2L0.Text = configuracion.InputPick2L0.ToString();
+                        txbBaudRateBascula.Text = configuracion.BaudRateBascula12.ToString();
                         cboxInputBoton.Text = configuracion.InputBoton.ToString();
                         cboxInputSensor0.Text = configuracion.InputSensor0.ToString();
                         cboxInputSensor1.Text = configuracion.InputSensor1.ToString();
@@ -269,7 +271,7 @@ namespace Scale_Program
                     else
                         bascula1 = new BasculaFuncGFC();
 
-                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text, 9600, Parity.None, 8));
+                    bascula1.AsignarPuertoBascula(new SerialPort(cboxScalePort_1.Text, int.Parse(txbBaudRateBascula.Text), Parity.None, 8));
                     bascula1.OpenPort();
                     bascula1.AsignarControles(Dispatcher);
                     bascula1.OnDataReady += Bascula1_OnDataReady;

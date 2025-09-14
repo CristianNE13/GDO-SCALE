@@ -114,6 +114,7 @@
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
     <Compile Include="Functions\BasculaFuncGFC.cs" />
+    <Compile Include="Functions\ComboResult.cs" />
     <Compile Include="Functions\IBasculaFunc.cs" />
     <Compile Include="Functions\ISeaLevelDevice.cs" />
     <Compile Include="Functions\KeyenceTcpClient.cs" />
@@ -229,7 +230,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="BinDebug\CatalogosData.xlsx" />
     <None Include="Content\img\Automatic gearbox warning.psd" />
     <EntityDeploy Include="Model1.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
@@ -298,9 +298,6 @@
     <Resource Include="favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Content\img\articulos\Bolsa.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Content\img\Electric Bulb.png" />
   </ItemGroup>
   <ItemGroup>
@@ -313,85 +310,14 @@
     <Resource Include="Content\img\Restart.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Content\img\articulos\Clamp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Content\img\articulos\Corbata 27-10199.png" />
-    <Resource Include="Content\img\articulos\Grommet 082-0037-000.png" />
-    <Resource Include="Content\img\articulos\Harness14 006-0218-000.png" />
-    <Resource Include="Content\img\articulos\Harness38 006-0051-000.png" />
-    <Resource Include="Content\img\articulos\Limit plate 10-12806.png" />
-    <Resource Include="Content\img\articulos\Plastic PCB 012-1403-000.png" />
-    <Resource Include="Content\img\articulos\Seal shaft 168-0038-000.png" />
-    <Resource Include="Content\img\articulos\Spacer Nylon 184-0317-000.png" />
-    <Resource Include="Content\img\articulos\Tornillo grande 171-1171-000.png" />
-    <Resource Include="Content\img\articulos\Tornillos chicos 171-1148-000.png" />
-    <Resource Include="Content\img\articulos\Washer 85-FW-25SM.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Content\img\articulos\Caja antenna 141A1528.png" />
-    <Resource Include="Content\img\articulos\Caja harness 141A1528.png" />
-    <Resource Include="Content\img\articulos\Caja master kit 141C2396.png" />
-    <Resource Include="Content\img\articulos\Carton 14-10898.png" />
-    <Resource Include="Content\img\articulos\Carton 14-16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Content\img\articulos\17 Tornillos chicos 171A0366.png" />
-    <Resource Include="Content\img\articulos\2 Tornillos pequeños 171-1150-000.png" />
-    <Resource Include="Content\img\articulos\3 Corbatas 27-10199.png" />
-    <Resource Include="Content\img\articulos\3 Tornillos hexagonales 171A1268.png" />
-    <Resource Include="Content\img\articulos\4 Tornillos hexagonales 82-WX10-10T.png" />
-    <Resource Include="Content\img\articulos\6 Corbatas 27-10199.png" />
-    <Resource Include="Content\img\articulos\Antena fierro 76-36391.png" />
-    <Resource Include="Content\img\articulos\Antena plastico 76-38736.png" />
-    <Resource Include="Content\img\articulos\Arnes 006-0159-000.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="BinDebug\Imagenes\17 Tornillos chicos 171A0366.png" />
-    <Resource Include="BinDebug\Imagenes\2 Tornillos pequeños 171-1150-000.png" />
-    <Resource Include="BinDebug\Imagenes\3 Corbatas 27-10199.png" />
-    <Resource Include="BinDebug\Imagenes\3 Tornillos hex 121-1268-000.png" />
-    <Resource Include="BinDebug\Imagenes\4 Tornillos hex. 82-WX10-10T.png" />
-    <Resource Include="BinDebug\Imagenes\6 Corbatas 27-10199.png" />
-    <Resource Include="BinDebug\Imagenes\Antena fierro 76-36391.png" />
-    <Resource Include="BinDebug\Imagenes\Antena plastico 76-38736.png" />
-    <Resource Include="BinDebug\Imagenes\Arnes 006-0159-000.png" />
-    <Resource Include="BinDebug\Imagenes\Bolsa.png" />
-    <Resource Include="BinDebug\Imagenes\Caja antenna 141A1528.png" />
-    <Resource Include="BinDebug\Imagenes\Caja harness 141C1594.png" />
-    <Resource Include="BinDebug\Imagenes\Caja master kit 141C2396.png" />
-    <Resource Include="BinDebug\Imagenes\Carton 14-10898.png" />
-    <Resource Include="BinDebug\Imagenes\Carton 14-16.png" />
-    <Resource Include="BinDebug\Imagenes\check.png" />
-    <Resource Include="BinDebug\Imagenes\checkoff.png" />
-    <Resource Include="BinDebug\Imagenes\Clamp 028-0171-000.png" />
-    <Resource Include="BinDebug\Imagenes\Corbata 27-10199.png" />
-    <Resource Include="BinDebug\Imagenes\Ferreteria 432.png" />
-    <Resource Include="BinDebug\Imagenes\Ferreteria 441.png" />
-    <Resource Include="BinDebug\Imagenes\Ferreteria 447.png" />
-    <Resource Include="BinDebug\Imagenes\Grommet 082-0037-000.png" />
-    <Resource Include="BinDebug\Imagenes\Harness14 006-0218-000.png" />
-    <Resource Include="BinDebug\Imagenes\Harness38 006-0051-000.png" />
-    <Resource Include="BinDebug\Imagenes\Limit plate 10-12806.png" />
-    <Resource Include="BinDebug\Imagenes\Papel 12In 141-4127-000.png" />
-    <Resource Include="BinDebug\Imagenes\Papel 20In 141-4127-000.png" />
-    <Resource Include="BinDebug\Imagenes\Plastic PCB 012-1403-000.png" />
-    <Resource Include="BinDebug\Imagenes\Seal shaft 168-0038-000.png" />
-    <Resource Include="BinDebug\Imagenes\Spacer Nylon 184-0317-000.png" />
-    <Resource Include="BinDebug\Imagenes\Tornillo grande 171-1171-000.png" />
-    <Resource Include="BinDebug\Imagenes\Tornillos chicos 171-1148-000.png" />
-    <Resource Include="BinDebug\Imagenes\Washer 85-FW-25SM.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="BinDebug\README.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Content\img\lock.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Content\img\Arrowhead-Down.png" />
     <Resource Include="Content\img\Up Arrow - 01.png" />
     <Resource Include="Content\img\Weight-Scale.png" />
+    <Resource Include="Content\img\Sincronizacion.png" />
+    <Resource Include="Content\img\Zero.png" />
     <Content Include="Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>Model1.edmx</DependentUpon>

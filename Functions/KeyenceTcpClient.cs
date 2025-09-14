@@ -100,7 +100,7 @@ namespace Scale_Program.Functions
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException("No hay conexión activa con la cámara.");
+                    throw new InvalidOperationException($"No hay conexión activa con la cámara. {e.Message}");
                 } 
 
 

@@ -41,7 +41,7 @@
             </Grid.ColumnDefinitions>
             <Label x:Name="AppName" Content="Parts Presence" HorizontalAlignment="Left" Margin="20,14,0,0"
                    VerticalAlignment="Top" Height="54" FontFamily="Open Sans" FontSize="33.333" Width="331"
-                   FontWeight="Bold" Foreground="White" Grid.Column="0" Grid.ColumnSpan="2" />
+                   FontWeight="Bold" Foreground="White" Grid.Column="0" Grid.ColumnSpan="2" MouseLeftButtonDown="AppName_MouseLeftButtonDown" />
             <Grid Height="77" Margin="0,88,0,0" VerticalAlignment="Top" Background="#FFE2E2E2" Grid.ColumnSpan="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="370" />
@@ -171,6 +171,7 @@
                 <Label x:Name="lblVerificar1" Content="Sensor2" Grid.Column="2" HorizontalAlignment="Left"
                        Visibility="Hidden"
                        Margin="136,1,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
+                <Button x:Name="TestInspeccion" Grid.Column="2" Content="Button" HorizontalAlignment="Left" Margin="201,30,0,0" VerticalAlignment="Top" Click="TestInspeccion_Click" Visibility="Hidden"/>
 
             </Grid>
 
@@ -314,6 +315,30 @@
             <TextBlock Text="Reset de secuencia" Margin="252,46,0,0" VerticalAlignment="Top"
                        Foreground="White" HorizontalAlignment="Left" Width="64" Grid.Column="3" Height="33"
                        TextWrapping="Wrap" TextAlignment="Center" />
+            <Label x:Name="lblSincronizacion" Content="COM-RESET" Margin="25,49,0,0" VerticalAlignment="Top"
+                Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="1" Height="26" Visibility="Hidden" />
+            <Button x:Name="BtnResetCom" Grid.Column="1" Content=""
+                Margin="44,14,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.746,0.584" Height="36" BorderBrush="{x:Null}"
+                Template="{StaticResource ButtonControlTemplate1}" HorizontalAlignment="Left" Width="36" Click="BtnResetCom_Click" Visibility="Hidden">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Sincronizacion.png" />
+                </Button.Background>
+            </Button>
+            <Label x:Name="lblZero" Content="Cero bascula" Margin="116,48,0,0" VerticalAlignment="Top"
+                Foreground="White" HorizontalAlignment="Left" Width="84" Grid.Column="1" Height="26" Visibility="Hidden" />
+            <Button x:Name="BtnZero" Grid.Column="1" Content=""
+                Margin="135,14,0,115" RenderTransformOrigin="-0.746,0.584" BorderBrush="{x:Null}"
+                Template="{StaticResource ButtonControlTemplate1}" HorizontalAlignment="Left" Width="36" Click="BtnZero_Click" Visibility="Hidden">
+                <Button.Foreground>
+                    <ImageBrush />
+                </Button.Foreground>
+                <Button.Background>
+                    <ImageBrush ImageSource="/Content/img/Zero.png" />
+                </Button.Background>
+            </Button>
 
         </Grid>
 
@@ -816,6 +841,8 @@
                            Foreground="#FF3B3B3B" />
             </Grid>
         </StackPanel>
+        <Label x:Name="lblPesoMinTotal" Content="Peso Min:" Margin="10,0,0,35" FontSize="18" HorizontalAlignment="Left" Width="437" Height="32" VerticalAlignment="Bottom"/>
+        <Label x:Name="lblPesoMaxTotal" Content="Peso Max:" Margin="10,0,0,0" FontSize="18" HorizontalAlignment="Left" Width="437" Height="35" VerticalAlignment="Bottom"/>
 
     </Grid>
 

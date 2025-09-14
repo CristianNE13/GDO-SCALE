@@ -6,7 +6,7 @@ namespace Scale_Program.Functions
 {
     public class PuertosFunc
     {
-        private const int DefaultBaudRate = 9600;
+        private const int DefaultBaudRate = 19200;
 
         public List<string> GetPorts()
         {

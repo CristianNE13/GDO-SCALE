@@ -83,6 +83,12 @@
                         <ComboBoxItem Content="GFC" />
                         <ComboBoxItem Content="Pennsylvania" />
                     </ComboBox>
+                    <Label Content="Baudrate:" Grid.Column="1" VerticalAlignment="Top"
+                        HorizontalAlignment="Right" Margin="0,101,169,0" FontFamily="Arial" FontSize="18.667"
+                        Height="32" Width="89" />
+                    <TextBox x:Name="txbBaudRateBascula"
+                        VerticalAlignment="Top" Margin="300,101,7,0"
+                        FontSize="24" TabIndex="1" TextAlignment="Center" Grid.Column="1" />
                 </Grid>
             </TabItem>
             <TabItem Header="SeaLevel">

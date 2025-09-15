@@ -62,15 +62,13 @@ namespace Scale_Program.Functions
         {
             try
             {
-                return EjecutarConReconexion(() =>
-                {
+
                     var inputs = _modbusMaster.ReadInputs(_slaveId, (ushort)startIndex, (ushort)count);
                     uint result = 0;
                     for (var i = 0; i < inputs.Length; i++)
                         if (inputs[i])
                             result |= (uint)(1 << i);
                     return result;
-                }, "ReadDiscreteInputs");
             }
             catch (Exception ex)
             {
@@ -83,11 +81,7 @@ namespace Scale_Program.Functions
         {
             try
             {
-                EjecutarConReconexion(() =>
-                {
                     _modbusMaster.WriteSingleCoil(_slaveId, (ushort)coilIndex, state);
-                    return true;
-                }, "SetSingleCoilState");
             }
             catch (Exception ex)
             {
@@ -99,15 +93,11 @@ namespace Scale_Program.Functions
         {
             try
             {
-                EjecutarConReconexion(() =>
-                {
                     var bits = new bool[count];
                     for (var i = 0; i < count; i++)
                         bits[i] = (value & (1 << i)) != 0;
 
                     _modbusMaster.WriteMultipleCoils(_slaveId, (ushort)startIndex, bits);
-                    return true;
-                }, "WriteMultipleCoils");
             }
             catch (Exception ex)
             {

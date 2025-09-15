@@ -1794,6 +1794,15 @@ namespace Scale_Program
                     bascula.ClosePort();
 
                 sealevel?.Dispose();
+                ioInterface?.Dispose();
+
+                if (ioScanner != null)
+                {
+                    ioScanner.Stop();
+                    ioScanner = null;
+                }
+
+                ioScannerActivado = false;
 
                 keyence?.StopMonitoring();
                 keyence?.Dispose();
@@ -2065,8 +2074,6 @@ namespace Scale_Program
             }
             else
                 bascula?.EnviarZero();
-
-            BtnResetCom_Click(sender, e);
         }
 
         private void BtnResetCom_Click(object sender, RoutedEventArgs e)

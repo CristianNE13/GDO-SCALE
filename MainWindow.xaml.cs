@@ -1764,8 +1764,8 @@ namespace Scale_Program
                         }
 
                         var currentStep = pasosFiltrados[_currentStepIndex];
-                        ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
-                            pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
+                        //ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
+                        //    pieceWeight, _validacion, int.Parse(currentStep.PartCantidad));
                     }
                     catch (Exception exception)
                     {
@@ -2489,9 +2489,9 @@ namespace Scale_Program
             if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock))
                 return;
 
-            ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
-                pieceWeight,
-                _validacion, int.Parse(cantidadTextBlock.Text));
+            //ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
+            //    pieceWeight,
+            //    _validacion, int.Parse(cantidadTextBlock.Text));
 
             if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) ||
                 !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
@@ -2724,9 +2724,9 @@ namespace Scale_Program
             if (!(FindName($"Part_Cantidad{int.Parse(currentStep.PartOrden) - 1}") is TextBlock cantidadTextBlock))
                 return;
 
-            ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
-                pieceWeight,
-                _validacion, int.Parse(cantidadTextBlock.Text));
+            //ShowBolsasRestantes(currentStep.PartNoParte, currentStep.MinWeight, currentStep.MaxWeight,
+            //    pieceWeight,
+            //    _validacion, int.Parse(cantidadTextBlock.Text));
 
             if (!(FindName(currentStep.PartIndicator) is Rectangle indicator) ||
                 !(FindName(currentStep.PartPeso) is TextBlock pesoTextBlock)) return;
@@ -2880,7 +2880,14 @@ namespace Scale_Program
 
                 await Task.Delay(500);
 
-                IniciarSealevel();
+                try
+                {
+                    IniciarSealevel();
+                }
+                catch (Exception exSealevel)
+                {
+                    MessageBox.Show($"Error al reconectar con Sealevel: {exSealevel.Message}");
+                }
 
                 await Task.Delay(500);
 

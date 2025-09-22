@@ -173,6 +173,7 @@
                        Visibility="Hidden"
                        Margin="136,1,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
                 <Button x:Name="TestInspeccion" Grid.Column="2" Content="Button" HorizontalAlignment="Left" Margin="201,30,0,0" VerticalAlignment="Top" Click="TestInspeccion_Click" Visibility="Hidden"/>
+                <Button Content="Button" Grid.Column="2" Margin="104,2,445,2" Click="Button_Click" Visibility="Hidden"/>
 
             </Grid>
 

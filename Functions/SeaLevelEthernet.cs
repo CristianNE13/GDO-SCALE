@@ -12,7 +12,6 @@ namespace Scale_Program.Functions
         private const int MaxOutputs = 16;
 
         private readonly string _ip;
-
         private readonly object _modbusLock = new object();
         private readonly int _port;
         private readonly byte _slaveId;

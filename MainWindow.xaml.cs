@@ -2221,7 +2221,7 @@ namespace Scale_Program
 
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount == 2 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2229,7 +2229,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount == 2 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount == 1 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2509,13 +2509,6 @@ namespace Scale_Program
                 return;
             }
 
-            /*
-               indicator.Fill = Brushes.Red;
-               pesoTextBlock.Text = $"{pieceWeight:F5} kg";
-               currentStep.DetectedWeight = currentWeight.ToString("F5");
-             */
-
-
             if (resultado.Count != 0 && !currentStep.PartNoParte.Contains("CCAM"))
             {
                 ResetNoCcamByIndex(pasosFiltrados.Where(x => x.PartNoParte != "CCAM"));
@@ -2525,7 +2518,13 @@ namespace Scale_Program
             else
             {
                 if (currentStep.PartNoParte.Contains("CCAM"))
+                {
+                    indicator.Fill = Brushes.Red;
+                    pesoTextBlock.Text = $"{pieceWeight:F5} kg";
+                    currentStep.DetectedWeight = currentWeight.ToString("F5");
+
                     return;
+                }
 
                 ResetNoCcamByIndex(pasosFiltrados.Where(x => x.PartNoParte != "CCAM"));
             }
@@ -2953,6 +2952,11 @@ namespace Scale_Program
                 ResetComunicaciones();
             else
                 _resetPendiente = true;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            InspeccionarValidacionFunc();
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Scale_Program.Functions
 {
@@ -12,6 +14,8 @@ namespace Scale_Program.Functions
         private readonly int _monitorInterval = 8000;
         private readonly int _reconnectDelay = 3000;
         private readonly int _timeout;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _lockConnection = new SemaphoreSlim(1, 1);
         private TcpClient _client;
         private CancellationTokenSource _monitorTokenSource;
         private NetworkStream _stream;
@@ -56,14 +60,15 @@ namespace Scale_Program.Functions
 
         public async Task<bool> ConnectAsync()
         {
-            if (_client != null && _client.Connected)
-                return true;
+            if (_client != null && _client.Connected)///Verificar que cliente no sea null y que cliente este conectado
+                return true;///Devolver valor conectado = true;
+            await _lockConnection.WaitAsync();
 
             try
             {
-                _client = new TcpClient();
-                var connectTask = _client.ConnectAsync(IpAddress, Port);
-                if (await Task.WhenAny(connectTask, Task.Delay(_timeout)) == connectTask)
+                _client = new TcpClient();///Declarar _client como nuevo objeto TcpClient
+                var connectTask = _client.ConnectAsync(IpAddress, Port);///Declarar variable connectTask con metodo ConnectAsync
+                if (await Task.WhenAny(connectTask, Task.Delay(_timeout)) == connectTask)///Condicion if con Task asincrona, espera a que se cumpla la condicion connectTask o que pase el timeout de conexion
                 {
                     _stream = _client.GetStream();
                     return true;
@@ -76,10 +81,16 @@ namespace Scale_Program.Functions
                 Console.WriteLine($"Error al conectar: {ex.Message}");
                 return false;
             }
+            finally 
+            {
+                await Task.Delay(100);
+                _lockConnection.Release();
+            }
         }
 
         public async Task<string> SendCommandAsync(string command)
         {
+            await _lock.WaitAsync();
             try
             {
                 try
@@ -106,14 +117,28 @@ namespace Scale_Program.Functions
 
 
                 var commandBytes = Encoding.ASCII.GetBytes(command + "\r");
+
+
                 await _stream.WriteAsync(commandBytes, 0, commandBytes.Length);
 
                 using (var cts = new CancellationTokenSource(_timeout))
                 {
                     var buffer = new byte[1024];
-                    var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
-                    return Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                    while (true)
+                    {
+                        var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                        if(bytesRead==0) return null;
+                        for(int i = 0; i < bytesRead; i++)
+                        {
+                            if (buffer[i] == '\r')
+                            {
+                                await Task.Delay(100);
+                                return Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                            }
+                        }
+                    }
                 }
+                
             }
             catch (OperationCanceledException)
             {
@@ -124,6 +149,7 @@ namespace Scale_Program.Functions
                 Console.WriteLine($"Error al enviar comando: {ex.Message}");
                 return ex.Message;
             }
+            finally { _lock.Release(); }
         }
 
         public Task<string> SendTrigger()
@@ -142,32 +168,37 @@ namespace Scale_Program.Functions
 
         public List<string> Formato(string entrada)
         {
-            var partes = entrada.Split(',');
-            var resultado = new List<string>();
-
-            if (partes.Length < 4 || partes[0] != "RT")
+            if (entrada != null)
             {
-                resultado.Add(entrada);
+                var partes = entrada.Split(',');
+                var resultado = new List<string>();
+
+                if (partes.Length < 4 || partes[0] != "RT")
+                {
+                    resultado.Add(entrada);
+                    return resultado;
+                }
+
+                var estadoGlobal = partes[2];
+                resultado.Add($"Área: {estadoGlobal}");
+
+                for (var i = 3; i + 2 < partes.Length; i += 3)
+                {
+                    var herramienta = partes[i];
+                    var resultadoHerramienta = partes[i + 1];
+                    var tasa = partes[i + 2].TrimStart('0');
+
+                    if (string.IsNullOrEmpty(tasa))
+                        tasa = "0";
+
+                    var numeroHerramienta = int.TryParse(herramienta, out var h) ? h + 1 : i;
+                    resultado.Add($"Herramienta {numeroHerramienta}: {resultadoHerramienta} - {tasa}");
+                }
+
                 return resultado;
             }
+            else return null;
 
-            var estadoGlobal = partes[2];
-            resultado.Add($"Área: {estadoGlobal}");
-
-            for (var i = 3; i + 2 < partes.Length; i += 3)
-            {
-                var herramienta = partes[i];
-                var resultadoHerramienta = partes[i + 1];
-                var tasa = partes[i + 2].TrimStart('0');
-
-                if (string.IsNullOrEmpty(tasa))
-                    tasa = "0";
-
-                var numeroHerramienta = int.TryParse(herramienta, out var h) ? h + 1 : i;
-                resultado.Add($"Herramienta {numeroHerramienta}: {resultadoHerramienta} - {tasa}");
-            }
-
-            return resultado;
         }
 
         public async Task<int?> CheckActiveProgram()

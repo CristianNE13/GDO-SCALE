@@ -419,6 +419,7 @@ namespace Scale_Program
                             modeloBD.ProgramaVision = modeloLocal.ProgramaVision;
                             modeloBD.Etapa1 = modeloLocal.Etapa1;
                             modeloBD.Activo = modeloLocal.Activo;
+                            modeloBD.PesoInicial = modeloLocal.PesoInicial;
                         }
                         else
                         {

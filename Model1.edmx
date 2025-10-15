@@ -44,6 +44,7 @@
           <Property Name="UsaPick2Light" Type="bit" Nullable="false" />
           <Property Name="UsaCamaraVision" Type="bit" Nullable="false" />
           <Property Name="ProgramaVision" Type="nvarchar" MaxLength="50" />
+          <Property Name="PesoInicial" Type="float" />
           <Property Name="Etapa1" Type="nvarchar" MaxLength="255" />
           <Property Name="Activo" Type="bit" Nullable="false" />
         </EntityType>
@@ -102,21 +103,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="dc_missingpartsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="Completado">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Fecha" Type="DateTime" Precision="3" Nullable="false" />
-          <Property Name="NoParte" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="ModProceso" Type="Int32" />
-          <Property Name="Proceso" Type="Int32" Nullable="false" />
-          <Property Name="PesoDetectado" Type="Double" Nullable="false" />
-          <Property Name="Estado" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Tag" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-        </EntityType>
         <EntityContainer Name="dc_missingpartsEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Completados" EntityType="Self.Completado" />
           <FunctionImport Name="sp_alterdiagram">
             <Parameter Name="diagramname" Mode="In" Type="String" />
             <Parameter Name="owner_id" Mode="In" Type="Int32" />
@@ -147,10 +134,11 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
             <Parameter Name="new_diagramname" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="sp_upgraddiagrams" />
-          <EntitySet Name="users" EntityType="dc_missingpartsModel.user" />
-          <EntitySet Name="Modelos" EntityType="dc_missingpartsModel.Modelo" />
           <EntitySet Name="Articulos" EntityType="dc_missingpartsModel.Articulo" />
-        </EntityContainer>
+          <EntitySet Name="Completados" EntityType="dc_missingpartsModel.Completado" />
+          <EntitySet Name="Modelos" EntityType="dc_missingpartsModel.Modelo" />
+          <EntitySet Name="users" EntityType="dc_missingpartsModel.user" />
+          </EntityContainer>
         <ComplexType Name="sp_helpdiagramdefinition_Result">
           <Property Type="Int32" Name="version" Nullable="true" />
           <Property Type="Binary" Name="definition" Nullable="true" />
@@ -162,29 +150,6 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Type="String" Name="Owner" Nullable="true" MaxLength="128" />
           <Property Type="Int32" Name="OwnerID" Nullable="false" />
         </ComplexType>
-        <EntityType Name="user">
-          <Key>
-            <PropertyRef Name="user_id" />
-          </Key>
-          <Property Name="user_id" Type="Int32" Nullable="false" />
-          <Property Name="username" Type="String" Nullable="false" MaxLength="25" FixedLength="false" Unicode="false" />
-          <Property Name="password" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Modelo">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="NoModelo" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="ModProceso" Type="Int32" Nullable="false" />
-          <Property Name="Descripcion" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="UsaBascula1" Type="Boolean" Nullable="false" />
-          <Property Name="UsaPick2Light" Type="Boolean" Nullable="false" />
-          <Property Name="UsaCamaraVision" Type="Boolean" Nullable="false" />
-          <Property Name="ProgramaVision" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Activo" Type="Boolean" Nullable="false" />
-        </EntityType>
         <EntityType Name="Articulo">
           <Key>
             <PropertyRef Name="Id" />
@@ -199,26 +164,49 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="PesoMax" Type="Double" Nullable="false" />
           <Property Name="Cantidad" Type="Int32" Nullable="false" />
         </EntityType>
-      </Schema>
+        <EntityType Name="Completado">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Fecha" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="NoParte" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ModProceso" Type="Int32" />
+          <Property Name="Proceso" Type="Int32" Nullable="false" />
+          <Property Name="PesoDetectado" Type="Double" Nullable="false" />
+          <Property Name="Estado" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Tag" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Modelo">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="NoModelo" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ModProceso" Type="Int32" Nullable="false" />
+          <Property Name="Descripcion" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="UsaBascula1" Type="Boolean" Nullable="false" />
+          <Property Name="UsaPick2Light" Type="Boolean" Nullable="false" />
+          <Property Name="UsaCamaraVision" Type="Boolean" Nullable="false" />
+          <Property Name="ProgramaVision" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PesoInicial" Type="Double" />
+          <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activo" Type="Boolean" Nullable="false" />
+        </EntityType>
+        <EntityType Name="user">
+          <Key>
+            <PropertyRef Name="user_id" />
+          </Key>
+          <Property Name="user_id" Type="Int32" Nullable="false" />
+          <Property Name="username" Type="String" Nullable="false" MaxLength="25" FixedLength="false" Unicode="false" />
+          <Property Name="password" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+        </EntityType>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="dc_missingpartsModelStoreContainer" CdmEntityContainer="dc_missingpartsEntities">
-          <EntitySetMapping Name="Completados">
-            <EntityTypeMapping TypeName="dc_missingpartsModel.Completado">
-              <MappingFragment StoreEntitySet="Completados">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Fecha" ColumnName="Fecha" />
-                <ScalarProperty Name="NoParte" ColumnName="NoParte" />
-                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
-                <ScalarProperty Name="Proceso" ColumnName="Proceso" />
-                <ScalarProperty Name="PesoDetectado" ColumnName="PesoDetectado" />
-                <ScalarProperty Name="Estado" ColumnName="Estado" />
-                <ScalarProperty Name="Tag" ColumnName="Tag" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <FunctionImportMapping FunctionImportName="sp_alterdiagram" FunctionName="dc_missingpartsModel.Store.sp_alterdiagram" />
           <FunctionImportMapping FunctionImportName="sp_creatediagram" FunctionName="dc_missingpartsModel.Store.sp_creatediagram" />
           <FunctionImportMapping FunctionImportName="sp_dropdiagram" FunctionName="dc_missingpartsModel.Store.sp_dropdiagram" />
@@ -243,31 +231,6 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="sp_renamediagram" FunctionName="dc_missingpartsModel.Store.sp_renamediagram" />
           <FunctionImportMapping FunctionImportName="sp_upgraddiagrams" FunctionName="dc_missingpartsModel.Store.sp_upgraddiagrams" />
-          <EntitySetMapping Name="users">
-            <EntityTypeMapping TypeName="dc_missingpartsModel.user">
-              <MappingFragment StoreEntitySet="users">
-                <ScalarProperty Name="password" ColumnName="password" />
-                <ScalarProperty Name="username" ColumnName="username" />
-                <ScalarProperty Name="user_id" ColumnName="user_id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Modelos">
-            <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
-              <MappingFragment StoreEntitySet="Modelos">
-                <ScalarProperty Name="Activo" ColumnName="Activo" />
-                <ScalarProperty Name="Etapa1" ColumnName="Etapa1" />
-                <ScalarProperty Name="ProgramaVision" ColumnName="ProgramaVision" />
-                <ScalarProperty Name="UsaCamaraVision" ColumnName="UsaCamaraVision" />
-                <ScalarProperty Name="UsaPick2Light" ColumnName="UsaPick2Light" />
-                <ScalarProperty Name="UsaBascula1" ColumnName="UsaBascula1" />
-                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
-                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
-                <ScalarProperty Name="NoModelo" ColumnName="NoModelo" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Articulos">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Articulo">
               <MappingFragment StoreEntitySet="Articulos">
@@ -283,7 +246,47 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-        </EntityContainerMapping>
+          <EntitySetMapping Name="Completados">
+            <EntityTypeMapping TypeName="dc_missingpartsModel.Completado">
+              <MappingFragment StoreEntitySet="Completados">
+                <ScalarProperty Name="Tag" ColumnName="Tag" />
+                <ScalarProperty Name="Estado" ColumnName="Estado" />
+                <ScalarProperty Name="PesoDetectado" ColumnName="PesoDetectado" />
+                <ScalarProperty Name="Proceso" ColumnName="Proceso" />
+                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
+                <ScalarProperty Name="NoParte" ColumnName="NoParte" />
+                <ScalarProperty Name="Fecha" ColumnName="Fecha" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Modelos">
+            <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
+              <MappingFragment StoreEntitySet="Modelos">
+                <ScalarProperty Name="Activo" ColumnName="Activo" />
+                <ScalarProperty Name="Etapa1" ColumnName="Etapa1" />
+                <ScalarProperty Name="PesoInicial" ColumnName="PesoInicial" />
+                <ScalarProperty Name="ProgramaVision" ColumnName="ProgramaVision" />
+                <ScalarProperty Name="UsaCamaraVision" ColumnName="UsaCamaraVision" />
+                <ScalarProperty Name="UsaPick2Light" ColumnName="UsaPick2Light" />
+                <ScalarProperty Name="UsaBascula1" ColumnName="UsaBascula1" />
+                <ScalarProperty Name="Descripcion" ColumnName="Descripcion" />
+                <ScalarProperty Name="ModProceso" ColumnName="ModProceso" />
+                <ScalarProperty Name="NoModelo" ColumnName="NoModelo" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="users">
+            <EntityTypeMapping TypeName="dc_missingpartsModel.user">
+              <MappingFragment StoreEntitySet="users">
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="username" ColumnName="username" />
+                <ScalarProperty Name="user_id" ColumnName="user_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>
   </edmx:Runtime>

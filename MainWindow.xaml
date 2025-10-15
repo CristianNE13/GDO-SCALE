@@ -669,10 +669,10 @@
             <Run Text="0.0 " /><Run FontSize="18.667" Text="Kgs." />
         </TextBlock>
 
-        <Grid x:Name="grdValidacion" Panel.ZIndex="11" Visibility="Hidden" Margin="228,506,245,374" Background="#FFFDE546" UseLayoutRounding="False">
-            <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO" HorizontalAlignment="Left"
-                     VerticalAlignment="Top" FontSize="32" Width="616" Foreground="Red"
-                     FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,0,0"
+        <Grid x:Name="grdValidacion" Panel.ZIndex="11" Visibility="Hidden" Margin="228,506,245,0" Background="#FFFDE546" UseLayoutRounding="False" Height="142" VerticalAlignment="Top">
+            <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO"
+                     VerticalAlignment="Top" FontSize="32" Foreground="Red"
+                     FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,44,0"
                      Focusable="False" AllowDrop="False" IsHitTestVisible="False" IsTabStop="False">
                 <TextBox.BorderBrush>
                     <ImageBrush />
@@ -681,17 +681,21 @@
                     <ImageBrush />
                 </TextBox.Background>
             </TextBox>
-            <TextBlock x:Name="txbArticulo" HorizontalAlignment="Left" Margin="10,68,0,0" TextWrapping="Wrap"
-                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="656" TextAlignment="Center"
-                       FontWeight="Bold" />
+            <Viewbox Stretch="Uniform" Margin="10,53,26,45">
+                <TextBlock x:Name="txbArticulo"
+                           Text="TextBlock"
+                           TextWrapping="Wrap"
+                           FontWeight="Bold"
+                           TextAlignment="Center" />
+            </Viewbox>
             <Label x:Name="lblPesoMin" Content="Peso Min" HorizontalAlignment="Left" Margin="115,164,0,0"
                    VerticalAlignment="Top" FontSize="18.667" Width="87" />
             <Label x:Name="lblPesoMax" Content="Peso Max" HorizontalAlignment="Left" Margin="478,166,0,0"
                    VerticalAlignment="Top" FontSize="18.667" Width="87" />
-            <TextBlock x:Name="txbPesoMin" HorizontalAlignment="Left" Margin="43,119,0,0" TextWrapping="Wrap"
-                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="229" TextAlignment="Center" />
-            <TextBlock x:Name="txbPesoMax" HorizontalAlignment="Left" Margin="416,119,0,0" TextWrapping="Wrap"
-                       Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="230" TextAlignment="Center" />
+            <TextBlock x:Name="txbPesoMin" Margin="2,53,0,0" TextWrapping="Wrap"
+                       Text="TextBlock" FontSize="32" TextAlignment="Left" HorizontalAlignment="Left" Width="229" Height="44" VerticalAlignment="Top" />
+            <TextBlock x:Name="txbPesoMax" Margin="0,53,10,0" TextWrapping="Wrap"
+                       Text="TextBlock" FontSize="32" TextAlignment="Left" HorizontalAlignment="Right" Width="230" Height="44" VerticalAlignment="Top" />
             <Button x:Name="btnCerrarPeso" Content="X" HorizontalAlignment="Left" Margin="616,7,0,0"
                     VerticalAlignment="Top" Width="59" Height="53" Background="{x:Null}" FontSize="24"
                     Foreground="#FFC1C0C0" BorderBrush="{x:Null}" BorderThickness="0" Click="BtnCerrarPeso_Click" />
@@ -705,13 +709,23 @@
                      FontSize="25" />
             <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
                     VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
-                    RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />
-            <Button x:Name="btnIniciarZero" Content="Iniciar" HorizontalAlignment="Left" Margin="235,191,0,0"
-                    VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
-                    RenderTransformOrigin="0.378,4.807" Click="btnIniciarZero_Click" Visibility="Hidden" />
-            <Button x:Name="btnInspeccionCamara" Content="Inspeccion" HorizontalAlignment="Left" Margin="235,203,0,0"
-                    VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
-                    RenderTransformOrigin="0.378,4.807" Click="btnInspeccionCamara_Click" Visibility="Hidden" />
+                    RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" Visibility="Hidden"/>
+
+            <Button x:Name="btnCambiarPesoInicial"
+                    Content=""
+                    BorderBrush="{x:Null}" Foreground="White"
+                    Template="{DynamicResource ButtonControlTemplate1}"
+                    Margin="3,3,0,0"
+                    Click="QuickSetup_Btn_Click"
+                    HorizontalAlignment="Left" Width="50" Height="45" VerticalAlignment="Top">
+                <Button.DataContext>
+                    <scaleProgram:Modelo />
+                </Button.DataContext>
+                <Button.Background>
+                    <ImageBrush ImageSource="Content/img/Weight-Scale.png" />
+                </Button.Background>
+            </Button>
+
         </Grid>
         <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
                  d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />

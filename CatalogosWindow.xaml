@@ -35,6 +35,7 @@
                             <DataGridCheckBoxColumn Binding="{Binding UsaCamaraVision}" Header="Usa camara de vision" />
                             <DataGridTextColumn Binding="{Binding ProgramaVision}" Header="Programa camara" />
                             <DataGridTextColumn Binding="{Binding Etapa1}" Header="Último artículo" />
+                            <DataGridCheckBoxColumn Binding="{Binding UsaPesoInicial}" Header="Usar peso inicial" />
                             <DataGridTextColumn Binding="{Binding PesoInicial}" Header="Peso Inicial(Kg)" />
                             <DataGridCheckBoxColumn Binding="{Binding Activo}" Header="Activo" />
                         </DataGrid.Columns>

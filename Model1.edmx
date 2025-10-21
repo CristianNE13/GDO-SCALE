@@ -44,6 +44,7 @@
           <Property Name="UsaPick2Light" Type="bit" Nullable="false" />
           <Property Name="UsaCamaraVision" Type="bit" Nullable="false" />
           <Property Name="ProgramaVision" Type="nvarchar" MaxLength="50" />
+          <Property Name="UsaPesoInicial" Type="bit" Nullable="false" />
           <Property Name="PesoInicial" Type="float" />
           <Property Name="Etapa1" Type="nvarchar" MaxLength="255" />
           <Property Name="Activo" Type="bit" Nullable="false" />
@@ -192,6 +193,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="PesoInicial" Type="Double" />
           <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="UsaPesoInicial" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="user">
           <Key>
@@ -263,6 +265,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <EntitySetMapping Name="Modelos">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
               <MappingFragment StoreEntitySet="Modelos">
+                <ScalarProperty Name="UsaPesoInicial" ColumnName="UsaPesoInicial" />
                 <ScalarProperty Name="Activo" ColumnName="Activo" />
                 <ScalarProperty Name="Etapa1" ColumnName="Etapa1" />
                 <ScalarProperty Name="PesoInicial" ColumnName="PesoInicial" />

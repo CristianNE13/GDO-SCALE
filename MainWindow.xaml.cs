@@ -216,7 +216,16 @@ namespace Scale_Program
             try
             {
                 _inicioZero = true;
-               //_stopBascula1 = true;
+
+                if (!ModeloData.UsaPesoInicial)
+                {
+                    //_stopBascula1 = true;
+                    ShowIniciar();
+                    btnCambiarPesoInicial.Visibility = Visibility.Hidden;
+                }
+                else btnCambiarPesoInicial.Visibility = Visibility.Visible;
+
+
 
                 _inicioBascula = false;
                 PesoGeneral.Text = "Peso: 0.0Kg";
@@ -242,7 +251,7 @@ namespace Scale_Program
                 SecuenciaASeguir(ModeloData);
 
                 ResetVariables();
-                //ShowIniciar();
+
 
                 if (defaultSettings.CheckShutOff)
                 {
@@ -592,7 +601,7 @@ namespace Scale_Program
             _manual = false;
             _zeroConfirmed = false;
             _inicioZero = true;
-            _activarBoton = true;
+            _activarBoton = !ModeloData.UsaPesoInicial;
             pick0Estado = true;
             pick1Estado = true;
             pick2Estado = true;
@@ -603,6 +612,7 @@ namespace Scale_Program
             _esperandoPickToLight = false;    
             _verificacionIndividual = false;
             _etapa1 = true;
+            paso0 = 0;
             _consecutiveCount = 0;
             _accumulatedWeight = 0;
             _currentStepIndex = 0;
@@ -818,7 +828,7 @@ namespace Scale_Program
             {
                 lbx_Codes.Items.Add("SIN RESPUESTA");
                 _stopBascula1 = true;
-                await ShowMensaje("NO SE CONECTO CON LA CAMARA, REINICIAR SISTEMA", Brushes.Red, 5000);
+                await ShowMensaje("NO SE CONECTO CON LA CAMARA, REINICIAR COMUNICACION", Brushes.Red, 5000);
                 await Task.Delay(5000);
                 return true;
             }
@@ -849,8 +859,12 @@ namespace Scale_Program
             ResetVariables();
             DesactivarSalida(defaultSettings.Piston);
             SetImagesBox();
-            //ShowIniciar();
-            EsperandoInicio();
+
+            if (ModeloData.UsaPesoInicial)
+                EsperandoInicio();
+            else 
+                ShowIniciar();
+
             Dispatcher.Invoke(ShowPruebaCorrecta);
         }
 
@@ -1860,93 +1874,52 @@ namespace Scale_Program
             }
         }
 
-        private async void QuickSetup_Btn_Click(object sender, RoutedEventArgs e)
+        private void QuickSetup_Btn_Click(object sender, RoutedEventArgs e)
         {
             var auth = new AuthenticationWindow();
-            if (auth.ShowDialog() != true) return;
 
-            var btn = sender as Button;
-            if (btn == null)
-                return;
-
-            if (btn.DataContext is Articulo modArtQS_Articulo)
+            if (auth.ShowDialog() == true)
             {
-                PopupQS.Visibility = Visibility.Visible;
 
-                NoArticuloQS_TBox.Text = modArtQS_Articulo.NoParte;
-                ArticuloIDQS_TBox.Text = modArtQS_Articulo.Id.ToString();
+                var modArtQS = (sender as Button)?.DataContext as SequenceStep;
 
-                if (!TryParseKg(PesoBasculaQS_TBox.Text, out var basculaKg))
+                if ( modArtQS == null)
                 {
-                    if (TryParseKg(PesoGeneral.Text, out var generalKg))
-                        PesoBasculaQS_TBox.Text = $"{FormatKg(generalKg)} kg";
-                    else
-                        PesoBasculaQS_TBox.Text = "0 kg";
-                }
+                    var lista = PesoGeneral.Text.Split(' ');
+                    PesoBasculaQS_TBox.Text = lista[1]+" kg";
+                    ModeloData.PesoInicial = Convert.ToDouble(lista[1]);
 
-                PesoMinQS_TBox.Text = modArtQS_Articulo.PesoMin.ToString("F5", KgCulture);
-                PesoMaxQS_TBox.Text = modArtQS_Articulo.PesoMax.ToString("F5", KgCulture);
-                peso_min_qs_text.Text = PesoMinQS_TBox.Text;
-                peso_max_qs_text.Text = PesoMaxQS_TBox.Text;
+                    var db = new dc_missingpartsEntities();
+                    db.Entry(ModeloData).State = EntityState.Modified;
+                    db.SaveChanges();
+                    _ = ShowMensaje("Peso inicial actualizado", Brushes.AntiqueWhite, 1000);
+                    EsperandoInicio();
 
-                return;
-            }
-
-            else
-            {
-                if (!TryParseKg(PesoGeneral.Text, out var actualKg))
-                {
-                    await ShowMensaje("No pude leer el peso actual de la báscula.", Brushes.LightPink, 2500);
                     return;
                 }
 
-                try
-                {
-                    using (var db = new dc_missingpartsEntities())
+                PopupQS.Visibility = Visibility.Visible;
+
+                NoArticuloQS_TBox.Text = modArtQS.PartNoParte;
+
+                if (FindName(modArtQS.PartPeso) is TextBlock secuencia)
+                { 
+                    PesoBasculaQS_TBox.Text = secuencia.Text;
+                    if (secuencia.Text == "0.0Kgs" || secuencia.Text == "OK")
                     {
-                        var dbModelo = db.Modelos.Find(ModeloData.Id);
-                        if (dbModelo == null)
-                        {
-                            await ShowMensaje("Modelo no encontrado en BD.", Brushes.LightPink, 2500);
-                            return;
-                        }
-
-                        ModeloData.PesoInicial = (double)actualKg;
-                        dbModelo.PesoInicial = (double)actualKg;
-                        db.Entry(dbModelo).State = EntityState.Modified;
-                        await db.SaveChangesAsync();
+                        var lista = PesoGeneral.Text.Split(' ');
+                        PesoBasculaQS_TBox.Text = lista[1]+" kg";
                     }
+                }
 
-                    await ShowMensaje($"Peso inicial actualizado a {FormatKg(actualKg)} kg", Brushes.LightGreen, 1500);
-                }
-                catch (Exception ex)
-                {
-                    await ShowMensaje("Error al guardar PesoInicial: " + ex.Message, Brushes.LightPink, 3000);
-                }
+
+                ArticuloIDQS_TBox.Text = modArtQS.Id.ToString();
+                PesoMinQS_TBox.Text = modArtQS.MinWeight.ToString();
+                PesoMaxQS_TBox.Text = modArtQS.MaxWeight.ToString();
+                peso_max_qs_text.Text = modArtQS.MaxWeight.ToString();
+                peso_min_qs_text.Text = modArtQS.MinWeight.ToString();
             }
         }
-
-        private bool TryParseKg(string raw, out decimal kg)
-        {
-            kg = 0m;
-            if (string.IsNullOrWhiteSpace(raw)) return false;
-
-            if (raw.Trim().Equals("OK", StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            var m = Regex.Match(raw, @"([-+]?\d+(?:[.,]\d+)?)\s*(kg|kgs)?", RegexOptions.IgnoreCase);
-            if (!m.Success) return false;
-
-            var num = m.Groups[1].Value.Replace(',', '.');
-            return decimal.TryParse(num, NumberStyles.Float, KgCulture, out kg);
-        }
-
-        private string FormatKg(decimal kg)
-        {
-            return kg.ToString("F5", KgCulture);
-        }
-
-        private static readonly CultureInfo KgCulture = CultureInfo.InvariantCulture;
 
         private void SubirVariacion_Btn_Click(object sender, RoutedEventArgs e)
         {
@@ -2051,6 +2024,7 @@ namespace Scale_Program
         private void Part_Imagen0_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             paso0 = pesoBascula;
+            Console.WriteLine(paso0);
         }
 
         private void AppName_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -2164,7 +2138,7 @@ namespace Scale_Program
 
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
 
-                if (isStable)
+                if (isStable && ModeloData != null)
                 {
                     if (Math.Abs(weight - _lastWeight) < 0.005)
                         _consecutiveCount++;
@@ -2173,16 +2147,21 @@ namespace Scale_Program
 
                     _lastWeight = weight;
 
+
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
-                    var menor = pesoInicial - pesoInicial * 0.04;
-                    var mayor = pesoInicial + pesoInicial * 0.04;
+                    var menor = pesoInicial - pesoInicial * 0.1;
+                    var mayor = pesoInicial + pesoInicial * 0.1;
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount == 1 && !_zeroConfirmed)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount == 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
                         return;
+                    }
+                    if (weight <= menor && weight >= mayor && _consecutiveCount == 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    {
+                        _activarBoton = false;
                     }
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
@@ -2249,8 +2228,14 @@ namespace Scale_Program
 
                     if (!_zeroConfirmed)
                     {
+
                         _activarBoton = false;
-                        EsperandoInicio();
+
+                        if (ModeloData.UsaPesoInicial)
+                            EsperandoInicio();
+                        else
+                            ShowIniciar();
+
                     }
 
                     if (_zeroConfirmed && _consecutiveCount == 2 && ModeloData.UsaCamaraVision)
@@ -2988,9 +2973,7 @@ namespace Scale_Program
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (_activarBoton)
-            {
                 InspeccionarValidacionFunc();
-            }
         }
 
         private void btnCambiarPesoInicial_Click(object sender, RoutedEventArgs e)

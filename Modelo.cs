@@ -25,5 +25,6 @@ namespace Scale_Program
         public Nullable<double> PesoInicial { get; set; }
         public string Etapa1 { get; set; }
         public bool Activo { get; set; }
+        public bool UsaPesoInicial { get; set; }
     }
 }

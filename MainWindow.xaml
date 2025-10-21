@@ -173,7 +173,7 @@
                        Visibility="Hidden"
                        Margin="136,1,0,0" VerticalAlignment="Top" Foreground="#FF595656" FontWeight="Bold" />
                 <Button x:Name="TestInspeccion" Grid.Column="2" Content="Button" HorizontalAlignment="Left" Margin="201,30,0,0" VerticalAlignment="Top" Click="TestInspeccion_Click" Visibility="Hidden"/>
-                <Button Content="Button" Grid.Column="2" Margin="104,2,445,2" Click="Button_Click" Visibility="Hidden"/>
+                <Button Content="Button" Grid.Column="2" Margin="104,2,445,2" Click="Button_Click" Visibility="Visible"/>
 
             </Grid>
 
@@ -730,9 +730,9 @@
         <ListBox x:Name="lbx_Codes" Visibility="Hidden" Margin="575,561,575,75"
                  d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFFEE141" MaxHeight="150" MaxWidth="450" />
 
-        <StackPanel x:Name="PopupQS" HorizontalAlignment="Center" Height="383" Margin="382,220,453.333,135.667"
-                    VerticalAlignment="Center" Width="438" Background="#FFEFEFEF" Panel.ZIndex="15"
-                    Visibility="Hidden">
+        <StackPanel x:Name="PopupQS" Height="383" Margin="0,361,399,0"
+                    VerticalAlignment="Top" Background="#FFEFEFEF" Panel.ZIndex="15"
+                    Visibility="Hidden" HorizontalAlignment="Right" Width="438">
             <StackPanel.Effect>
                 <DropShadowEffect Color="#FF888888" Opacity="0.25" />
             </StackPanel.Effect>

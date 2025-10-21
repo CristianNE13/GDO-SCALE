@@ -420,6 +420,7 @@ namespace Scale_Program
                             modeloBD.Etapa1 = modeloLocal.Etapa1;
                             modeloBD.Activo = modeloLocal.Activo;
                             modeloBD.PesoInicial = modeloLocal.PesoInicial;
+                            modeloBD.UsaPesoInicial = modeloLocal.UsaPesoInicial;
                         }
                         else
                         {

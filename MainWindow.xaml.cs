@@ -98,6 +98,7 @@ namespace Scale_Program
         private readonly DispatcherTimer _commResetTimer = new DispatcherTimer();
         private bool _resetPendiente = false;
         private bool _ResetSeguro = false;
+        private bool PrimerInicial = false;
 
         public MainWindow()
         {
@@ -620,6 +621,7 @@ namespace Scale_Program
             pieceWeight = 0;
             codigo = "";
             valoresBolsas.Clear();
+            PrimerInicial = false;
         }
 
         private void RegistrarPasoRechazado(SequenceStep step)
@@ -680,6 +682,7 @@ namespace Scale_Program
                         if (error)
                         {
                             _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                            LogRejectedCamaraValidation(pasosFiltrados[_currentStepIndex]);
                             _activarBoton = true;
                             return;
                         }
@@ -720,9 +723,11 @@ namespace Scale_Program
                         await keyence.ChangeProgram(int.Parse(lista.Last()));
 
                     error = await VerificacionCamara();
+                    
                     if (error)
                     {
                         _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
+                        LogRejectedCamaraValidation(pasosFiltrados[_currentStepIndex]);
                         _activarBoton = true;
                         return;
                     }
@@ -1705,6 +1710,36 @@ namespace Scale_Program
             }
         }
 
+        private void LogRejectedCamaraValidation(SequenceStep step)
+        {
+            try
+            {
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var registro = new Completado
+                    {
+                        Fecha = DateTime.Now,
+                        NoParte = step.PartNoParte,
+                        ModProceso = step.ModProceso,
+                        Proceso = step.PartProceso,
+                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
+                        Estado = "ERROR VALIDACION CAMARA",
+                        Tag = step.Tag ?? ""
+                    };
+
+                    db.Completados.Add(registro);
+                    db.SaveChanges();
+
+                    registroBitacora.Rechazos++;
+                    bitacora.Guardar(directorioBit);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al registrar rechazo camara: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region Botones
@@ -1812,23 +1847,23 @@ namespace Scale_Program
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            //AuthenticationWindow auth = new AuthenticationWindow();
+            AuthenticationWindow auth = new AuthenticationWindow();
 
-            //if (auth.ShowDialog() == true)
-            //{
-            if (Cbox_Modelo.SelectedItem == null)
+            if (auth.ShowDialog() == true)
             {
-                ShowAlertError("No hay un modelo seleccionado.");
-                return;
+                if (Cbox_Modelo.SelectedItem == null)
+                {
+                    ShowAlertError("No hay un modelo seleccionado.");
+                    return;
+                }
+
+                var modeloSeleccionado = ModeloData.NoModelo.ToUpper();
+
+                if (ModeloExiste(modeloSeleccionado))
+                    ProcesarResetModelo();
+                else
+                    ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
             }
-
-            var modeloSeleccionado = ModeloData.NoModelo.ToUpper();
-
-            if (ModeloExiste(modeloSeleccionado))
-                ProcesarResetModelo();
-            else
-                ShowAlertError($"Modelo '{modeloSeleccionado}' no reconocido.");
-            //}
         }
 
         private void BtnRechazo_Click(object sender, RoutedEventArgs e)
@@ -2153,16 +2188,23 @@ namespace Scale_Program
                     var menor = pesoInicial - pesoInicial * 0.1;
                     var mayor = pesoInicial + pesoInicial * 0.1;
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount == 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
+
+                        if(!PrimerInicial)
+                        {
+                            PrimerInicial = true;
+                            InspeccionarValidacionFunc();
+                        }
                         return;
                     }
-                    if (weight <= menor && weight >= mayor && _consecutiveCount == 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    
+                    /*if (weight <= menor && weight >= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = false;
-                    }
+                    }*/
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {
@@ -2238,7 +2280,7 @@ namespace Scale_Program
 
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount == 2 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 2 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2246,7 +2288,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount == 2 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 2 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);

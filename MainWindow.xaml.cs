@@ -662,7 +662,12 @@ namespace Scale_Program
         {
             ShowAlertCamara();
             _stopBascula1 = true;
-            InspeccionarValidacionFunc();
+
+            if (!PrimerInicial)
+            {
+                PrimerInicial = true;
+                InspeccionarValidacionFunc();
+            }
         }
 
         private async void InspeccionarValidacionFunc()
@@ -2162,7 +2167,7 @@ namespace Scale_Program
 
         private void Bascula1_OnDataReady(object sender, BasculaEventArgs e)
         {
-            if (_stopBascula1) return;
+            //if (_stopBascula1) return;
 
             Dispatcher.Invoke(() =>
             {
@@ -2236,6 +2241,7 @@ namespace Scale_Program
                                 }
                                 Grd_Color.Background = Brushes.ForestGreen;
 
+                                PrimerInicial = false;
                                 ProcessStableWeight(weight);
                             }
                         }

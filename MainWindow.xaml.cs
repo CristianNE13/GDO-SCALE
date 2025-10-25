@@ -2162,7 +2162,7 @@ namespace Scale_Program
 
         private void Bascula1_OnDataReady(object sender, BasculaEventArgs e)
         {
-            //if (_stopBascula1 || _inicioZero) return;
+            if (_stopBascula1) return;
 
             Dispatcher.Invoke(() =>
             {
@@ -2185,8 +2185,8 @@ namespace Scale_Program
 
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
-                    var menor = pesoInicial - pesoInicial * 0.1;
-                    var mayor = pesoInicial + pesoInicial * 0.1;
+                    var menor = pesoInicial - pesoInicial * 0.03;
+                    var mayor = pesoInicial + pesoInicial * 0.03;
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {
@@ -2289,9 +2289,25 @@ namespace Scale_Program
                         _activarBoton = false;
 
                         if (ModeloData.UsaPesoInicial)
+                        {
                             EsperandoInicio();
+                            if (_consecutiveCount >= 2)
+                            {
+                                _consecutiveCount = 0;
+                                return;
+                            }
+                        }
+
                         else
+                        {
                             ShowIniciar();
+                            if (_consecutiveCount >= 2)
+                            {
+                                _consecutiveCount = 0;
+                                return;
+                            }
+                        }
+
 
                     }
                 }

@@ -2496,7 +2496,11 @@ namespace Scale_Program
 
                     if (ModeloData.UsaCamaraVision)
                     {
-                        _ = ActivarCamaraValidacion();
+                        if (!PrimerInicial)
+                        {
+                            _ = ActivarCamaraValidacion();
+                            return;
+                        }
                         return;
                     }
 

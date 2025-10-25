@@ -687,7 +687,7 @@ namespace Scale_Program
                         if (error)
                         {
                             _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
-                            LogRejectedCamaraValidation(pasosFiltrados[_currentStepIndex]);
+                            LogCamaraValidation(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
                             _activarBoton = true;
                             return;
                         }
@@ -705,6 +705,7 @@ namespace Scale_Program
                     _pickCompletado = false;
                     _inicioPicks = false;
 
+                    LogCamaraValidation(pasosFiltrados[0], "PESO INICIAL OK");
                     if (ModeloData.UsaCamaraVision)
                     {
                         _ = ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
@@ -732,7 +733,7 @@ namespace Scale_Program
                     if (error)
                     {
                         _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
-                        LogRejectedCamaraValidation(pasosFiltrados[_currentStepIndex]);
+                        LogCamaraValidation(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
                         _activarBoton = true;
                         return;
                     }
@@ -1235,7 +1236,7 @@ namespace Scale_Program
             txbPesoMax.Visibility = Visibility.Hidden;
             txbPesoMin.Visibility = Visibility.Hidden;
             txbPesoActual.Visibility = Visibility.Hidden;
-            txbArticulo.Text = $"Peso Min:{ModeloData.PesoInicial-ModeloData.PesoInicial*0.004:F4}   Peso Max:{ModeloData.PesoInicial+ModeloData.PesoInicial*0.004:F4}";
+            txbArticulo.Text = $"Peso Min:{ModeloData.PesoInicial-ModeloData.PesoInicial* 0.015:F4}   Peso Max:{ModeloData.PesoInicial+ModeloData.PesoInicial* 0.02:F4}";
             txbPesoMax.Text = "";
             txbPesoMin.Text = "";
             txbPesoActual.Text = "";
@@ -1715,7 +1716,7 @@ namespace Scale_Program
             }
         }
 
-        private void LogRejectedCamaraValidation(SequenceStep step)
+        private void LogCamaraValidation(SequenceStep step,string estado)
         {
             try
             {
@@ -1727,8 +1728,8 @@ namespace Scale_Program
                         NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
-                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
-                        Estado = "ERROR VALIDACION CAMARA",
+                        PesoDetectado = pesoBascula,
+                        Estado = $"{estado}",
                         Tag = step.Tag ?? ""
                     };
 
@@ -2190,8 +2191,8 @@ namespace Scale_Program
 
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
-                    var menor = pesoInicial - pesoInicial * 0.03;
-                    var mayor = pesoInicial + pesoInicial * 0.03;
+                    var menor = pesoInicial - pesoInicial * 0.015;
+                    var mayor = pesoInicial + pesoInicial * 0.025;
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {

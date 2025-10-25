@@ -1689,7 +1689,7 @@ namespace Scale_Program
                     var registro = new Completado
                     {
                         Fecha = DateTime.Now,
-                        NoParte = step.PartNoParte,
+                        NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
                         PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
@@ -1719,7 +1719,7 @@ namespace Scale_Program
                     var registro = new Completado
                     {
                         Fecha = DateTime.Now,
-                        NoParte = step.PartNoParte,
+                        NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
                         PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
@@ -2188,24 +2188,6 @@ namespace Scale_Program
                     var menor = pesoInicial - pesoInicial * 0.1;
                     var mayor = pesoInicial + pesoInicial * 0.1;
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
-                    {
-                        _activarBoton = true;
-                        ShowIniciar();
-
-                        if(!PrimerInicial)
-                        {
-                            PrimerInicial = true;
-                            InspeccionarValidacionFunc();
-                        }
-                        return;
-                    }
-                    
-                    /*if (weight <= menor && weight >= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
-                    {
-                        _activarBoton = false;
-                    }*/
-
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {
                         if (Math.Abs(weight - paso0) <= 0.0025)
@@ -2268,17 +2250,23 @@ namespace Scale_Program
                         }
                     }
 
-                    if (!_zeroConfirmed)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
+                        _activarBoton = true;
+                        ShowIniciar();
 
-                        _activarBoton = false;
-
-                        if (ModeloData.UsaPesoInicial)
-                            EsperandoInicio();
-                        else
-                            ShowIniciar();
-
+                        if(!PrimerInicial)
+                        {
+                            PrimerInicial = true;
+                            InspeccionarValidacionFunc();
+                        }
+                        return;
                     }
+                    
+                    /*if (weight <= menor && weight >= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    {
+                        _activarBoton = false;
+                    }*/
 
                     if (_zeroConfirmed && _consecutiveCount >= 2 && ModeloData.UsaCamaraVision)
                     {
@@ -2295,6 +2283,17 @@ namespace Scale_Program
                         return;
                     }
 
+                    if (!_zeroConfirmed)
+                    {
+
+                        _activarBoton = false;
+
+                        if (ModeloData.UsaPesoInicial)
+                            EsperandoInicio();
+                        else
+                            ShowIniciar();
+
+                    }
                 }
             });
         }

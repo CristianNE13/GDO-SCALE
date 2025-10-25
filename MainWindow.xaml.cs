@@ -870,6 +870,7 @@ namespace Scale_Program
             ResetVariables();
             DesactivarSalida(defaultSettings.Piston);
             SetImagesBox();
+            LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
 
             if (ModeloData.UsaPesoInicial)
                 EsperandoInicio();
@@ -1638,7 +1639,7 @@ namespace Scale_Program
                         NoParte = step.PartNoParte,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
-                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
+                        PesoDetectado = double.TryParse(PesoGeneral.Text, out var peso) ? peso : 0,
                         Estado = resultado,
                         Tag = matchedTag ?? ""
                     };
@@ -1665,7 +1666,7 @@ namespace Scale_Program
                         NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
-                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
+                        PesoDetectado = double.TryParse(PesoGeneral.Text, out var peso) ? peso : 0,
                         Estado = resultado,
                         Tag = matchedTag ?? ""
                     };
@@ -1698,7 +1699,7 @@ namespace Scale_Program
                         NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
-                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
+                        PesoDetectado = double.TryParse(PesoGeneral.Text, out var peso) ? peso : 0,
                         Estado = "Rechazado",
                         Tag = step.Tag ?? ""
                     };
@@ -2491,7 +2492,6 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
-                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
                         }
                     }
 

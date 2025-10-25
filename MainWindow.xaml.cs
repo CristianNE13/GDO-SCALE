@@ -1658,6 +1658,8 @@ namespace Scale_Program
         {
             try
             {
+                var lista = PesoGeneral.Text.Split(' ');
+                PesoBasculaQS_TBox.Text = lista[1] + " kg";
                 using (var db = new dc_missingpartsEntities())
                 {
                     var registro = new Completado
@@ -1666,7 +1668,8 @@ namespace Scale_Program
                         NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
-                        PesoDetectado = double.TryParse(PesoGeneral.Text, out var peso) ? peso : 0,
+
+                        PesoDetectado = double.TryParse(lista[1], out var peso) ? peso : 0,
                         Estado = resultado,
                         Tag = matchedTag ?? ""
                     };

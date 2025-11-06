@@ -731,7 +731,7 @@ namespace Scale_Program
                         lbx_Codes.Visibility = Visibility.Hidden;
                     }
 
-                    ActivarSalida(defaultSettings.Piston);
+                    //ActivarSalida(defaultSettings.Piston);
 
                     _stopBascula1 = false;
                     _activarBoton = false;
@@ -893,17 +893,20 @@ namespace Scale_Program
             return false;
         }
 
-        private void CamaraCompletada()
+        private async Task CamaraCompletada()
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
-            DesactivarSalida(defaultSettings.Piston);
             SetImagesBox();
             ShowIniciar();
             Dispatcher.Invoke(ShowPruebaCorrecta);
+            //DesactivarSalida(defaultSettings.Piston);
+            ActivarSalida(defaultSettings.Piston);
+            await Task.Delay(4000);
+            DesactivarSalida(defaultSettings.Piston);
         }
 
         #endregion

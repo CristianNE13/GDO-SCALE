@@ -126,7 +126,7 @@ namespace Scale_Program
 
             directorioBit = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
 
-            InicializarResets();
+            //InicializarResets();
 
             IniciarSealevel();
 

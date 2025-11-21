@@ -185,6 +185,7 @@ namespace Scale_Program
                 }
                 
                 Cbox_Proceso.SelectedIndex = 0;
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception exception)
             {
@@ -570,6 +571,7 @@ namespace Scale_Program
                 SecuenciaASeguir(ModeloData);
                 Cbox_Proceso.SelectedIndex = procesoSeleccionado - 1;
                 PrecargarCombosAsync(ModeloData.ModProceso, procesoSeleccionado);
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception ex)
             {
@@ -710,6 +712,8 @@ namespace Scale_Program
         {
             try
             {
+                DesactivarSalida(defaultSettings.Piston);
+
                 var lista = ModeloData.ProgramaVision.Split(',');
                 bool error;
 
@@ -905,8 +909,6 @@ namespace Scale_Program
             Dispatcher.Invoke(ShowPruebaCorrecta);
             //DesactivarSalida(defaultSettings.Piston);
             ActivarSalida(defaultSettings.Piston);
-            await Task.Delay(4000);
-            DesactivarSalida(defaultSettings.Piston);
         }
 
         #endregion

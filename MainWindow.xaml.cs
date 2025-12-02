@@ -126,7 +126,7 @@ namespace Scale_Program
 
             directorioBit = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
 
-            InicializarResets();
+            //InicializarResets();
 
             IniciarSealevel();
 
@@ -185,6 +185,7 @@ namespace Scale_Program
                 }
                 
                 Cbox_Proceso.SelectedIndex = 0;
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception exception)
             {
@@ -570,6 +571,7 @@ namespace Scale_Program
                 SecuenciaASeguir(ModeloData);
                 Cbox_Proceso.SelectedIndex = procesoSeleccionado - 1;
                 PrecargarCombosAsync(ModeloData.ModProceso, procesoSeleccionado);
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception ex)
             {
@@ -710,6 +712,8 @@ namespace Scale_Program
         {
             try
             {
+                DesactivarSalida(defaultSettings.Piston);
+
                 var lista = ModeloData.ProgramaVision.Split(',');
                 bool error;
 
@@ -731,7 +735,7 @@ namespace Scale_Program
                         lbx_Codes.Visibility = Visibility.Hidden;
                     }
 
-                    ActivarSalida(defaultSettings.Piston);
+                    //ActivarSalida(defaultSettings.Piston);
 
                     _stopBascula1 = false;
                     _activarBoton = false;
@@ -893,17 +897,18 @@ namespace Scale_Program
             return false;
         }
 
-        private void CamaraCompletada()
+        private async Task CamaraCompletada()
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
-            DesactivarSalida(defaultSettings.Piston);
             SetImagesBox();
             ShowIniciar();
             Dispatcher.Invoke(ShowPruebaCorrecta);
+            //DesactivarSalida(defaultSettings.Piston);
+            ActivarSalida(defaultSettings.Piston);
         }
 
         #endregion

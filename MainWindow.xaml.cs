@@ -188,6 +188,7 @@ namespace Scale_Program
                 }
                 
                 Cbox_Proceso.SelectedIndex = 0;
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception exception)
             {
@@ -582,6 +583,7 @@ namespace Scale_Program
                 SecuenciaASeguir(ModeloData);
                 Cbox_Proceso.SelectedIndex = procesoSeleccionado - 1;
                 PrecargarCombosAsync(ModeloData.ModProceso, procesoSeleccionado);
+                DesactivarSalida(defaultSettings.Piston);
             }
             catch (Exception ex)
             {
@@ -674,6 +676,8 @@ namespace Scale_Program
         {
             try
             {
+                DesactivarSalida(defaultSettings.Piston);
+
                 var lista = ModeloData.ProgramaVision.Split(',');
                 bool error;
 
@@ -696,7 +700,7 @@ namespace Scale_Program
                         lbx_Codes.Visibility = Visibility.Hidden;
                     }
 
-                    ActivarSalida(defaultSettings.Piston);
+                    //ActivarSalida(defaultSettings.Piston);
 
                     _stopBascula1 = false;
                     _activarBoton = false;
@@ -869,7 +873,8 @@ namespace Scale_Program
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
-            DesactivarSalida(defaultSettings.Piston);
+            //DesactivarSalida(defaultSettings.Piston);
+            ActivarSalida(defaultSettings.Piston);
             SetImagesBox();
 
             if (ModeloData.UsaPesoInicial)

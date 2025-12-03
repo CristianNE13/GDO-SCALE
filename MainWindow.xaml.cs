@@ -687,7 +687,7 @@ namespace Scale_Program
                         if (error)
                         {
                             _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
-                            LogCamaraValidation(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
+                            LogCamaraValidationError(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
                             _activarBoton = true;
                             return;
                         }
@@ -705,7 +705,7 @@ namespace Scale_Program
                     _pickCompletado = false;
                     _inicioPicks = false;
 
-                    LogCamaraValidation(pasosFiltrados[0], "PESO INICIAL OK");
+                    LogCamaraValidationOk(pasosFiltrados[0], "PESO INICIAL OK");
                     if (ModeloData.UsaCamaraVision)
                     {
                         _ = ShowMensaje("INSPECCION CORRECTA", Brushes.Green, 1500);
@@ -733,7 +733,7 @@ namespace Scale_Program
                     if (error)
                     {
                         _ = ShowMensaje("Error, verificar imagen de camara", Brushes.Beige, 3000);
-                        LogCamaraValidation(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
+                        LogCamaraValidationError(pasosFiltrados[_currentStepIndex], "ERROR VALIDACION CAMARA");
                         _activarBoton = true;
                         return;
                     }
@@ -865,12 +865,12 @@ namespace Scale_Program
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
+            LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
             DesactivarSalida(defaultSettings.Piston);
             SetImagesBox();
-            LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
 
             if (ModeloData.UsaPesoInicial)
                 EsperandoInicio();
@@ -1720,7 +1720,7 @@ namespace Scale_Program
             }
         }
 
-        private void LogCamaraValidation(SequenceStep step,string estado)
+        private void LogCamaraValidationError(SequenceStep step,string estado)
         {
             try
             {
@@ -1742,6 +1742,33 @@ namespace Scale_Program
 
                     registroBitacora.Rechazos++;
                     bitacora.Guardar(directorioBit);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al registrar rechazo camara: {ex.Message}");
+            }
+        }
+
+        private void LogCamaraValidationOk(SequenceStep step,string estado)
+        {
+            try
+            {
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var registro = new Completado
+                    {
+                        Fecha = DateTime.Now,
+                        NoParte = ModeloData.NoModelo,
+                        ModProceso = step.ModProceso,
+                        Proceso = step.PartProceso,
+                        PesoDetectado = pesoBascula,
+                        Estado = $"{estado}",
+                        Tag = step.Tag ?? ""
+                    };
+
+                    db.Completados.Add(registro);
+                    db.SaveChanges();
                 }
             }
             catch (Exception ex)
@@ -2195,7 +2222,7 @@ namespace Scale_Program
 
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
-                    var menor = pesoInicial - pesoInicial * 0.015;
+                    var menor = pesoInicial - pesoInicial * 0.025;
                     var mayor = pesoInicial + pesoInicial * 0.025;
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)

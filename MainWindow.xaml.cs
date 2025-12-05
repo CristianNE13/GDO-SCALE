@@ -99,6 +99,7 @@ namespace Scale_Program
         private bool _resetPendiente = false;
         private bool _ResetSeguro = false;
         private bool PrimerInicial = false;
+        private double tolerancia = 0.08;
 
         public MainWindow()
         {
@@ -1242,7 +1243,7 @@ namespace Scale_Program
             txbPesoMax.Visibility = Visibility.Hidden;
             txbPesoMin.Visibility = Visibility.Hidden;
             txbPesoActual.Visibility = Visibility.Hidden;
-            txbArticulo.Text = $"Peso Min:{ModeloData.PesoInicial-ModeloData.PesoInicial* 0.015:F4}   Peso Max:{ModeloData.PesoInicial+ModeloData.PesoInicial* 0.02:F4}";
+            txbArticulo.Text = $"Peso Min:{ModeloData.PesoInicial-ModeloData.PesoInicial* tolerancia:F4}   Peso Max:{ModeloData.PesoInicial+ModeloData.PesoInicial* tolerancia:F4}";
             txbPesoMax.Text = "";
             txbPesoMin.Text = "";
             txbPesoActual.Text = "";
@@ -2227,8 +2228,8 @@ namespace Scale_Program
 
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
-                    var menor = pesoInicial - pesoInicial * 0.025;
-                    var mayor = pesoInicial + pesoInicial * 0.025;
+                    var menor = pesoInicial - pesoInicial * tolerancia;
+                    var mayor = pesoInicial + pesoInicial * tolerancia;
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {
@@ -2305,13 +2306,8 @@ namespace Scale_Program
                         }
                         return;
                     }
-                    
-                    /*if (weight <= menor && weight >= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
-                    {
-                        _activarBoton = false;
-                    }*/
 
-                    if (_zeroConfirmed && _consecutiveCount >= 2 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2319,7 +2315,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount >= 2 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2334,7 +2330,7 @@ namespace Scale_Program
                         if (ModeloData.UsaPesoInicial)
                         {
                             EsperandoInicio();
-                            if (_consecutiveCount >= 2)
+                            if (_consecutiveCount >= 1)
                             {
                                 _consecutiveCount = 0;
                                 return;
@@ -2344,7 +2340,7 @@ namespace Scale_Program
                         else
                         {
                             ShowIniciar();
-                            if (_consecutiveCount >= 2)
+                            if (_consecutiveCount >= 1)
                             {
                                 _consecutiveCount = 0;
                                 return;

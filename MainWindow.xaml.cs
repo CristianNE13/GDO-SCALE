@@ -2294,7 +2294,7 @@ namespace Scale_Program
                         }
                     }
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 2 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
@@ -2619,6 +2619,10 @@ namespace Scale_Program
                 currentStep.DetectedWeight = currentWeight.ToString();
                 (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                 codigo = $"{integrer}.{fraction}";
+                if (!_manual)
+                {
+                    PrimerInicial = false;
+                }
                 _manual = true;
                 _ = ActivarCamaraValidacion();
                 return;

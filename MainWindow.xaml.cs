@@ -222,13 +222,10 @@ namespace Scale_Program
 
                 if (!ModeloData.UsaPesoInicial)
                 {
-                    //_stopBascula1 = true;
                     ShowIniciar();
                     btnCambiarPesoInicial.Visibility = Visibility.Hidden;
                 }
                 else btnCambiarPesoInicial.Visibility = Visibility.Visible;
-
-
 
                 _inicioBascula = false;
                 PesoGeneral.Text = "Peso: 0.0Kg";
@@ -664,7 +661,6 @@ namespace Scale_Program
         private async Task ActivarCamaraValidacion()
         {
             ShowAlertCamara();
-            _stopBascula1 = true;
 
             if (!PrimerInicial)
             {
@@ -843,7 +839,6 @@ namespace Scale_Program
                 (resultado.Count == 1 && resultado.Contains("No hay conexión activa con la cámara.")))
             {
                 lbx_Codes.Items.Add("SIN RESPUESTA");
-                _stopBascula1 = true;
                 await ShowMensaje("NO SE CONECTO CON LA CAMARA, REINICIAR COMUNICACION", Brushes.Red, 5000);
                 await Task.Delay(5000);
                 return true;
@@ -859,14 +854,13 @@ namespace Scale_Program
             if (ngValores.Any())
             {
                 valoresNG = string.Join(",", ngValores);
-                _stopBascula1 = true;
                 return true;
             }
 
             return false;
         }
 
-        private void CamaraCompletada()
+        private async Task CamaraCompletada()
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
@@ -879,7 +873,12 @@ namespace Scale_Program
             SetImagesBox();
 
             if (ModeloData.UsaPesoInicial)
+            {
                 EsperandoInicio();
+                _stopBascula1 = true;
+                await Task.Delay(4000);
+                _stopBascula1 = false;
+            }
             else 
                 ShowIniciar();
 
@@ -1142,7 +1141,6 @@ namespace Scale_Program
 
         private void ShowSensor(string articulo)
         {
-            _stopBascula1 = true;
             lblPesoArt.Text = "";
 
             txbArticulo.Text = $"VERIFICAR {articulo} CON SENSOR";
@@ -1170,7 +1168,6 @@ namespace Scale_Program
 
         private void HideSensor()
         {
-            _stopBascula1 = false;
             lblPesoArt.Text = "";
             txbArticulo.Text = "";
 
@@ -1370,7 +1367,6 @@ namespace Scale_Program
 
         private void VerificarEstadoBasculasPick2(object sender, EventArgs e)
         {
-            borderBascula1.Background = _stopBascula1 ? Brushes.Red : Brushes.Green;
             borderPick1.Background = pick0Estado ? Brushes.Red : Brushes.Green;
             borderPick2.Background = pick1Estado ? Brushes.Red : Brushes.Green;
             borderPick3.Background = pick2Estado ? Brushes.Red : Brushes.Green;
@@ -2196,16 +2192,12 @@ namespace Scale_Program
                     Application.Current.Dispatcher.Invoke(() =>
                         ShowAlertError($"Error inesperado al abrir el puerto ({puerto}): {ex.Message}"));
                 }
-                finally
-                {
-                    if (error) _stopBascula1 = true;
-                }
             });
         }
 
         private void Bascula1_OnDataReady(object sender, BasculaEventArgs e)
         {
-            //if (_stopBascula1) return;
+            if (_stopBascula1) return;
 
             Dispatcher.Invoke(() =>
             {
@@ -2218,14 +2210,6 @@ namespace Scale_Program
 
                 if (isStable && ModeloData != null)
                 {
-                    if (Math.Abs(weight - _lastWeight) < 0.005)
-                        _consecutiveCount++;
-                    else
-                        _consecutiveCount = 1;
-
-                    _lastWeight = weight;
-
-
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
                     var menor = pesoInicial - pesoInicial * tolerancia;
@@ -2235,8 +2219,6 @@ namespace Scale_Program
                     {
                         if (Math.Abs(weight - paso0) <= 0.0025)
                         {
-                            if (_consecutiveCount >= 1)
-                            {
                                 _zeroConfirmed = true;
                                 _consecutiveCount = 0;
                                 _ResetSeguro = false;
@@ -2281,20 +2263,15 @@ namespace Scale_Program
 
                                 PrimerInicial = false;
                                 ProcessStableWeight(weight);
-                            }
-                        }
-                        else
-                        {
-                            if (_consecutiveCount >= 1)
-                            {
-                                paso0 = weight;
-                                _consecutiveCount = 0;
-                                return;
-                            }
                         }
                     }
+                    else
+                    {
+                        paso0 = weight;
+                        return;
+                    }
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    if (weight >= menor && weight <= mayor && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
@@ -2307,7 +2284,7 @@ namespace Scale_Program
                         return;
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount >= 1 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2315,7 +2292,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2324,30 +2301,16 @@ namespace Scale_Program
 
                     if (!_zeroConfirmed)
                     {
-
                         _activarBoton = false;
 
                         if (ModeloData.UsaPesoInicial)
                         {
                             EsperandoInicio();
-                            if (_consecutiveCount >= 1)
-                            {
-                                _consecutiveCount = 0;
-                                return;
-                            }
+                            return;
                         }
 
                         else
-                        {
-                            ShowIniciar();
-                            if (_consecutiveCount >= 1)
-                            {
-                                _consecutiveCount = 0;
-                                return;
-                            }
-                        }
-
-
+                           ShowIniciar();
                     }
                 }
             });
@@ -2641,6 +2604,8 @@ namespace Scale_Program
                     indicator.Fill = Brushes.Red;
                     pesoTextBlock.Text = $"{pieceWeight:F5} kg";
                     currentStep.DetectedWeight = currentWeight.ToString("F5");
+                    _manual = true;
+                    _activarBoton = true;
 
                     return;
                 }

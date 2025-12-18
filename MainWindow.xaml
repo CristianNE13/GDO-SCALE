@@ -670,7 +670,7 @@
         </TextBlock>
 
         <Grid x:Name="grdValidacion" Panel.ZIndex="11" Visibility="Hidden" Margin="228,506,245,374" Background="#FFFDE546" UseLayoutRounding="False">
-            <TextBox x:Name="lblPesoArt" Text="FAVOR DE PESAR EL ARTICULO" HorizontalAlignment="Left"
+            <TextBox x:Name="lblPesoArt" Text="FAVOR DE ESCANEAR ETIQUETA" HorizontalAlignment="Left"
                      VerticalAlignment="Top" FontSize="32" Width="616" Foreground="Red"
                      FontWeight="Bold" TextWrapping="Wrap" Height="64" TextAlignment="Center" Margin="32,0,0,0"
                      Focusable="False" AllowDrop="False" IsHitTestVisible="False" IsTabStop="False">
@@ -699,10 +699,10 @@
                    VerticalAlignment="Top" FontSize="18.667" Width="148" HorizontalContentAlignment="Center" />
             <TextBlock x:Name="txbPesoActual" HorizontalAlignment="Center" Margin="0,167,0,0" TextWrapping="Wrap"
                        Text="TextBlock" VerticalAlignment="Top" FontSize="32" Width="228" TextAlignment="Center" />
-            <TextBox x:Name="txbScanner" Visibility="Hidden" HorizontalAlignment="Left" Margin="115,0,0,0"
+            <TextBox x:Name="txbScanner" Visibility="Visible" HorizontalAlignment="Left" Margin="115,0,0,0"
                      TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="450" Height="38"
                      Background="#FFFFFADB" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                     FontSize="25" />
+                     FontSize="25" KeyDown="txbScanner_KeyDown" />
             <Button x:Name="btnRechazo" Content="Rechazar" HorizontalAlignment="Left" Margin="456,227,0,0"
                     VerticalAlignment="Top" Width="210" Height="53" Background="#FFFFFF" FontSize="24"
                     RenderTransformOrigin="0.378,4.807" Click="BtnRechazo_Click" />

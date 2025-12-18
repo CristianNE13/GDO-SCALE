@@ -31,6 +31,7 @@
           <Property Name="PesoDetectado" Type="float" Nullable="false" />
           <Property Name="Estado" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="Tag" Type="nvarchar" MaxLength="100" />
+          <Property Name="NumeroSerie" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Modelos">
           <Key>
@@ -46,6 +47,8 @@
           <Property Name="ProgramaVision" Type="nvarchar" MaxLength="50" />
           <Property Name="Etapa1" Type="nvarchar" MaxLength="255" />
           <Property Name="Activo" Type="bit" Nullable="false" />
+          <Property Name="UsaPesoInicial" Type="bit" Nullable="false" />
+          <Property Name="PesoInicial" Type="float" Nullable="false" />
         </EntityType>
         <EntityType Name="users">
           <Key>
@@ -114,6 +117,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="PesoDetectado" Type="Double" Nullable="false" />
           <Property Name="Estado" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Tag" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="NumeroSerie" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityContainer Name="dc_missingpartsEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Completados" EntityType="Self.Completado" />
@@ -184,6 +188,8 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <Property Name="ProgramaVision" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Etapa1" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activo" Type="Boolean" Nullable="false" />
+          <Property Name="UsaPesoInicial" Type="Boolean" Nullable="false" />
+          <Property Name="PesoInicial" Type="Double" Nullable="false" />
         </EntityType>
         <EntityType Name="Articulo">
           <Key>
@@ -208,6 +214,7 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <EntitySetMapping Name="Completados">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Completado">
               <MappingFragment StoreEntitySet="Completados">
+                <ScalarProperty Name="NumeroSerie" ColumnName="NumeroSerie" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="Fecha" ColumnName="Fecha" />
                 <ScalarProperty Name="NoParte" ColumnName="NoParte" />
@@ -255,6 +262,8 @@ warning 6035: The relationship 'FK_Completados_ModProceso' has columns that are 
           <EntitySetMapping Name="Modelos">
             <EntityTypeMapping TypeName="dc_missingpartsModel.Modelo">
               <MappingFragment StoreEntitySet="Modelos">
+                <ScalarProperty Name="PesoInicial" ColumnName="PesoInicial" />
+                <ScalarProperty Name="UsaPesoInicial" ColumnName="UsaPesoInicial" />
                 <ScalarProperty Name="Activo" ColumnName="Activo" />
                 <ScalarProperty Name="Etapa1" ColumnName="Etapa1" />
                 <ScalarProperty Name="ProgramaVision" ColumnName="ProgramaVision" />

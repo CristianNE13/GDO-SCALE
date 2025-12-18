@@ -22,5 +22,6 @@ namespace Scale_Program
         public double PesoDetectado { get; set; }
         public string Estado { get; set; }
         public string Tag { get; set; }
+        public string NumeroSerie { get; set; }
     }
 }

@@ -24,5 +24,7 @@ namespace Scale_Program
         public string ProgramaVision { get; set; }
         public string Etapa1 { get; set; }
         public bool Activo { get; set; }
+        public bool UsaPesoInicial { get; set; }
+        public double PesoInicial { get; set; }
     }
 }

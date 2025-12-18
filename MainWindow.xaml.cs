@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Scale_Program.Functions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -9,10 +10,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Scale_Program.Functions;
 using Brushes = System.Windows.Media.Brushes;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
@@ -96,6 +97,7 @@ namespace Scale_Program
         private readonly DispatcherTimer _commResetTimer = new DispatcherTimer();
         private bool _resetPendiente = false;
         private bool _ResetSeguro = false;
+        private string _codigoSerie = "";
 
         public MainWindow()
         {
@@ -581,6 +583,7 @@ namespace Scale_Program
 
         void ResetVariables()
         {
+            _codigoSerie = "";
             nosum = false;
             _siguienteManual = false;
             _siguienteManualCompletado =false;
@@ -1238,7 +1241,7 @@ namespace Scale_Program
 
             _activarBoton = true;
             _ResetSeguro = true;
-            lblPesoArt.Text = "PRESIONAR BOTON DE INICIO";
+            lblPesoArt.Text = "FAVOR DE ESCANEAR ETIQUETA";
             lblPesoMin.Visibility = Visibility.Hidden;
             lblPesoMax.Visibility = Visibility.Hidden;
             lblPesoActual.Visibility = Visibility.Hidden;
@@ -1246,7 +1249,7 @@ namespace Scale_Program
             txbPesoMax.Visibility = Visibility.Hidden;
             txbPesoMin.Visibility = Visibility.Hidden;
             txbPesoActual.Visibility = Visibility.Hidden;
-            txbArticulo.Text = "SET BASCULA A ZERO";
+            txbArticulo.Text = "";
             txbPesoMax.Text = "";
             txbPesoMin.Text = "";
             txbPesoActual.Text = "";
@@ -1258,6 +1261,8 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Hidden;
 
             grdValidacion.Visibility = Visibility.Visible;
+            txbScanner.Visibility = Visibility.Visible;
+            txbScanner.Focus();
         }
 
         private void ShowAlertCamara()
@@ -1689,6 +1694,39 @@ namespace Scale_Program
                     db.SaveChanges();
 
                     if (registro.Tag != "" && registroBitacora != null) 
+                        registroBitacora.Completadas++;
+
+                    bitacora.Guardar(directorioBit);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAlertError($"Error al registrar ferretería: {ex.Message}");
+            }
+        }
+
+        private void LogSaveSerialNumber(SequenceStep step, string resultado, string matchedTag)
+        {
+            try
+            {
+                using (var db = new dc_missingpartsEntities())
+                {
+                    var registro = new Completado
+                    {
+                        Fecha = DateTime.Now,
+                        NoParte = ModeloData.NoModelo,
+                        ModProceso = step.ModProceso,
+                        Proceso = step.PartProceso,
+                        PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
+                        Estado = resultado,
+                        Tag = matchedTag ?? "",
+                        NumeroSerie = _codigoSerie
+                    };
+
+                    db.Completados.Add(registro);
+                    db.SaveChanges();
+
+                    if (registro.Tag != "" && registroBitacora != null)
                         registroBitacora.Completadas++;
 
                     bitacora.Guardar(directorioBit);
@@ -2155,7 +2193,7 @@ namespace Scale_Program
                 var weight = e.Value;
                 pesoBascula = weight;
                 var isStable = e.IsStable;
-                isStable = true;// Se utiliza true, para acelerar el proceso.
+                //isStable = true;// Se utiliza true, para acelerar el proceso.
 
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
 
@@ -2402,6 +2440,7 @@ namespace Scale_Program
 
                 lblPesoMinTotal.Content = $"Peso Min:{minTotal:F5}";
                 lblPesoMaxTotal.Content = $"Peso Max:{maxTotal:F5}";
+
                 if (currentWeight >= minTotal && currentWeight <= maxTotal && !_esperandoPickToLight)
                 {
                     foreach (var step in pasosAMostrar)
@@ -2576,38 +2615,6 @@ namespace Scale_Program
             var currentStep = pasosAMostrar[indexEnPagina];
             pieceWeight = currentWeight - _accumulatedWeight;
 
-            var verificarArticulo = pasosAMostrar.Where(v => v.PartNoParte.Contains("VERIFY"));
-            var verificarArticulo2 = pasosAMostrar.Where(v => v.PartNoParte.Contains("VSEN2"));
-
-            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo != null && !_verificacionCompletado)
-            {
-                _verificacionCompletado = false;
-                borderSensor0.Visibility = Visibility.Visible;
-                lblVerificar.Visibility = Visibility.Visible;
-            }
-
-            if (!verificarArticulo.Any())
-            {
-                sensor0Completado = true;
-                borderSensor0.Visibility = Visibility.Hidden;
-                lblVerificar.Visibility = Visibility.Hidden;
-            }
-
-            if (Math.Abs(currentWeight) <= 0.0025 && verificarArticulo2 != null && !_verificacionCompletado)
-            {
-                sensor1Completado = false;
-                _verificacionCompletado = false;
-                borderSensor1.Visibility = Visibility.Visible;
-                lblVerificar1.Visibility = Visibility.Visible;
-            }
-
-            if (!verificarArticulo2.Any())
-            {
-                sensor1Completado = true;
-                borderSensor1.Visibility = Visibility.Hidden;
-                lblVerificar1.Visibility = Visibility.Hidden;
-            }
-
             if (ModeloData.UsaPick2Light && !_esperandoPickToLight && !_pickCompletado)
             {
                 _pickCompletado = false;
@@ -2696,6 +2703,9 @@ namespace Scale_Program
                 var minTotal = pasosAMostrar.Sum(p => p.MinWeight);
                 var maxTotal = pasosAMostrar.Sum(p => p.MaxWeight);
 
+                lblPesoMinTotal.Content = $"Peso Min:{minTotal:F5}";
+                lblPesoMaxTotal.Content = $"Peso Max:{maxTotal:F5}";
+
                 if (currentWeight >= minTotal && currentWeight <= maxTotal && _verificacionCompletado)
                 {
                     foreach (var step in pasosAMostrar)
@@ -2717,15 +2727,16 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
-                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
+                            LogSaveSerialNumber(step, "PESO TOTAL OK", codigo);
                         }
                     }
 
-                    lbx_Codes.Visibility = Visibility.Hidden;
                     DesactivarSalida(defaultSettings.Piston);
                     ProcesarResetModelo();
+                    lbx_Codes.Visibility = Visibility.Hidden;
                     SetImagesBox();
                     lblCompletados.Content = registroBitacora.Completadas;
+                    
                     ShowIniciar();
                     Dispatcher.Invoke(ShowPruebaCorrecta);
                     return;
@@ -2969,6 +2980,30 @@ namespace Scale_Program
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             InspeccionarValidacionFunc();
+        }
+
+        private async void txbScanner_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+
+                _codigoSerie = txbScanner.Text.Trim();
+
+                if (string.IsNullOrEmpty(_codigoSerie))
+                {
+                    MessageBox.Show("El código escaneado no puede estar vacío. Intente nuevamente.");
+                    txbScanner.Clear();
+                    return;
+                }
+
+                    txbScanner.IsEnabled = false;
+                    txbScanner.Visibility = Visibility.Hidden;
+                    txbScanner.Clear();
+                    _stopBascula1 = false;
+
+                InspeccionarValidacionFunc();
+            }
         }
     }
 }

@@ -913,7 +913,20 @@ namespace Scale_Program
             //DesactivarSalida(defaultSettings.Piston);
             ActivarSalida(defaultSettings.Piston);
         }
+        private async Task CamaraCompletada2()
+        {
+            Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
+            lbx_Codes.Visibility = Visibility.Hidden;
+            lblCompletados.Content = registroBitacora.Completadas;
+            bitacora.Guardar(directorioBit);
+            ResetVariables();
+            SetImagesBox();
 
+            _ = ShowSecuenciaCorrecta2();
+            ShowIniciar();
+            //DesactivarSalida(defaultSettings.Piston);
+            ActivarSalida(defaultSettings.Piston);
+        }
         #endregion
 
         #region VISUALES
@@ -2229,7 +2242,7 @@ namespace Scale_Program
                 var weight = e.Value;
                 pesoBascula = weight;
                 var isStable = e.IsStable;
-                //isStable = true;// Se utiliza true, para acelerar el proceso.
+                isStable = true;// Se utiliza true, para acelerar el proceso.
 
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
 
@@ -2291,7 +2304,13 @@ namespace Scale_Program
                                 }
                                 Grd_Color.Background = Brushes.ForestGreen;
 
-                                ProcessStableWeight(weight);
+                                if (ModeloData.UsaCamaraVision)
+                                    ProcessStableWeight(weight);
+                                else
+                                {
+                                    ProcessStableWeightNoCam(weight);
+                                }
+                               
                             }
                         }
                         else
@@ -2307,7 +2326,7 @@ namespace Scale_Program
 
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2315,7 +2334,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount == 1 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2766,14 +2785,14 @@ namespace Scale_Program
                             LogSaveSerialNumber(step, "PESO TOTAL OK", codigo);
                         }
                     }
-
-                    DesactivarSalida(defaultSettings.Piston);
-                    ProcesarResetModelo();
-                    lbx_Codes.Visibility = Visibility.Hidden;
-                    SetImagesBox();
-                    lblCompletados.Content = registroBitacora.Completadas;
-                    _ = ShowSecuenciaCorrecta2();
-                    ShowIniciar();
+                    CamaraCompletada2();
+                    //DesactivarSalida(defaultSettings.Piston);
+                    //ProcesarResetModelo();
+                    //lbx_Codes.Visibility = Visibility.Hidden;
+                    //SetImagesBox();
+                    //lblCompletados.Content = registroBitacora.Completadas;
+                    //_ = ShowSecuenciaCorrecta2();
+                    //ShowIniciar();
                     return;
                 }
             }

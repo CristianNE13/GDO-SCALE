@@ -872,17 +872,20 @@ namespace Scale_Program
             ActivarSalida(defaultSettings.Piston);
             SetImagesBox();
 
+            Dispatcher.Invoke(ShowPruebaCorrecta);
+
             if (ModeloData.UsaPesoInicial)
             {
                 EsperandoInicio();
                 _stopBascula1 = true;
-                await Task.Delay(4000);
+
+                if (defaultSettings.CheckBascula1)
+                    await Task.Delay(4000);
+
                 _stopBascula1 = false;
             }
             else 
                 ShowIniciar();
-
-            Dispatcher.Invoke(ShowPruebaCorrecta);
         }
 
         #endregion
@@ -2210,6 +2213,14 @@ namespace Scale_Program
 
                 if (isStable && ModeloData != null)
                 {
+                    if (Math.Abs(weight - _lastWeight) < 0.005)
+                        _consecutiveCount++;
+                    else
+                        _consecutiveCount = 1;
+
+                    _lastWeight = weight;
+
+
                     double pesoInicial = ModeloData?.PesoInicial ?? 0;
 
                     var menor = pesoInicial - pesoInicial * tolerancia;
@@ -2219,6 +2230,8 @@ namespace Scale_Program
                     {
                         if (Math.Abs(weight - paso0) <= 0.0025)
                         {
+                            if (_consecutiveCount >= 1)
+                            {
                                 _zeroConfirmed = true;
                                 _consecutiveCount = 0;
                                 _ResetSeguro = false;
@@ -2263,15 +2276,20 @@ namespace Scale_Program
 
                                 PrimerInicial = false;
                                 ProcessStableWeight(weight);
+                            }
+                        }
+                        else
+                        {
+                            if (_consecutiveCount >= 1)
+                            {
+                                paso0 = weight;
+                                _consecutiveCount = 0;
+                                return;
+                            }
                         }
                     }
-                    else
-                    {
-                        paso0 = weight;
-                        return;
-                    }
 
-                    if (weight >= menor && weight <= mayor && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
@@ -2284,7 +2302,7 @@ namespace Scale_Program
                         return;
                     }
 
-                    if (_zeroConfirmed && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2292,7 +2310,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2301,16 +2319,30 @@ namespace Scale_Program
 
                     if (!_zeroConfirmed)
                     {
+
                         _activarBoton = false;
 
                         if (ModeloData.UsaPesoInicial)
                         {
                             EsperandoInicio();
-                            return;
+                            if (_consecutiveCount >= 1)
+                            {
+                                _consecutiveCount = 0;
+                                return;
+                            }
                         }
 
                         else
-                           ShowIniciar();
+                        {
+                            ShowIniciar();
+                            if (_consecutiveCount >= 1)
+                            {
+                                _consecutiveCount = 0;
+                                return;
+                            }
+                        }
+
+
                     }
                 }
             });

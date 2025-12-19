@@ -29,7 +29,7 @@ namespace Scale_Program.Functions
         public string SealevelIP { get; set; }
         public int InputSensor0 { get; set; }
         public int InputSensor1 { get; set; }
-
+        public bool CheckBascula1 { get; set; }
         public static string RutaArchivoConf { get; } =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.xml");
 

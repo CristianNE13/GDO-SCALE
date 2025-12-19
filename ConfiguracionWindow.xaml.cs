@@ -174,7 +174,8 @@ namespace Scale_Program
                     CheckSealevelEthernet = chkBox_SeaEthernet.IsChecked ?? false,
                     SealevelIP = txbIPSealevel.Text,
                     InputSensor0 = cboxInputSensor0.SelectedIndex,
-                    InputSensor1 = cboxInputSensor1.SelectedIndex
+                    InputSensor1 = cboxInputSensor1.SelectedIndex,
+                    CheckBascula1 = chkBox_Bascula1.IsChecked ?? false
                 };
 
                 var serializer = new XmlSerializer(typeof(Configuracion));
@@ -228,6 +229,7 @@ namespace Scale_Program
 
                         chkBox_SeaEthernet.IsChecked = configuracion.CheckSealevelEthernet;
                         txbIPSealevel.Text = configuracion.SealevelIP;
+                        chkBox_Bascula1.IsChecked = configuracion.CheckBascula1;
 
                         if (configuracion.BasculaMarca == "Pennsylvania")
                             cboxMarca.SelectedIndex = 1;

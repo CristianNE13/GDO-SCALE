@@ -1132,6 +1132,41 @@ namespace Scale_Program
             _alertWindow.Show();
         }
 
+        public static async Task ShowCustomMessage(string message, Brush color, int time)
+        {
+            Window messageBox = new Window
+            {
+                Title = "Validaciones",
+                Height = 500,
+                Width = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Background = color,
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            StackPanel stackPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            TextBlock textBlock = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 30,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Black,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(10)
+            };
+
+            stackPanel.Children.Add(textBlock);
+            messageBox.Content = stackPanel;
+
+            messageBox.Show();
+
+            await Task.Delay(time);
+            messageBox.Close();
+        }
+
         private void ShowPickToLight(SequenceStep current)
         {
             SalidaPick2Orden(current.PartOrden, true);
@@ -1261,6 +1296,7 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Hidden;
 
             grdValidacion.Visibility = Visibility.Visible;
+
             txbScanner.Visibility = Visibility.Visible;
             txbScanner.Focus();
         }
@@ -1748,7 +1784,7 @@ namespace Scale_Program
                     var registro = new Completado
                     {
                         Fecha = DateTime.Now,
-                        NoParte = step.PartNoParte,
+                        NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
                         PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
@@ -2736,9 +2772,8 @@ namespace Scale_Program
                     lbx_Codes.Visibility = Visibility.Hidden;
                     SetImagesBox();
                     lblCompletados.Content = registroBitacora.Completadas;
-                    
+                    _ = ShowSecuenciaCorrecta2();
                     ShowIniciar();
-                    Dispatcher.Invoke(ShowPruebaCorrecta);
                     return;
                 }
             }
@@ -2770,6 +2805,11 @@ namespace Scale_Program
 
                 ResetNoCcamByIndex(pasosFiltrados.Where(x => x.PartNoParte != "CCAM"));
             }
+        }
+
+        private async Task ShowSecuenciaCorrecta2()
+        {
+            await ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 5000);
         }
 
         private bool TryFindByIndex(int zeroBased, out Rectangle indicator, out TextBlock pesoBlock)
@@ -2997,10 +3037,8 @@ namespace Scale_Program
                     return;
                 }
 
-                    txbScanner.IsEnabled = false;
-                    txbScanner.Visibility = Visibility.Hidden;
-                    txbScanner.Clear();
-                    _stopBascula1 = false;
+                txbScanner.Visibility = Visibility.Hidden;
+                txbScanner.Clear();
 
                 InspeccionarValidacionFunc();
             }

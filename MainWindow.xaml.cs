@@ -880,7 +880,7 @@ namespace Scale_Program
                 _stopBascula1 = true;
 
                 if (defaultSettings.CheckBascula1)
-                    await Task.Delay(4000);
+                    await Task.Delay(5000);
 
                 _stopBascula1 = false;
             }
@@ -2289,7 +2289,7 @@ namespace Scale_Program
                         }
                     }
 
-                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 1 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
+                    if (weight >= menor && weight <= mayor && _consecutiveCount >= 3 && !_zeroConfirmed && ModeloData.UsaPesoInicial)
                     {
                         _activarBoton = true;
                         ShowIniciar();
@@ -2325,7 +2325,7 @@ namespace Scale_Program
                         if (ModeloData.UsaPesoInicial)
                         {
                             EsperandoInicio();
-                            if (_consecutiveCount >= 1)
+                            if (_consecutiveCount >= 3)
                             {
                                 _consecutiveCount = 0;
                                 return;

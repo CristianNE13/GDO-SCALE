@@ -99,7 +99,7 @@ namespace Scale_Program
         private bool _resetPendiente = false;
         private bool _ResetSeguro = false;
         private bool PrimerInicial = false;
-        private double tolerancia = 0.08;
+        private double tolerancia = 0.11;
 
         public MainWindow()
         {
@@ -2636,8 +2636,8 @@ namespace Scale_Program
                     indicator.Fill = Brushes.Red;
                     pesoTextBlock.Text = $"{pieceWeight:F5} kg";
                     currentStep.DetectedWeight = currentWeight.ToString("F5");
-                    _manual = true;
-                    _activarBoton = true;
+                    //_manual = true;
+                    //_activarBoton = true;
 
                     return;
                 }

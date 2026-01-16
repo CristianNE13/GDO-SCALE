@@ -130,7 +130,7 @@ namespace Scale_Program
 
             //InicializarResets();
 
-            IniciarSealevel();
+            //IniciarSealevel();
 
             ReadInputBascula1(defaultSettings.PuertoBascula1, bascula);
         }
@@ -146,7 +146,7 @@ namespace Scale_Program
 
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
 
-                IniciarSealevel();
+                //IniciarSealevel();
 
                 if (ioScannerActivado) 
                     OutputsOff();
@@ -248,7 +248,7 @@ namespace Scale_Program
                 if (defaultSettings.CheckShutOff)
                 {
                     if (ioInterface == null)
-                        IniciarSealevel();
+                        //IniciarSealevel();
 
                     ActivarSalida(defaultSettings.ShutOff);
                 }
@@ -403,8 +403,8 @@ namespace Scale_Program
                 if (ioScannerActivado)
                     OutputsOff();
 
-                ioInterface.Dispose();
-                ioScanner.Stop();
+                //ioInterface.Dispose();
+                //ioScanner.Stop();
                 
                 if (bascula.GetPuerto() != null && bascula.GetPuerto().IsOpen)
                     bascula.ClosePort();
@@ -1468,12 +1468,12 @@ namespace Scale_Program
 
         private void ActivarSalida(int tipo)
         {
-            ioInterface.WriteSingleOutput(tipo, true);
+            //ioInterface.WriteSingleOutput(tipo, true);
         }
 
         private void DesactivarSalida(int tipo)
         {
-            ioInterface.WriteSingleOutput(tipo, false);
+            //ioInterface.WriteSingleOutput(tipo, false);
         }
 
         private void IniciarSealevel()
@@ -1530,11 +1530,11 @@ namespace Scale_Program
             {
                 if (ioScanner != null && ioScanner.IsRunning())
                 {
-                    ioInterface?.WriteMultipleOutputs(0, 0, 16);
+                    //ioInterface?.WriteMultipleOutputs(0, 0, 16);
                 }
                 else
                 {
-                    IniciarSealevel();
+                    //IniciarSealevel();
                     ioInterface?.WriteMultipleOutputs(0, 0, 16);
                     ioScanner?.Stop();
                     ioInterface?.Dispose();
@@ -1916,7 +1916,7 @@ namespace Scale_Program
 
             await Task.Delay(500);
 
-            IniciarSealevel();
+            //IniciarSealevel();
 
             await Task.Delay(500);
 
@@ -2242,7 +2242,7 @@ namespace Scale_Program
                 var weight = e.Value;
                 pesoBascula = weight;
                 var isStable = e.IsStable;
-                isStable = true;// Se utiliza true, para acelerar el proceso.
+                //isStable = true;// Se utiliza true, para acelerar el proceso.
 
                 PesoGeneral.Text = $"Peso: {weight-paso0:F5} kg";
 
@@ -2963,7 +2963,7 @@ namespace Scale_Program
 
                 try
                 {
-                    IniciarSealevel();
+                    //IniciarSealevel();
                 }
                 catch (Exception exSealevel)
                 {

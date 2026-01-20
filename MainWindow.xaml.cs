@@ -864,7 +864,7 @@ namespace Scale_Program
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
-            LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
+            //LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
@@ -2518,6 +2518,7 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
+                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
                         }
                     }
 

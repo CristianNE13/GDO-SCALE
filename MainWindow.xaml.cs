@@ -98,6 +98,8 @@ namespace Scale_Program
         private bool _resetPendiente = false;
         private bool _ResetSeguro = false;
         private string _codigoSerie = "";
+        private Color AppNameColor = (Color) ColorConverter.ConvertFromString("#FF005288");
+        private Brush AppNameBrushColor = (Brush)new BrushConverter().ConvertFrom("#FF005288");
 
         public MainWindow()
         {
@@ -2736,9 +2738,9 @@ namespace Scale_Program
                     lbx_Codes.Visibility = Visibility.Hidden;
                     SetImagesBox();
                     lblCompletados.Content = registroBitacora.Completadas;
-                    
-                    ShowIniciar();
+
                     Dispatcher.Invoke(ShowPruebaCorrecta);
+                    ShowIniciar();
                     return;
                 }
             }
@@ -2992,17 +2994,33 @@ namespace Scale_Program
 
                 if (string.IsNullOrEmpty(_codigoSerie))
                 {
-                    MessageBox.Show("El código escaneado no puede estar vacío. Intente nuevamente.");
+                    Grd_Color.Background = Brushes.OrangeRed;
+                    AppName.Content = "Código escaneado no puede estar vacío";
                     txbScanner.Clear();
+                    txbScanner.Focus();
                     return;
                 }
 
+                else if (_codigoSerie.Length != 12)
+                {
+                    Grd_Color.Background = Brushes.OrangeRed;
+                    AppName.Content = "Código con numero de caracteres incorrecto";
+                    txbScanner.Clear();
+                    txbScanner.Focus();
+                    return;
+                }
+
+                else if (_codigoSerie.Length == 12)
+                {
+                    AppName.Content = "Parts Presence";
+                    Grd_Color.Background = AppNameBrushColor;
                     txbScanner.IsEnabled = false;
                     txbScanner.Visibility = Visibility.Hidden;
                     txbScanner.Clear();
                     _stopBascula1 = false;
 
-                InspeccionarValidacionFunc();
+                    InspeccionarValidacionFunc();
+                }
             }
         }
     }

@@ -106,7 +106,7 @@ namespace Scale_Program
             btnContinuar.Visibility = Visibility.Hidden;
             grdAlertWindow.Background = Brushes.LightGreen;
 
-            await Task.Delay(3000);
+            await Task.Delay(2000);
             Close();
         }
 

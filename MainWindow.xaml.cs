@@ -132,7 +132,7 @@ namespace Scale_Program
 
             //InicializarResets();
 
-            IniciarSealevel();
+            //IniciarSealevel();
 
             ReadInputBascula1(defaultSettings.PuertoBascula1, bascula);
         }
@@ -148,7 +148,7 @@ namespace Scale_Program
 
                 defaultSettings = Configuracion.Cargar(Configuracion.RutaArchivoConf);
 
-                IniciarSealevel();
+                //IniciarSealevel();
 
                 if (ioScannerActivado) 
                     OutputsOff();
@@ -250,7 +250,7 @@ namespace Scale_Program
                 if (defaultSettings.CheckShutOff)
                 {
                     if (ioInterface == null)
-                        IniciarSealevel();
+                        //IniciarSealevel();
 
                     ActivarSalida(defaultSettings.ShutOff);
                 }
@@ -405,8 +405,8 @@ namespace Scale_Program
                 if (ioScannerActivado)
                     OutputsOff();
 
-                ioInterface.Dispose();
-                ioScanner.Stop();
+                //ioInterface.Dispose();
+                //ioScanner.Stop();
                 
                 if (bascula.GetPuerto() != null && bascula.GetPuerto().IsOpen)
                     bascula.ClosePort();
@@ -915,7 +915,20 @@ namespace Scale_Program
             //DesactivarSalida(defaultSettings.Piston);
             ActivarSalida(defaultSettings.Piston);
         }
+        private async Task CamaraCompletada2()
+        {
+            Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
+            lbx_Codes.Visibility = Visibility.Hidden;
+            lblCompletados.Content = registroBitacora.Completadas;
+            bitacora.Guardar(directorioBit);
+            ResetVariables();
+            SetImagesBox();
 
+            _ = ShowSecuenciaCorrecta2();
+            ShowIniciar();
+            //DesactivarSalida(defaultSettings.Piston);
+            ActivarSalida(defaultSettings.Piston);
+        }
         #endregion
 
         #region VISUALES
@@ -1134,6 +1147,41 @@ namespace Scale_Program
             _alertWindow.Show();
         }
 
+        public static async Task ShowCustomMessage(string message, Brush color, int time)
+        {
+            Window messageBox = new Window
+            {
+                Title = "Validaciones",
+                Height = 500,
+                Width = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Background = color,
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            StackPanel stackPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            TextBlock textBlock = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 30,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Black,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(10)
+            };
+
+            stackPanel.Children.Add(textBlock);
+            messageBox.Content = stackPanel;
+
+            messageBox.Show();
+
+            await Task.Delay(time);
+            messageBox.Close();
+        }
+
         private void ShowPickToLight(SequenceStep current)
         {
             SalidaPick2Orden(current.PartOrden, true);
@@ -1263,6 +1311,7 @@ namespace Scale_Program
             btnRechazo.Visibility = Visibility.Hidden;
 
             grdValidacion.Visibility = Visibility.Visible;
+
             txbScanner.Visibility = Visibility.Visible;
             txbScanner.Focus();
         }
@@ -1421,12 +1470,12 @@ namespace Scale_Program
 
         private void ActivarSalida(int tipo)
         {
-            ioInterface.WriteSingleOutput(tipo, true);
+            //ioInterface.WriteSingleOutput(tipo, true);
         }
 
         private void DesactivarSalida(int tipo)
         {
-            ioInterface.WriteSingleOutput(tipo, false);
+            //ioInterface.WriteSingleOutput(tipo, false);
         }
 
         private void IniciarSealevel()
@@ -1483,11 +1532,11 @@ namespace Scale_Program
             {
                 if (ioScanner != null && ioScanner.IsRunning())
                 {
-                    ioInterface?.WriteMultipleOutputs(0, 0, 16);
+                    //ioInterface?.WriteMultipleOutputs(0, 0, 16);
                 }
                 else
                 {
-                    IniciarSealevel();
+                    //IniciarSealevel();
                     ioInterface?.WriteMultipleOutputs(0, 0, 16);
                     ioScanner?.Stop();
                     ioInterface?.Dispose();
@@ -1750,7 +1799,7 @@ namespace Scale_Program
                     var registro = new Completado
                     {
                         Fecha = DateTime.Now,
-                        NoParte = step.PartNoParte,
+                        NoParte = ModeloData.NoModelo,
                         ModProceso = step.ModProceso,
                         Proceso = step.PartProceso,
                         PesoDetectado = double.TryParse(step.DetectedWeight, out var peso) ? peso : 0,
@@ -1869,7 +1918,7 @@ namespace Scale_Program
 
             await Task.Delay(500);
 
-            IniciarSealevel();
+            //IniciarSealevel();
 
             await Task.Delay(500);
 
@@ -2257,7 +2306,13 @@ namespace Scale_Program
                                 }
                                 Grd_Color.Background = Brushes.ForestGreen;
 
-                                ProcessStableWeight(weight);
+                                if (ModeloData.UsaCamaraVision)
+                                    ProcessStableWeight(weight);
+                                else
+                                {
+                                    ProcessStableWeightNoCam(weight);
+                                }
+                               
                             }
                         }
                         else
@@ -2273,7 +2328,7 @@ namespace Scale_Program
 
                     }
 
-                    if (_zeroConfirmed && _consecutiveCount == 1 && ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeight(weight);
@@ -2281,7 +2336,7 @@ namespace Scale_Program
                     }
 
 
-                    if (_zeroConfirmed && _consecutiveCount == 1 && !ModeloData.UsaCamaraVision)
+                    if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
                     {
                         weight -= paso0;
                         ProcessStableWeightNoCam(weight);
@@ -2766,6 +2821,11 @@ namespace Scale_Program
             }
         }
 
+        private async Task ShowSecuenciaCorrecta2()
+        {
+            await ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 5000);
+        }
+
         private bool TryFindByIndex(int zeroBased, out Rectangle indicator, out TextBlock pesoBlock)
         {
             indicator = FindName($"Part_Indicator{zeroBased}") as Rectangle;
@@ -2898,7 +2958,7 @@ namespace Scale_Program
 
                 try
                 {
-                    IniciarSealevel();
+                    //IniciarSealevel();
                 }
                 catch (Exception exSealevel)
                 {

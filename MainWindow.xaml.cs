@@ -2732,15 +2732,7 @@ namespace Scale_Program
                             LogSaveSerialNumber(step, "PESO TOTAL OK", codigo);
                         }
                     }
-
-                    DesactivarSalida(defaultSettings.Piston);
-                    ProcesarResetModelo();
-                    lbx_Codes.Visibility = Visibility.Hidden;
-                    SetImagesBox();
-                    lblCompletados.Content = registroBitacora.Completadas;
-
-                    Dispatcher.Invoke(ShowPruebaCorrecta);
-                    ShowIniciar();
+                    CamaraCompletada2();
                     return;
                 }
             }
@@ -2982,6 +2974,60 @@ namespace Scale_Program
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             InspeccionarValidacionFunc();
+        }
+
+        private async Task CamaraCompletada2()
+        {
+            Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
+            lbx_Codes.Visibility = Visibility.Hidden;
+            lblCompletados.Content = registroBitacora.Completadas;
+            bitacora.Guardar(directorioBit);
+            ResetVariables();
+            SetImagesBox();
+
+            _ = ShowSecuenciaCorrecta2();
+            ShowIniciar();
+            ActivarSalida(defaultSettings.Piston);
+        }
+
+        private async Task ShowSecuenciaCorrecta2()
+        {
+            _ = ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 2000);
+        }
+
+        public static async Task ShowCustomMessage(string message, Brush color, int time)
+        {
+            Window messageBox = new Window
+            {
+                Title = "Validaciones",
+                Height = 500,
+                Width = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Background = color,
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            StackPanel stackPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            TextBlock textBlock = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 30,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Black,
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(10)
+            };
+
+            stackPanel.Children.Add(textBlock);
+            messageBox.Content = stackPanel;
+
+            messageBox.Show();
+
+            await Task.Delay(time);
+            messageBox.Close();
         }
 
         private async void txbScanner_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)

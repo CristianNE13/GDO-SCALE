@@ -915,20 +915,7 @@ namespace Scale_Program
             //DesactivarSalida(defaultSettings.Piston);
             ActivarSalida(defaultSettings.Piston);
         }
-        private async Task CamaraCompletada2()
-        {
-            Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
-            lbx_Codes.Visibility = Visibility.Hidden;
-            lblCompletados.Content = registroBitacora.Completadas;
-            bitacora.Guardar(directorioBit);
-            ResetVariables();
-            SetImagesBox();
 
-            _ = ShowSecuenciaCorrecta2();
-            ShowIniciar();
-            //DesactivarSalida(defaultSettings.Piston);
-            ActivarSalida(defaultSettings.Piston);
-        }
         #endregion
 
         #region VISUALES
@@ -1145,41 +1132,6 @@ namespace Scale_Program
             _alertWindow = new AlertWindow();
             _alertWindow.ShowPruebaCorrecta();
             _alertWindow.Show();
-        }
-
-        public static async Task ShowCustomMessage(string message, Brush color, int time)
-        {
-            Window messageBox = new Window
-            {
-                Title = "Validaciones",
-                Height = 500,
-                Width = 500,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize,
-                Background = color,
-                WindowStyle = WindowStyle.ToolWindow
-            };
-
-            StackPanel stackPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-
-            TextBlock textBlock = new TextBlock
-            {
-                Text = message,
-                TextWrapping = TextWrapping.Wrap,
-                FontSize = 30,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Black,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(10)
-            };
-
-            stackPanel.Children.Add(textBlock);
-            messageBox.Content = stackPanel;
-
-            messageBox.Show();
-
-            await Task.Delay(time);
-            messageBox.Close();
         }
 
         private void ShowPickToLight(SequenceStep current)
@@ -2823,7 +2775,7 @@ namespace Scale_Program
 
         private async Task ShowSecuenciaCorrecta2()
         {
-            await ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 5000);
+             _ = ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 2000);
         }
 
         private bool TryFindByIndex(int zeroBased, out Rectangle indicator, out TextBlock pesoBlock)
@@ -3048,11 +3000,6 @@ namespace Scale_Program
             _ = ShowSecuenciaCorrecta2();
             ShowIniciar();
             ActivarSalida(defaultSettings.Piston);
-        }
-
-        private async Task ShowSecuenciaCorrecta2()
-        {
-            _ = ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 2000);
         }
 
         public static async Task ShowCustomMessage(string message, Brush color, int time)

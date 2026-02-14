@@ -2775,7 +2775,7 @@ namespace Scale_Program
 
         private async Task ShowSecuenciaCorrecta2()
         {
-             _ = ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 2000);
+            _ = ShowCustomMessage("SECUENCIA COMPLETA", Brushes.Green, 2000);
         }
 
         private bool TryFindByIndex(int zeroBased, out Rectangle indicator, out TextBlock pesoBlock)
@@ -2998,11 +2998,10 @@ namespace Scale_Program
             SetImagesBox();
 
             _ = ShowSecuenciaCorrecta2();
-            ShowIniciar();
             ActivarSalida(defaultSettings.Piston);
         }
 
-        public static async Task ShowCustomMessage(string message, Brush color, int time)
+        public async Task ShowCustomMessage(string message, Brush color, int time)
         {
             Window messageBox = new Window
             {
@@ -3035,6 +3034,7 @@ namespace Scale_Program
 
             await Task.Delay(time);
             messageBox.Close();
+            ShowIniciar();
         }
 
         private async void txbScanner_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -3067,7 +3067,6 @@ namespace Scale_Program
                 {
                     AppName.Content = "Parts Presence";
                     Grd_Color.Background = AppNameBrushColor;
-                    txbScanner.IsEnabled = false;
                     txbScanner.Visibility = Visibility.Hidden;
                     txbScanner.Clear();
                     _stopBascula1 = false;

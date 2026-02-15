@@ -2209,6 +2209,16 @@ namespace Scale_Program
 
                     _lastWeight = weight;
 
+                    if (_currentStepIndex == 0 && ModeloData != null)
+                    {
+                        _zeroConfirmed = true;
+                        _ResetSeguro = false;
+                        Grd_Color.Background = Brushes.ForestGreen;
+                        sensor0Completado = true;
+                        sensor1Completado = true;
+                        _verificacionCompletado = true;
+
+                    }
 
                     if (_currentStepIndex == 0 && !_inicioZero && !_zeroConfirmed && !_inicioBascula)
                     {
@@ -2287,13 +2297,8 @@ namespace Scale_Program
                         return;
                     }
 
-
                     if (_zeroConfirmed && _consecutiveCount >= 1 && !ModeloData.UsaCamaraVision)
-                    {
-                        weight -= paso0;
                         ProcessStableWeightNoCam(weight);
-                        return;
-                    }
 
 
                 }

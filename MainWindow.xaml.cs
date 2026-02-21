@@ -758,7 +758,7 @@ namespace Scale_Program
                     {
                         grdValidacion.Visibility = Visibility.Hidden;
                         lbx_Codes.Visibility = Visibility.Hidden;
-                        _ = ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
+                        //_ = ShowMensaje("ESPERA A PESO APROX 0.0KG", Brushes.Green, 1500);
                     }
                 }
 

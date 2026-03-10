@@ -2822,7 +2822,7 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
-                            //LogCompleteStep(step, "PESO TOTAL OK", codigo);
+                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
                         }
                     }
 

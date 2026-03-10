@@ -743,7 +743,7 @@ namespace Scale_Program
                     {
                         var currentStep = pasosFiltrados[_currentStepIndex];
 
-                        LogCompleteStep(currentStep, "OK", codigo);
+                        //LogCompleteStep(currentStep, "OK", codigo);
 
                         CamaraCompletada();
                         return;
@@ -864,7 +864,7 @@ namespace Scale_Program
         {
             Grd_Color.Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF005288"));
             lbx_Codes.Visibility = Visibility.Hidden;
-            //LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
+            LogCompleteStep(pasosFiltrados[_currentStepIndex], "PESO TOTAL OK", codigo);
             lblCompletados.Content = registroBitacora.Completadas;
             bitacora.Guardar(directorioBit);
             ResetVariables();
@@ -2518,7 +2518,7 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
-                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
+                            //LogCompleteStep(step, "PESO TOTAL OK", codigo);
                         }
                     }
 
@@ -2577,7 +2577,7 @@ namespace Scale_Program
                         if (step == listaSinCCAM.Last())
                         {
                             step.DetectedWeight = currentWeight.ToString();
-                            LogCompleteStep(step, "PESO OK", "");
+                            //LogCompleteStep(step, "PESO OK", "");
                         }
                     }
 
@@ -2822,7 +2822,7 @@ namespace Scale_Program
                             step.DetectedWeight = currentWeight.ToString();
                             (zpl, integrer, fraction) = ZebraPrinter.GenerateZplBody(ModeloData.NoModelo);
                             codigo = $"{integrer}.{fraction}";
-                            LogCompleteStep(step, "PESO TOTAL OK", codigo);
+                            //LogCompleteStep(step, "PESO TOTAL OK", codigo);
                         }
                     }
 
